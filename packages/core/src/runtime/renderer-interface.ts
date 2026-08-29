@@ -28,11 +28,6 @@ export interface IRenderer {
     handleResize(): void;
 
     /**
-     * Toggles the visibility of editor helpers (like the grid).
-     */
-    setGridVisible(visible: boolean): void;
-
-    /**
      * Cleans up all GPU resources.
      */
     dispose(): void;

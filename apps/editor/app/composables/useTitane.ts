@@ -1,8 +1,19 @@
 import type { Entity } from '@titane/core';
 import type { ShallowRef } from 'vue';
-import { TitaneEngine, ThreeRenderer, Phase, createPlayerControlSystem } from '@titane/core';
+import { TitaneEngine, Phase, createPlayerControlSystem } from '@titane/core';
+import { ThreeRenderer } from '@titane/renderer';
 
 const engineInstance = shallowRef<TitaneEngine | null>(null);
+
+/**
+ * The concrete driver, kept alongside the engine.
+ *
+ * `engine.renderer` is typed as `IRenderer`, which intentionally knows nothing
+ * about editor chrome. Holding the implementation is what gives the UI access
+ * to viewport helpers such as the grid.
+ */
+const rendererInstance = shallowRef<ThreeRenderer | null>(null);
+
 const isInitialized = ref(false);
 
 /**
@@ -22,11 +33,13 @@ export const useTitane = () => {
   const initEngine = (canvas: HTMLCanvasElement): TitaneEngine => {
     if (engineInstance.value) return engineInstance.value;
 
-    const engine = new TitaneEngine(new ThreeRenderer(), canvas);
+    const renderer = new ThreeRenderer();
+    const engine = new TitaneEngine(renderer, canvas);
 
     // Gameplay is opt-in: the engine ships no player controls of its own.
     engine.addSystem(Phase.UPDATE, createPlayerControlSystem());
 
+    rendererInstance.value = renderer;
     engineInstance.value = engine;
 
     // The engine keeps its World reference for its whole lifetime, so this
@@ -47,6 +60,7 @@ export const useTitane = () => {
 
   return {
     engine: engineInstance,
+    renderer: rendererInstance,
     isInitialized,
     /** This ref updates only when syncWorld() is called */
     entities: activeEntities as ShallowRef<Set<Entity>>,

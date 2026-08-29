@@ -15,7 +15,6 @@ const createMockRenderer = (): IRenderer => ({
     render: vi.fn(),
     handleResize: vi.fn(),
     setSize: vi.fn(),
-    setGridVisible: vi.fn(),
     dispose: vi.fn()
 });
 

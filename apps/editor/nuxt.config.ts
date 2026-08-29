@@ -4,9 +4,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/ui', '@nuxt/eslint'],
   css: ['~/assets/css/main.css'],
-  // Ensure core is treated as ESM
+  // Ensure the workspace packages are treated as ESM
   build: {
-    transpile: ['@titane/core', 'three']
+    transpile: ['@titane/core', '@titane/renderer', 'three']
   },
   imports: {
     dirs: [

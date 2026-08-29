@@ -1,7 +1,7 @@
 {
-  "name": "@titane/core",
+  "name": "@titane/renderer",
   "version": "0.4.0",
-  "description": "Titane Core Engine",
+  "description": "Three.js rendering driver for the Titane Engine",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,7 +9,6 @@
     "dev": "tsc -b -w",
     "build": "tsc -b",
     "typecheck": "tsc -b --force",
-    "lint": "eslint .",
     "test": "vitest",
     "test:run": "vitest run"
   },
@@ -18,9 +17,11 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@dimforge/rapier3d": "^0.19.3"
+    "@titane/core": "file:../core",
+    "three": "^0.183.2"
   },
   "devDependencies": {
+    "@types/three": "^0.183.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.2"
   }

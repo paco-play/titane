@@ -7,7 +7,7 @@ const isGridVisible = ref<boolean>(true);
  * Controls the engine's execution state.
  */
 export const useRuntime = () => {
-  const { engine, syncWorld } = useTitane();
+  const { engine, renderer, syncWorld } = useTitane();
 
   /**
      * Toggles between Simulation mode (Play) and Edit mode (Pause). 
@@ -34,10 +34,10 @@ export const useRuntime = () => {
      * Toggles the visibility of the ground grid.
      */
   const toggleGrid = () => {
-    if (!engine.value) return;
+    if (!renderer.value) return;
 
     isGridVisible.value = !isGridVisible.value;
-    engine.value.renderer.setGridVisible(isGridVisible.value);
+    renderer.value.setGridVisible(isGridVisible.value);
   };
 
   /**

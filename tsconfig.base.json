@@ -17,6 +17,9 @@
         "paths": {
             "@titane/core": [
                 "packages/core/src/index.ts"
+            ],
+            "@titane/renderer": [
+                "packages/renderer/src/index.ts"
             ]
         }
     }

@@ -136,10 +136,26 @@ export class TitaneEngine {
     }
 
     /**
-     * (Re)installs the Input and Name components on the global input entity.
+     * (Re)installs the Input and Name components on the global input entity,
+     * and re-reserves its ID against the freshly loaded entity counters.
+     *
+     * A loaded scene brings its own `nextId` and free list, which may both
+     * consider this ID available. Handing it out again would let a game object
+     * overwrite the input singleton: it would render in the viewport while
+     * disappearing from any UI that filters engine-owned entities out.
      */
     private seedGlobalInput(): void {
-        this.world.entities.active.add(this.globalInputEntity);
+        const { entities } = this.world;
+
+        entities.active.add(this.globalInputEntity);
+
+        if (entities.nextId <= this.globalInputEntity) {
+            entities.nextId = this.globalInputEntity + 1;
+        }
+
+        const freeSlot = entities.recycled.indexOf(this.globalInputEntity);
+        if (freeSlot !== -1) entities.recycled.splice(freeSlot, 1);
+
         addComponent(this.world, this.globalInputEntity, Input, createDefaultInput());
         addComponent(this.world, this.globalInputEntity, Name, createName('System (Global Input)'));
     }
