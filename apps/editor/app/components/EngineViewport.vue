@@ -16,7 +16,7 @@ import { addComponent, createPrimitive, Velocity, createVelocity } from '@titane
 const AUTOSAVE_INTERVAL_MS = 60_000;
 
 const canvasReference = ref<HTMLCanvasElement | null>(null);
-const { initEngine, entities } = useTitane();
+const { initEngine, entities, syncWorld } = useTitane();
 const { saveToStorage, loadFromStorage } = usePersistence();
 
 let autoSaveInterval: number | undefined;
@@ -35,18 +35,22 @@ onMounted(() => {
 
   const engine = initEngine(canvasReference.value);
 
-  // 1. Attempt to recover the previous session
+  // 1. Persist on every structural change. Registered before the scene exists
+  // so the demo cube is saved through the same path as any later edit: it used
+  // to be created after the watch and never synced, so a reload before the
+  // periodic save re-created it and the scene accumulated duplicates.
+  stopEntityWatch = watch(entities, () => saveToStorage());
+
+  // 2. Attempt to recover the previous session
   const hasRecovered = loadFromStorage();
 
-  // 2. Spawn a demo cube only on a truly fresh start.
+  // 3. Spawn a demo cube only on a truly fresh start.
   // active.size starts at 1 because the engine owns the global input entity.
   if (!hasRecovered && engine.world.entities.active.size <= 1) {
     const demoCube = createPrimitive(engine.world, { name: 'Demo Cube', color: '#4ade80' });
     addComponent(engine.world, demoCube, Velocity, createVelocity(0.4, 0, 0));
+    syncWorld();
   }
-
-  // 3. Persist whenever entities are added or removed
-  stopEntityWatch = watch(entities, () => saveToStorage());
 
   // 4. Periodic auto-save, to also capture component edits
   autoSaveInterval = window.setInterval(saveToStorage, AUTOSAVE_INTERVAL_MS);
