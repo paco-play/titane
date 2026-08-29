@@ -1,0 +1,28 @@
+{
+  "name": "@titane/renderer",
+  "version": "0.4.0",
+  "description": "Three.js rendering driver for the Titane Engine",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "tsc -b -w",
+    "build": "tsc -b",
+    "typecheck": "tsc -b --force",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@titane/core": "file:../core",
+    "three": "^0.183.2"
+  },
+  "devDependencies": {
+    "@types/three": "^0.183.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
+  }
+}
