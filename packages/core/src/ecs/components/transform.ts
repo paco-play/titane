@@ -1,19 +1,26 @@
-import { ComponentId, Entity } from '../types';
+import type { Entity } from '../types';
+import { defineComponent } from '../kernel/registry';
 import { mat4Create } from '../../utils/math';
 
 /**
- * Unique identifier for the Transform component.
+ * A point or direction in 3D space.
  */
-export const TRANSFORM_ID: ComponentId = 'transform';
+export interface Vec3 {
+    x: number;
+    y: number;
+    z: number;
+}
 
 /**
  * Represents the spatial properties of an entity.
+ * `position`, `rotation` and `scale` are local to the parent.
  */
 export interface Transform {
-    position: { x: number; y: number; z: number };
-    rotation: { x: number; y: number; z: number };
-    scale: { x: number; y: number; z: number };
+    position: Vec3;
+    rotation: Vec3;
+    scale: Vec3;
     parent: Entity | null;
+    /** Computed by the transform system. Never authored by hand. */
     worldMatrix: Float32Array;
     isDirty: boolean;
 }
@@ -26,9 +33,9 @@ export interface Transform {
  * @returns A clean Transform object.
  */
 export const createTransform = (
-    position = { x: 0, y: 0, z: 0 },
-    rotation = { x: 0, y: 0, z: 0 },
-    scale = { x: 1, y: 1, z: 1 }
+    position: Vec3 = { x: 0, y: 0, z: 0 },
+    rotation: Vec3 = { x: 0, y: 0, z: 0 },
+    scale: Vec3 = { x: 1, y: 1, z: 1 }
 ): Transform => ({
     position: { ...position },
     rotation: { ...rotation },
@@ -37,3 +44,26 @@ export const createTransform = (
     worldMatrix: mat4Create(),
     isDirty: true
 });
+
+/**
+ * Rebuilds a Transform coming from JSON.
+ * `worldMatrix` is a Float32Array, which JSON cannot represent, so it is
+ * reallocated and flagged dirty for the transform system to recompute.
+ * @param raw The plain object parsed from a scene file.
+ * @returns A live Transform instance.
+ */
+const reviveTransform = (raw: unknown): Transform => {
+    const source = raw as Partial<Transform>;
+    const transform = createTransform(source.position, source.rotation, source.scale);
+    transform.parent = source.parent ?? null;
+    return transform;
+};
+
+/**
+ * Typed handle for the Transform component.
+ */
+export const Transform = defineComponent<Transform>(
+    'transform',
+    createTransform,
+    reviveTransform
+);

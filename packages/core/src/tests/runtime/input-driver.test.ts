@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createWorld, World } from '../../ecs/kernel/world';
 import { createEntity } from '../../ecs/kernel/entity';
 import { addComponent, getComponent } from '../../ecs/kernel/component';
-import { INPUT_ID, createDefaultInput, Input } from '../../ecs/components/input';
+import { createDefaultInput, Input } from '../../ecs/components/input';
 import { InputDriver } from '../../runtime/input-driver';
 import { Entity } from '../../ecs/types';
 
@@ -14,7 +14,7 @@ describe('Runtime: Input Driver', () => {
     beforeEach(() => {
         world = createWorld();
         inputEntity = createEntity(world);
-        addComponent(world, inputEntity, INPUT_ID, createDefaultInput());
+        addComponent(world, inputEntity, Input, createDefaultInput());
 
         driver = new InputDriver(world, inputEntity);
     });
@@ -23,7 +23,7 @@ describe('Runtime: Input Driver', () => {
         window.dispatchEvent({ type: 'keydown', code: 'KeyW' } as any);
         window.dispatchEvent({ type: 'keydown', code: 'Space' } as any);
 
-        const input = getComponent<Input>(world, inputEntity, INPUT_ID)!;
+        const input = getComponent(world, inputEntity, Input)!;
         expect(input.keys['KeyW']).toBe(true);
         expect(input.keys['Space']).toBe(true);
         expect(input.justPressed['KeyW']).toBe(true);
@@ -33,7 +33,7 @@ describe('Runtime: Input Driver', () => {
         window.dispatchEvent({ type: 'keydown', code: 'KeyW' } as any);
         window.dispatchEvent({ type: 'keyup', code: 'KeyW' } as any);
 
-        const input = getComponent<Input>(world, inputEntity, INPUT_ID)!;
+        const input = getComponent(world, inputEntity, Input)!;
         expect(input.keys['KeyW']).toBe(false);
         // justPressed should remain true until the end-of-frame system clears it
         expect(input.justPressed['KeyW']).toBe(true); 
@@ -42,7 +42,7 @@ describe('Runtime: Input Driver', () => {
     it('should track mouse button clicks', () => {
         window.dispatchEvent({ type: 'mousedown', button: 0 } as any); // Left click
         
-        let input = getComponent<Input>(world, inputEntity, INPUT_ID)!;
+        const input = getComponent(world, inputEntity, Input)!;
         expect(input.mouse.buttons[0]).toBe(true);
 
         window.dispatchEvent({ type: 'mouseup', button: 0 } as any);

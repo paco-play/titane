@@ -2,8 +2,16 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createWorld, World } from '../../ecs/kernel/world';
 import { createEntity } from '../../ecs/kernel/entity';
 import { addComponent, getComponent } from '../../ecs/kernel/component';
-import { createScheduler, registerSystem, runScheduler } from '../../ecs/pipeline/scheduler';
+import {
+    createScheduler,
+    registerSystem,
+    unregisterSystem,
+    runScheduler
+} from '../../ecs/pipeline/scheduler';
 import { Phase } from '../../ecs/pipeline/system';
+import { defineComponent } from '../../ecs/kernel/registry';
+
+const Position = defineComponent<{ x: number }>('position', () => ({ x: 0 }));
 
 describe('ECS: System Execution', () => {
     let world: World;
@@ -51,10 +59,10 @@ describe('ECS: System Execution', () => {
         const scheduler = createScheduler();
 
         const entity = createEntity(world);
-        addComponent(world, entity, 'position', { x: 0 });
+        addComponent(world, entity, Position, { x: 0 });
 
         const moveSystem = (w: World, dt: number) => {
-            const pos = getComponent<{ x: number }>(w, entity, 'position');
+            const pos = getComponent(w, entity, Position);
             if (pos) {
                 pos.x += 10 * dt;
             }
@@ -64,6 +72,22 @@ describe('ECS: System Execution', () => {
 
         runScheduler(scheduler, world, 1); // 1 second elapsed
 
-        expect(getComponent<{ x: number }>(world, entity, 'position')).toEqual({ x: 10 });
+        expect(getComponent(world, entity, Position)).toEqual({ x: 10 });
+    });
+
+    it('should let games register and remove their own systems', () => {
+        const scheduler = createScheduler();
+        const gameSystem = vi.fn();
+
+        registerSystem(scheduler, Phase.UPDATE, gameSystem);
+        runScheduler(scheduler, world, 0.016);
+        expect(gameSystem).toHaveBeenCalledTimes(1);
+
+        expect(unregisterSystem(scheduler, Phase.UPDATE, gameSystem)).toBe(true);
+        runScheduler(scheduler, world, 0.016);
+        expect(gameSystem).toHaveBeenCalledTimes(1);
+
+        // Removing it twice is a no-op, not an error
+        expect(unregisterSystem(scheduler, Phase.UPDATE, gameSystem)).toBe(false);
     });
 });

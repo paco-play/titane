@@ -1,87 +1,102 @@
-import { World } from '../kernel/world';
-import { query } from '../kernel/query';
+import type { World } from '../kernel/world';
+import type { Entity } from '../types';
+import { defineQuery, runQuery } from '../kernel/query';
 import { getComponent } from '../kernel/component';
-import { TRANSFORM_ID, Transform } from '../components/transform';
+import { Transform } from '../components/transform';
 import { mat4FromTRS, mat4Multiply } from '../../utils/math';
-import { Entity } from '../types';
 
-// Pre-allocate a single matrix for local computations to prevent GC pauses
+/** Pre-allocated matrix for local computations, to prevent GC pauses. */
 const TEMP_LOCAL_MATRIX = new Float32Array(16);
+
+const transformQuery = defineQuery([Transform]);
+
+/** Reused BFS buffers: parallel arrays avoid allocating a node object per entity. */
+const queueIds: Entity[] = [];
+const queueParentDirty: boolean[] = [];
+
+/**
+ * Reused parent -> children index. Sibling arrays are emptied rather than
+ * dropped between frames, so the buffers are only ever grown once.
+ */
+const childrenMap = new Map<Entity, Entity[]>();
 
 /**
  * Calculates world matrices for all transforms iteratively.
  * Uses Breadth-First Search (BFS) to compute parents before children reliably.
- * In-place math ensures zero allocations during the loop.
+ * In-place math and recycled buffers ensure zero allocations during the loop.
  * @param world - The current world state.
  */
 export const transformSystem = (world: World): void => {
-    const allTransforms = query(world, [TRANSFORM_ID]);
+    const allTransforms = runQuery(world, transformQuery);
     if (allTransforms.length === 0) return;
 
-    // 1. Build a fast mapping for children and identify roots
-    const roots: Entity[] = [];
-    const childrenMap = new Map<Entity, Entity[]>();
+    // 1. Reset buffers, then index children by parent and seed roots
+    queueIds.length = 0;
+    queueParentDirty.length = 0;
+    childrenMap.forEach(siblings => { siblings.length = 0; });
 
     for (const entityId of allTransforms) {
-        const transform = getComponent<Transform>(world, entityId, TRANSFORM_ID);
+        const transform = getComponent(world, entityId, Transform);
         if (!transform) continue;
 
-        if (transform.parent === null) {
-            roots.push(entityId);
-        } else {
-            let siblings = childrenMap.get(transform.parent);
-            if (!siblings) {
-                siblings = [];
-                childrenMap.set(transform.parent, siblings);
-            }
-            siblings.push(entityId);
+        // An entity pointing at a parent without a Transform is orphaned:
+        // treat it as a root so its matrix is still computed.
+        const parent = transform.parent;
+        if (parent === null || !getComponent(world, parent, Transform)) {
+            queueIds.push(entityId);
+            queueParentDirty.push(false);
+            continue;
         }
+
+        let siblings = childrenMap.get(parent);
+        if (!siblings) {
+            siblings = [];
+            childrenMap.set(parent, siblings);
+        }
+        siblings.push(entityId);
     }
 
-    // 2. BFS Iterative calculation
-    // Queue stores { id, parentDirty }
-    // Using a dynamic array is fast enough and avoids recursion stack overflow.
-    const queue: { id: Entity, parentDirty: boolean }[] = [];
-    
-    // Enqueue roots
-    for (const root of roots) {
-        queue.push({ id: root, parentDirty: false });
-    }
+    // 2. Iterative BFS. A moving head index avoids the cost of shift().
+    let head = 0;
+    while (head < queueIds.length) {
+        const entityId = queueIds[head];
+        const parentDirty = queueParentDirty[head];
+        head++;
 
-    let head = 0; // Simulate queue without shift() performance cost
-    while (head < queue.length) {
-        const { id, parentDirty } = queue[head++];
-        
-        const transform = getComponent<Transform>(world, id, TRANSFORM_ID);
+        const transform = getComponent(world, entityId, Transform);
         if (!transform) continue;
 
         const isDirty = transform.isDirty || parentDirty;
 
         if (isDirty) {
-            // Compute Local Matrix into our reusable TEMP_LOCAL_MATRIX
-            mat4FromTRS(TEMP_LOCAL_MATRIX, transform.position, transform.rotation, transform.scale);
+            mat4FromTRS(
+                TEMP_LOCAL_MATRIX,
+                transform.position,
+                transform.rotation,
+                transform.scale
+            );
 
-            if (transform.parent === null) {
-                // If it's a root, world Matrix IS local Matrix
-                for(let i = 0; i < 16; i++) {
-                    transform.worldMatrix[i] = TEMP_LOCAL_MATRIX[i];
-                }
+            const parentTransform = transform.parent === null
+                ? undefined
+                : getComponent(world, transform.parent, Transform);
+
+            if (parentTransform) {
+                // M_world = M_parent * M_local
+                mat4Multiply(transform.worldMatrix, parentTransform.worldMatrix, TEMP_LOCAL_MATRIX);
             } else {
-                const parentTransform = getComponent<Transform>(world, transform.parent, TRANSFORM_ID);
-                if (parentTransform) {
-                    // M_world = M_parent * M_local
-                    mat4Multiply(transform.worldMatrix, parentTransform.worldMatrix, TEMP_LOCAL_MATRIX);
-                }
+                // Root (or orphaned) entity: the world matrix IS the local matrix
+                transform.worldMatrix.set(TEMP_LOCAL_MATRIX);
             }
+
             transform.isDirty = false;
         }
 
-        // Add children to queue 
-        const children = childrenMap.get(id);
+        // Enqueue children, propagating the dirty state down the branch
+        const children = childrenMap.get(entityId);
         if (children) {
             for (const childId of children) {
-                // Pass the dirty state down
-                queue.push({ id: childId, parentDirty: isDirty });
+                queueIds.push(childId);
+                queueParentDirty.push(isDirty);
             }
         }
     }

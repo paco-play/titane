@@ -13,7 +13,7 @@ describe('ECS: World & Entities', () => {
         expect(world.entities.nextId).toBe(0);
         expect(world.entities.active.size).toBe(0);
         expect(world.entities.recycled.length).toBe(0);
-        expect(world._components.size).toBe(0);
+        expect(world._stores.length).toBe(0);
     });
 
     it('should create entities with unique ascending IDs', () => {

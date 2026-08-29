@@ -1,15 +1,19 @@
-import { World, createWorld } from '../ecs/kernel/world';
+import type { World } from '../ecs/kernel/world';
+import type { Entity } from '../ecs/types';
+import type { IRenderer } from './renderer-interface';
+import type { Scheduler } from '../ecs/pipeline/scheduler';
+import type { System } from '../ecs/pipeline/system';
+import { createWorld } from '../ecs/kernel/world';
 import { Clock } from '../utils/clock';
-import { IRenderer } from './renderer-interface';
-import { Scheduler, createScheduler, runScheduler } from '../ecs/pipeline/scheduler';
+import { createScheduler, registerSystem, runScheduler } from '../ecs/pipeline/scheduler';
+import { Phase } from '../ecs/pipeline/system';
 import { createEntity } from '../ecs/kernel/entity';
 import { addComponent } from '../ecs/kernel/component';
-import { INPUT_ID, createDefaultInput } from '../ecs/components/input';
+import { Input, createDefaultInput } from '../ecs/components/input';
+import { Name, createName } from '../ecs/components/name';
 import { InputDriver } from './input-driver';
-import { Entity } from '../ecs/types';
 import { setupDefaultPipeline } from '../ecs/pipeline/setup';
-import { captureWorldState } from '../ecs/kernel/state-manager';
-import { NAME_ID } from '../ecs/components/name';
+import { captureWorldState, restoreWorldState } from '../ecs/kernel/state-manager';
 
 /**
  * The high-level runner for the Titane Engine.
@@ -17,20 +21,21 @@ import { NAME_ID } from '../ecs/components/name';
  */
 export class TitaneEngine {
     /** The single source of truth for the game state */
-    public world: World;
+    public readonly world: World;
 
     /** Toggle to freeze logic systems without stopping the render loop */
     public isPaused: boolean = true;
 
-    private snapshot: World | null = null;
-    public scheduler: Scheduler;
-    public renderer: IRenderer;
-    private clock: Clock;
-    private isRunning: boolean = false;
-    private inputDriver: InputDriver;
+    public readonly scheduler: Scheduler;
+    public readonly renderer: IRenderer;
 
     /** Public access to the singleton entity ID hosting tracking inputs */
-    public globalInputEntity: Entity;
+    public readonly globalInputEntity: Entity;
+
+    private snapshot: World | null = null;
+    private readonly clock: Clock;
+    private readonly inputDriver: InputDriver;
+    private isRunning: boolean = false;
 
     /**
      * @param renderer - The renderer implementation (driver) to use.
@@ -46,18 +51,24 @@ export class TitaneEngine {
 
         // 2. Spawn the Core Global Input Entity dynamically
         this.globalInputEntity = createEntity(this.world);
-        addComponent(this.world, this.globalInputEntity, INPUT_ID, createDefaultInput());
-        // Ajoute ceci pour que l'éditeur l'affiche correctement :
-        addComponent(this.world, this.globalInputEntity, NAME_ID, { value: 'System (Global Input)' })
+        this.seedGlobalInput();
 
         // 3. Mount the Input Driver logic matching standard Editor Window APIs
         this.inputDriver = new InputDriver(this.world, this.globalInputEntity, canvasElement);
 
-        // 4. Setup the functional scheduler pipeline
+        // 4. Build the deterministic engine pipeline
         this.scheduler = createScheduler();
+        setupDefaultPipeline(this.scheduler, this.renderer, () => this.isPaused);
+    }
 
-        // 5. Build the deterministic engine pipeline functionally
-        setupDefaultPipeline(this);
+    /**
+     * Registers a game system into one of the engine's execution phases.
+     * Systems run in registration order within a phase.
+     * @param phase - The lifecycle phase to run the system in.
+     * @param system - The system function to register.
+     */
+    public addSystem(phase: Phase, system: System): void {
+        registerSystem(this.scheduler, phase, system);
     }
 
     /**
@@ -86,24 +97,61 @@ export class TitaneEngine {
     }
 
     /**
-     * Captures the current state of the world.
+     * Captures the current state of the world, to be reverted to later.
      */
     public saveSnapshot(): void {
         this.snapshot = captureWorldState(this.world);
-        console.log('Snapshot saved');
     }
 
     /**
      * Restores the world to its previously saved state.
+     *
+     * The restore is done in place: the World object and its stores keep their
+     * identity so the input driver, renderer and editor UI stay bound to live data.
      */
     public restoreSnapshot(): void {
         if (!this.snapshot) {
-            console.warn('No snapshot found to restore');
+            console.warn('[Titane] No snapshot found to restore.');
             return;
         }
-        // Replace the current world with the snapshot clone
-        this.world = captureWorldState(this.snapshot);
-        console.log('World restored from snapshot');
+        restoreWorldState(this.world, this.snapshot);
+    }
+
+    /**
+     * Replaces the live world content with another world's data (loaded scene).
+     *
+     * Like `restoreSnapshot`, the copy is done in place so every holder of the
+     * World reference keeps observing live data.
+     * @param source - The world whose data becomes the new scene.
+     */
+    public loadWorld(source: World): void {
+        this.snapshot = null;
+        restoreWorldState(this.world, source);
+
+        // Input state is live runtime data, never authored content. Whatever a
+        // scene file carried is dropped so the engine keeps exactly one input
+        // singleton, the one the InputDriver writes to.
+        this.world._stores[Input.index]?.clear();
+        this.seedGlobalInput();
+    }
+
+    /**
+     * (Re)installs the Input and Name components on the global input entity.
+     */
+    private seedGlobalInput(): void {
+        this.world.entities.active.add(this.globalInputEntity);
+        addComponent(this.world, this.globalInputEntity, Input, createDefaultInput());
+        addComponent(this.world, this.globalInputEntity, Name, createName('System (Global Input)'));
+    }
+
+    /**
+     * Runs exactly one frame of the pipeline, regardless of the loop state.
+     * @returns The delta time used for this frame, in seconds.
+     */
+    public tick(): number {
+        const deltaTime = this.clock.getDelta();
+        runScheduler(this.scheduler, this.world, deltaTime);
+        return deltaTime;
     }
 
     /**
@@ -113,11 +161,7 @@ export class TitaneEngine {
     private loop(): void {
         if (!this.isRunning) return;
 
-        const deltaTime = this.clock.getDelta();
-
-        // Execution of the deterministic pipeline (Input -> Update -> Physics -> Render)
-        runScheduler(this.scheduler, this.world, deltaTime);
-
+        this.tick();
         requestAnimationFrame(() => this.loop());
     }
 }

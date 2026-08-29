@@ -1,7 +1,7 @@
-import { World } from '../ecs/kernel/world';
-import { Entity } from '../ecs/types';
+import type { World } from '../ecs/kernel/world';
+import type { Entity } from '../ecs/types';
 import { updateComponent } from '../ecs/kernel/component';
-import { INPUT_ID, Input } from '../ecs/components/input';
+import { Input } from '../ecs/components/input';
 
 /**
  * Stateless driver that bridges DOM events to the ECS Input component.
@@ -50,7 +50,7 @@ export class InputDriver {
 
     private onKeyDown(event: KeyboardEvent): void {
         // We use pure functions to securely poke data.
-        updateComponent<Input>(this.world, this.inputEntityId, INPUT_ID, (input) => {
+        updateComponent(this.world, this.inputEntityId, Input, (input) => {
             if (!input.keys[event.code]) {
                 input.justPressed[event.code] = true;
             }
@@ -59,13 +59,13 @@ export class InputDriver {
     }
 
     private onKeyUp(event: KeyboardEvent): void {
-        updateComponent<Input>(this.world, this.inputEntityId, INPUT_ID, (input) => {
+        updateComponent(this.world, this.inputEntityId, Input, (input) => {
             input.keys[event.code] = false;
         });
     }
 
     private onMouseMove(event: MouseEvent): void {
-        updateComponent<Input>(this.world, this.inputEntityId, INPUT_ID, (input) => {
+        updateComponent(this.world, this.inputEntityId, Input, (input) => {
             // Coordinate normalization: -1 to +1 using canvas bounds if available, window otherwise.
             let width = window.innerWidth;
             let height = window.innerHeight;
@@ -86,7 +86,7 @@ export class InputDriver {
     }
 
     private onMouseDown(event: MouseEvent): void {
-        updateComponent<Input>(this.world, this.inputEntityId, INPUT_ID, (input) => {
+        updateComponent(this.world, this.inputEntityId, Input, (input) => {
             if (event.button >= 0 && event.button <= 2) {
                 input.mouse.buttons[event.button] = true;
             }
@@ -94,7 +94,7 @@ export class InputDriver {
     }
 
     private onMouseUp(event: MouseEvent): void {
-        updateComponent<Input>(this.world, this.inputEntityId, INPUT_ID, (input) => {
+        updateComponent(this.world, this.inputEntityId, Input, (input) => {
             if (event.button >= 0 && event.button <= 2) {
                 input.mouse.buttons[event.button] = false;
             }

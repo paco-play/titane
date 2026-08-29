@@ -1,6 +1,6 @@
 {
   "name": "@titane/editor",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "type": "module",
   "private": true,
   "scripts": {
@@ -8,14 +8,20 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "lint": "eslint .",
+    "typecheck": "nuxt prepare && vue-tsc --noEmit -p .nuxt/tsconfig.app.json",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@titane/core": "file:../../packages/core",
     "@nuxt/ui": "^4.6.0",
+    "@titane/core": "file:../../packages/core",
     "nuxt": "^4.4.2",
     "tailwindcss": "^4.2.2",
     "vue": "^3.5.30",
     "vue-router": "^5.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.3.11"
   }
 }

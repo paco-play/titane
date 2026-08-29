@@ -1,9 +1,4 @@
-import { ComponentId } from '../types';
-
-/**
- * Unique identifier for the Mesh component.
- */
-export const MESH_ID: ComponentId = 'mesh';
+import { defineComponent } from '../kernel/registry';
 
 /**
  * Types of primitive shapes supported by the engine.
@@ -24,7 +19,12 @@ export interface MeshData {
  * @param color The hex color string.
  * @returns A clean MeshData object.
  */
-export const createMesh = (primitive: PrimitiveType = 'box', color = '#ff0000'): MeshData => ({
-    primitive,
-    color
-});
+export const createMesh = (
+    primitive: PrimitiveType = 'box',
+    color = '#ff0000'
+): MeshData => ({ primitive, color });
+
+/**
+ * Typed handle for the Mesh component.
+ */
+export const Mesh = defineComponent<MeshData>('mesh', createMesh);

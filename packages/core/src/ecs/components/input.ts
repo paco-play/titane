@@ -1,4 +1,4 @@
-export const INPUT_ID = 'input';
+import { defineComponent } from '../kernel/registry';
 
 /**
  * Pure data representation of the global input state.
@@ -31,3 +31,8 @@ export const createDefaultInput = (): Input => ({
         buttons: [false, false, false],
     },
 });
+
+/**
+ * Typed handle for the global Input component.
+ */
+export const Input = defineComponent<Input>('input', createDefaultInput);

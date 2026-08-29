@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createWorld, World } from '../../ecs/kernel/world';
 import { createEntity } from '../../ecs/kernel/entity';
 import { addComponent, getComponent } from '../../ecs/kernel/component';
-import { INPUT_ID, createDefaultInput, Input } from '../../ecs/components/input';
+import { createDefaultInput, Input } from '../../ecs/components/input';
 import { clearInputSystem } from '../../ecs/systems/input-system';
 
 describe('ECS: clearInputSystem', () => {
@@ -19,17 +19,17 @@ describe('ECS: clearInputSystem', () => {
         initialInput.justPressed['Space'] = true;
         initialInput.keys['KeyW'] = true; // Key held down
         
-        addComponent(world, inputEntity, INPUT_ID, initialInput);
+        addComponent(world, inputEntity, Input, initialInput);
     });
 
     it('should clear justPressed impulses completely', () => {
-        let input = getComponent<Input>(world, inputEntity, INPUT_ID)!;
+        let input = getComponent(world, inputEntity, Input)!;
         expect(input.justPressed['KeyW']).toBe(true);
 
         // Simulate frame end (Phase.POST_PHYSICS)
         clearInputSystem(world);
 
-        input = getComponent<Input>(world, inputEntity, INPUT_ID)!;
+        input = getComponent(world, inputEntity, Input)!;
         // The impulses must vanish
         expect(Object.keys(input.justPressed).length).toBe(0);
         // But held keys must persist across frames

@@ -1,3 +1,3 @@
 <template>
-    <EngineViewport />
+  <EngineViewport />
 </template>

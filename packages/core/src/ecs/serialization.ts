@@ -1,14 +1,26 @@
-import { World, createWorld } from './kernel/world';
-import { Entity, ComponentId } from './types';
-import { addComponent } from './kernel/component';
+import type { World } from './kernel/world';
+import type { Entity, ComponentId } from './types';
+import { createWorld } from './kernel/world';
+import { getComponentTypeById, getComponentTypeByIndex } from './kernel/registry';
+
+/** Schema version of the `.titane` scene format. */
+export const SCENE_FORMAT_VERSION = 1;
 
 /**
  * Portable representation of the World state.
- * Maps are converted to nested objects for JSON compatibility.
+ * Stores are flattened into plain records for JSON compatibility.
  */
 export interface SerializedWorld {
+    /** Schema version, so future loaders can migrate older scenes. */
+    version: number;
     nextId: number;
     entities: Entity[];
+    /**
+     * Freed IDs awaiting reuse. Without it a reloaded scene would allocate
+     * differently from the session that saved it.
+     * Absent from scenes written before this field existed.
+     */
+    recycled?: Entity[];
     components: Record<ComponentId, Record<string, unknown>>;
 }
 
@@ -19,14 +31,21 @@ export interface SerializedWorld {
  */
 export const serializeWorld = (world: World): SerializedWorld => {
     const serialized: SerializedWorld = {
+        version: SCENE_FORMAT_VERSION,
         nextId: world.entities.nextId,
         entities: Array.from(world.entities.active),
+        recycled: Array.from(world.entities.recycled),
         components: {}
     };
 
-    // Transform Map<ComponentId, Map<Entity, Data>> into a plain Record structure
-    world._components.forEach((store, componentId) => {
-        serialized.components[componentId] = Object.fromEntries(store);
+    world._stores.forEach((store, index) => {
+        if (!store || store.size === 0) return;
+
+        // The registry owns the index -> id mapping, so slots stay anonymous on disk
+        const type = getComponentTypeByIndex(index);
+        if (!type) return;
+
+        serialized.components[type.id] = Object.fromEntries(store);
     });
 
     return serialized;
@@ -34,32 +53,48 @@ export const serializeWorld = (world: World): SerializedWorld => {
 
 /**
  * Reconstructs an ECS World from a serialized data object.
+ *
+ * Component types resolve their own data through their optional `revive` hook,
+ * so the loader stays free of any per-component special casing.
+ *
  * @param data - The serialized world data.
  * @returns A fresh, fully populated World instance.
+ * @throws If the scene was written by a newer, unsupported format version.
  */
 export const deserializeWorld = (data: SerializedWorld): World => {
+    const version = data.version ?? 0;
+    if (version > SCENE_FORMAT_VERSION) {
+        throw new Error(
+            `[Titane] Scene format v${version} is newer than the supported v${SCENE_FORMAT_VERSION}.`
+        );
+    }
+
     const world = createWorld();
 
-    // 1. Restore internal entity counters and active set
+    // 1. Restore internal entity counters, active set and free list
     world.entities.nextId = data.nextId;
     data.entities.forEach(id => world.entities.active.add(id));
+    data.recycled?.forEach(id => world.entities.recycled.push(id));
 
     // 2. Restore all component stores
     for (const [componentId, storeData] of Object.entries(data.components)) {
-        for (const [entityStringId, componentData] of Object.entries(storeData)) {
-            // Important: JSON keys are always strings, we must cast back to Entity (number)
-            const entityId = Number(entityStringId);
-            
-            // Fix Transform Float32Array loss during JSON serialization
-            if (componentId === 'transform') {
-                const t = componentData as any;
-                t.worldMatrix = new Float32Array(16);
-                t.worldMatrix[0] = 1; t.worldMatrix[5] = 1; t.worldMatrix[10] = 1; t.worldMatrix[15] = 1;
-                t.isDirty = true; 
-            }
+        const type = getComponentTypeById(componentId);
 
-            addComponent(world, entityId, componentId, componentData);
+        // Unknown component: its defining module was never imported. Skip it
+        // rather than corrupting the World with data nothing can interpret.
+        if (!type) {
+            console.warn(`[Titane] Unknown component "${componentId}" skipped while loading.`);
+            continue;
         }
+
+        const store = new Map<Entity, unknown>();
+
+        for (const [entityKey, raw] of Object.entries(storeData)) {
+            // JSON object keys are always strings, cast back to Entity (number)
+            store.set(Number(entityKey), type.revive ? type.revive(raw) : raw);
+        }
+
+        world._stores[type.index] = store;
     }
 
     return world;

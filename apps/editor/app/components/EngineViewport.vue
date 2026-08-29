@@ -1,66 +1,65 @@
 <template>
-    <div class="w-full h-full relative overflow-hidden">
-        <canvas
-            ref="canvasReference"
-            class="w-full h-full block outline-none transition-opacity duration-700"
-            :class="{ 'opacity-0': !canvasReference, 'opacity-100': canvasReference }"
-            tabindex="0">
-        </canvas>
-    </div>
+  <div class="w-full h-full relative overflow-hidden">
+    <canvas
+      ref="canvasReference"
+      class="w-full h-full block outline-none transition-opacity duration-700"
+      :class="{ 'opacity-0': !canvasReference, 'opacity-100': canvasReference }"
+      tabindex="0"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
-import { EntityFactory, addComponent, VELOCITY_ID, createVelocity } from '@titane/core';
+import { addComponent, createPrimitive, Velocity, createVelocity } from '@titane/core';
+
+/** Interval between periodic auto-saves, in milliseconds. */
+const AUTOSAVE_INTERVAL_MS = 60_000;
 
 const canvasReference = ref<HTMLCanvasElement | null>(null);
 const { initEngine, entities } = useTitane();
+const { saveToStorage, loadFromStorage } = usePersistence();
 
-let autoSaveInterval: number;
-let unwatch: () => void;
+let autoSaveInterval: number | undefined;
+let stopEntityWatch: (() => void) | undefined;
 
 /**
  * Forwards the resize command to the shared engine instance.
  */
-const onResize = () => {
-    const { engine } = useTitane();
-    engine.value?.renderer.handleResize();
+const onResize = (): void => {
+  const { engine } = useTitane();
+  engine.value?.renderer.handleResize();
 };
 
 onMounted(() => {
-    if (!canvasReference.value) return;
+  if (!canvasReference.value) return;
 
-    const engine = initEngine(canvasReference.value);
-    const { saveToStorage, loadFromStorage } = usePersistence();
+  const engine = initEngine(canvasReference.value);
 
-    // 1. Attempt to recover previous session
-    const hasRecovered = loadFromStorage();
+  // 1. Attempt to recover the previous session
+  const hasRecovered = loadFromStorage();
 
-    // 2. Spawn a test cube (only if no session was recovered and no user entities exist)
-    // Note: active.size starts at 1 because the engine always creates a globalInputEntity (entity 0)
-    if (!hasRecovered && engine.world.entities.active.size <= 1) {
-        const demoCube = EntityFactory.createBox(engine.world, '#4ade80', { x: 0, y: 0, z: 0 });
-        addComponent(engine.world, demoCube, VELOCITY_ID, createVelocity(0.4, 0, 0));
-    }
+  // 2. Spawn a demo cube only on a truly fresh start.
+  // active.size starts at 1 because the engine owns the global input entity.
+  if (!hasRecovered && engine.world.entities.active.size <= 1) {
+    const demoCube = createPrimitive(engine.world, { name: 'Demo Cube', color: '#4ade80' });
+    addComponent(engine.world, demoCube, Velocity, createVelocity(0.4, 0, 0));
+  }
 
-    // 3. Set up event-driven auto-save on entity mutations
-    unwatch = watch(entities, () => {
-        saveToStorage();
-    }, { deep: true });
+  // 3. Persist whenever entities are added or removed
+  stopEntityWatch = watch(entities, () => saveToStorage());
 
-    // 4. Set up periodic auto-save
-    autoSaveInterval = window.setInterval(() => {
-        saveToStorage();
-    }, 60000);
+  // 4. Periodic auto-save, to also capture component edits
+  autoSaveInterval = window.setInterval(saveToStorage, AUTOSAVE_INTERVAL_MS);
 
-    // 5. Start simulation and listen for resize
-    window.addEventListener('resize', onResize);
-    engine.start();
+  // 5. Start simulation and listen for resize
+  window.addEventListener('resize', onResize);
+  engine.start();
 });
 
 onBeforeUnmount(() => {
-    if (unwatch) unwatch();
-    window.clearInterval(autoSaveInterval);
-    window.removeEventListener('resize', onResize);
+  stopEntityWatch?.();
+
+  if (autoSaveInterval !== undefined) window.clearInterval(autoSaveInterval);
+  window.removeEventListener('resize', onResize);
 });
 </script>
