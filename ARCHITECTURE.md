@@ -14,12 +14,13 @@ It follows a strict **Entity-Component-System (ECS)** pattern to ensure maximum 
 ---
 
 ## 2. Monorepo Structure
-- `packages/core`: the whole engine. ECS kernel, execution pipeline, standard components, built-in systems, scene serialization, runtime orchestrator, and the Three.js driver.
+- `packages/core`: the engine. ECS kernel, execution pipeline, standard components, built-in systems, scene serialization and runtime orchestrator. Depends on no graphics library.
+- `packages/renderer`: the Three.js driver implementing `IRenderer`. The only package that imports `three`.
 - `apps/editor`: Nuxt 4 application. Visualizes the ECS World and allows real-time data editing.
 
-> **Current limitation:** the Three.js driver lives in `packages/core/src/rendering/`, so `@titane/core`
-> declares `three` as a direct dependency. Extracting it into a separate `packages/renderer` (making
-> `three` optional) is a planned step, not a current fact.
+The dependency arrow points one way only: the renderer depends on the core, never the reverse.
+Swapping to WebGPU, a headless driver or a canvas 2D debug view means adding a package next to
+`packages/renderer`, with nothing to change in the core.
 
 ### Dependency Graph & Core Engine Flow
 ```mermaid
@@ -51,9 +52,10 @@ graph TD
         Ser <-->|.titane files| Stores
     end
 
-    subgraph render [Rendering Driver]
+    subgraph render [packages/renderer]
         IRend -->|Implemented by| Three[ThreeRenderer]
         Three -->|Syncs worldMatrix to| ObjMap[Object3D Map]
+        Three -->|Pools geometry & materials| Pool[ResourceCache]
     end
 
     subgraph editor [apps/editor]
@@ -186,12 +188,28 @@ matrices, and **rendering still runs**, so the viewport stays responsive.
 ## 6. Renderer Integration Strategy
 The `Renderer` is a driver behind the `IRenderer` interface, invoked in the RENDER phase:
 
-1. It maintains a **Map<Entity, Object3D>**.
+1. It maintains a **Map<Entity, RenderedEntity>**, each record holding the `Object3D` plus the
+   primitive and color it was last built from.
 2. Each frame it runs its own query for `[Transform, Mesh]`.
-3. Entities that disappeared from the result have their GPU resources disposed and are unmapped.
+3. Entities that disappeared from the result have their object removed from the scene and unmapped.
 4. New entities get an `Object3D` created and added to the scene.
-5. Existing objects have `Transform.worldMatrix` copied straight into `Object3D.matrix`, with
+5. Records whose primitive or color no longer match the live component get their geometry or
+   material swapped. Two string comparisons per entity is how a data-oriented driver notices an
+   inspector edit without the ECS emitting a single event.
+6. Every object has `Transform.worldMatrix` copied straight into `Object3D.matrix`, with
    `matrixAutoUpdate = false`: the ECS is the single source of truth for spatial data.
+
+### Resource pooling
+A geometry is fully determined by its primitive type, and a material by its color, so `ResourceCache`
+keeps one instance of each and hands it to every entity asking for it. An entity therefore costs a
+single `Object3D` rather than its own geometry and material pair, and disposal happens once, when the
+renderer shuts down, instead of per entity removal. This is also the groundwork for instancing:
+entities already share the exact objects a draw call would need to batch.
+
+### What does not belong on `IRenderer`
+Editor chrome. `setGridVisible` lives on `ThreeRenderer` alone, and the editor reaches it by keeping
+a reference to the driver it constructed. The engine contract describes rendering a world, not the
+helpers a particular tool draws around it.
 
 ---
 

@@ -7,11 +7,9 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 - **Editor:** Nuxt 4 visual interface.
 
 ## Project Structure (Monorepo)
-- `packages/core`: the whole engine (ECS kernel, pipeline, components, systems, serialization, runtime, Three.js driver).
+- `packages/core`: the engine (ECS kernel, pipeline, components, systems, serialization, runtime). No graphics dependency.
+- `packages/renderer`: the Three.js driver. The only package importing `three`.
 - `apps/editor`: the Nuxt 4 editor UI.
-
-> `packages/renderer` does not exist yet. The Three.js driver currently lives in
-> `packages/core/src/rendering/`, so `three` is a direct dependency of the core.
 
 ## Architecture Rules
 1. **Entities** are just `number` IDs.
@@ -24,16 +22,32 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ## Quality Gates
 | Command | Checks |
 | --- | --- |
-| `npm test` | 50 tests across 11 files (Vitest) |
-| `npm run typecheck` | `tsc -b` on the core, `vue-tsc` on the editor |
+| `npm test` | 59 tests: 53 on the core, 6 on the renderer (Vitest) |
+| `npm run build` | `tsc -b` on the core, then the renderer |
+| `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor |
 | `npm run lint` | ESLint on the editor |
 
 ---
 
 ## Current Milestone
-**Typed Component Core** — done. Next up: renderer extraction and viewport interaction.
+**Renderer Extraction** — done. Next up: viewport interaction (raycast selection, orbit camera, gizmos).
 
 ## Completed
+
+### Renderer Extraction
+- [x] **`packages/renderer` exists.** The Three.js driver moved out of `packages/core/src/rendering/`, and `three` is no longer a dependency of the core. The "renderer agnostic core" claim is now enforced by the package boundary rather than by convention.
+- [x] **`MeshData.primitive` is honoured.** The driver always built a `BoxGeometry`, so a sphere or a plane rendered as a box. The mapping is an exhaustive switch, so adding a primitive type breaks the build instead of silently drawing the wrong shape.
+- [x] **Every primitive fits the same unit box**, so `Transform.scale` means the same thing whatever the shape.
+- [x] **Material changes are picked up.** `MeshData.color` was only read when the object was first created, so an edit never reached the screen.
+- [x] **Geometries and materials are pooled** by `ResourceCache` instead of allocating a pair per entity. An entity now costs one `Object3D`, disposal happens once at shutdown, and entities sharing a shape and color already share the objects instancing would need to batch.
+- [x] **`setGridVisible` left `IRenderer`.** Editor chrome no longer pollutes the engine's rendering contract; the editor reaches it through the driver it constructed.
+- [x] **The renderer has its own test suite**, covering the primitive mapping, the unit-box invariant, resource sharing and disposal.
+
+### Scene Loading Integrity
+Two more defects of the "phantom duplicate" family, found while smoke-testing the extraction.
+
+- [x] **The input singleton's ID is re-reserved after a load.** A loaded scene brings its own `nextId` and free list, both of which could consider that ID available. The next created entity was handed the same ID and overwrote the engine's input entity, so it rendered in the viewport while vanishing from any UI that filters engine-owned entities out.
+- [x] **The editor's initial scene is persisted at creation.** The demo cube was seeded *after* the autosave watcher was registered and never synced, so it stayed invisible to persistence until the 60-second timer fired. Any reload before that re-created it, and the scene accumulated duplicate cubes.
 
 ### Hierarchy Integrity
 Reported symptom: nesting a cube under a parent then deleting the parent left the child on screen,
@@ -81,26 +95,28 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-### 1. Renderer Extraction (High Priority)
-1. **Move the Three.js driver** out of `packages/core/src/rendering/` into a `packages/renderer` workspace so `three` stops being a core dependency, and the "the core knows nothing about Three.js" claim becomes true.
-2. **Honour `MeshData.primitive`**: `ThreeRenderer` currently always builds a `BoxGeometry`, so a sphere or a plane renders as a box.
-3. **React to material changes**: `MeshData.color` is only read when the object is first created.
-4. **Share geometry and materials** across entities instead of allocating one pair per entity, as a first step towards instancing.
-5. **Move `setGridVisible` off `IRenderer`**: grid visibility is an editor concern leaking into the driver contract.
-
-### 2. Viewport Interaction (High Priority)
+### 1. Viewport Interaction (High Priority)
 1. **Raycasting**: select an entity by clicking its mesh in the viewport.
 2. **Orbit camera**: the camera is currently fixed at `(5, 5, 5)` looking at the origin.
 3. **Transformation gizmos**: on-screen translate/rotate/scale handles for the selection.
 4. **Manual "Reset Scene"**: revert to the initial snapshot without reloading the page.
+
+### 2. Reach the New Rendering Features (High Priority)
+The driver now supports spheres and planes and reacts to color changes, but nothing in the editor
+can produce either: the Hierarchy "+" button hardcodes `primitive: 'box'` and no UI edits a color.
+The capability is shipped and tested, yet unreachable from the tool.
+1. **Primitive choice** when creating an entity, and a primitive selector in the Inspector.
+2. **Color picker** in the Inspector's Mesh section.
+3. **Bound the material pool**: `ResourceCache` keeps one material per distinct color forever, which is fine for hand-authored scenes but would grow unbounded behind a color picker dragged through thousands of values.
 
 ### 3. Editor Performance (Medium Priority)
 1. **`useHierarchy` is O(n^2)**: `buildHierarchyLevels` re-filters the full entity list at every depth. Build the parent-to-children index once per recomputation.
 2. **Auto-save granularity**: the editor watches the entity `Set`, so it only reacts to structural changes and otherwise re-serializes the entire world on a timer. Component edits deserve a cheaper dirty-tracking path.
 
 ### 4. Storage & Scale (Medium Priority)
-1. **Archetype / SoA storage**: move hot components into dense `Float32Array` buffers. The `ComponentType.index` indirection introduced in this milestone is the seam that makes this swap possible without touching call sites.
+1. **Archetype / SoA storage**: move hot components into dense `Float32Array` buffers. The `ComponentType.index` indirection is the seam that makes this swap possible without touching call sites.
 2. **Query caching**: keep query results across frames and invalidate them on structural change, instead of rescanning the smallest store.
+3. **Instanced rendering**: entities sharing a geometry and material already share the exact objects a draw call would batch, so `InstancedMesh` is the natural next step.
 
 ### 5. Simulation (Medium Priority)
 1. **Rapier (WASM) integration** in the `PHYSICS` phase. The dependency is already declared but unused.

@@ -18,11 +18,12 @@
 
 ```typescript
 import {
-  TitaneEngine, ThreeRenderer, Phase,
+  TitaneEngine, Phase,
   defineComponent, defineQuery, runQuery,
   createPrimitive, getComponent, addComponent,
   Transform, Velocity, createVelocity
 } from '@titane/core';
+import { ThreeRenderer } from '@titane/renderer';
 
 const engine = new TitaneEngine(new ThreeRenderer(), canvas);
 
@@ -66,10 +67,10 @@ for the wrong component is a compile error rather than a silent `undefined` at r
 | **1. Foundations** | ECS Core | Stable kernel, phase scheduler, Three.js driver, versioned scene format. | Done |
 | **2. Typed Core** | Public API | `defineComponent` handles, zero-allocation queries, open system registration. | Done |
 | **3. Elite Editor** | Visual Tooling | Hierarchy, dynamic Inspector, live sync. | Done |
-| **4. Renderer Split** | Decoupling | Extract `packages/renderer`, primitive support, geometry sharing. | Next |
-| **5. Interaction** | Viewport | Raycast selection, orbit camera, transform gizmos. | Planned |
+| **4. Renderer Split** | Decoupling | Extract `packages/renderer`, primitive support, resource pooling. | Done |
+| **5. Interaction** | Viewport | Raycast selection, orbit camera, transform gizmos. | Next |
 | **6. Simulation** | Physics | Rapier (WASM) in the PHYSICS phase, fixed timestep. | Planned |
-| **7. Scale** | Storage | Archetype / SoA buffers, cached queries. | Planned |
+| **7. Scale** | Storage | Archetype / SoA buffers, cached queries, instancing. | Planned |
 
 See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the detailed task breakdown.
 
@@ -77,7 +78,8 @@ See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the detailed task breakdown.
 
 ## Architecture & Structure
 
-- `packages/core` — the engine: ECS kernel, execution pipeline, standard components, built-in systems, scene serialization, runtime orchestrator, Three.js driver.
+- `packages/core` — the engine: ECS kernel, execution pipeline, standard components, built-in systems, scene serialization, runtime orchestrator. Imports no graphics library.
+- `packages/renderer` — the Three.js driver implementing `IRenderer`. The only package that imports `three`.
 - `apps/editor` — the Nuxt 4 editor UI.
 
 For an in-depth look at the internal data flow, ECS definitions and the engine loop, read the [Architecture Specification](ARCHITECTURE.md).
@@ -91,13 +93,14 @@ graph TD
     D --> E["Component Stores<br/>indexed by ComponentType.index"]
     end
     C -->|worldMatrix sync| F[IRenderer Driver]
-    subgraph viewport [Viewport]
-    F --> G[Three.js implementation]
+    subgraph renderer ["packages/renderer"]
+    F --> G[ThreeRenderer]
     end
 ```
 
-> **Note:** the Three.js driver currently lives inside `packages/core`, so `three` is a direct
-> dependency of the core. Extracting it into `packages/renderer` is the next milestone.
+The core declares no graphics dependency: `three` lives in `packages/renderer` alone. Targeting
+WebGPU, or running headless in a test harness, means adding a package beside it and changing nothing
+in the engine.
 
 ## Useful Commands
 
@@ -105,17 +108,19 @@ graph TD
 # Run the editor with HMR
 npm run editor:dev
 
-# Compile the core engine in watch mode
+# Compile the engine packages in watch mode
 npm run core:dev
+npm run renderer:dev
 
 # Quality gates
-npm test          # Vitest suite on the core
-npm run typecheck # tsc on the core, vue-tsc on the editor
+npm test          # Vitest suites on the core and the renderer
+npm run build     # tsc on the core, then the renderer
+npm run typecheck # tsc on core and renderer, vue-tsc on the editor
 npm run lint      # ESLint on the editor
 ```
 
-The editor consumes the core's build output, so keep `npm run core:dev` running alongside
-`npm run editor:dev`, or run `npm run core:build` once beforehand.
+The editor consumes the packages' build output, so run `npm run build` once beforehand, or keep
+`npm run core:dev` and `npm run renderer:dev` running alongside `npm run editor:dev`.
 
 ## Framework Agnostic
 
@@ -128,7 +133,7 @@ powers your 3D world.
 
 - **Core Engine**: TypeScript (Data-Oriented Design), strict mode, no `any`
 - **Architecture**: ECS with a deterministic phase scheduler
-- **Renderer**: Driver-based (Default: Three.js)
+- **Renderer**: Driver-based, in its own package (Default: Three.js)
 - **Editor**: Nuxt 4 + Nuxt UI
 - **Tests**: Vitest
 - **Physics**: Rapier (WASM) — declared, not yet integrated
