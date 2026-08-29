@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createWorld, World } from '../../ecs/kernel/world';
 import { createEntity } from '../../ecs/kernel/entity';
 import { addComponent } from '../../ecs/kernel/component';
-import { TRANSFORM_ID, createTransform } from '../../ecs/components/transform';
+import { Transform, createTransform } from '../../ecs/components/transform';
 import { setParent } from '../../ecs/kernel/transform-utils';
 import { transformSystem } from '../../ecs/systems/transform';
 
@@ -20,7 +20,7 @@ describe('Transform System (Hierarchy)', () => {
             { x: 0, y: 0, z: 0 },
             { x: 1, y: 1, z: 1 }
         );
-        addComponent(world, root, TRANSFORM_ID, transform);
+        addComponent(world, root, Transform, transform);
 
         // Run the system
         transformSystem(world);
@@ -41,11 +41,11 @@ describe('Transform System (Hierarchy)', () => {
 
         // Parent at x = 10
         const parentTransform = createTransform({ x: 10, y: 0, z: 0 });
-        addComponent(world, parent, TRANSFORM_ID, parentTransform);
+        addComponent(world, parent, Transform, parentTransform);
 
         // Child at x = 5 (local)
         const childTransform = createTransform({ x: 5, y: 0, z: 0 });
-        addComponent(world, child, TRANSFORM_ID, childTransform);
+        addComponent(world, child, Transform, childTransform);
 
         // Set the relationship
         setParent(world, child, parent);
@@ -63,8 +63,8 @@ describe('Transform System (Hierarchy)', () => {
         const parentTransform = createTransform({ x: 0, y: 0, z: 0 });
         const childTransform = createTransform({ x: 2, y: 0, z: 0 });
 
-        addComponent(world, parent, TRANSFORM_ID, parentTransform);
-        addComponent(world, child, TRANSFORM_ID, childTransform);
+        addComponent(world, parent, Transform, parentTransform);
+        addComponent(world, child, Transform, childTransform);
         setParent(world, child, parent);
 
         // 1. Initial calculation

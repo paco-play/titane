@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createDefaultInput, INPUT_ID } from '../../ecs/components/input';
+import { createDefaultInput, Input } from '../../ecs/components/input';
 
 describe('ECS: Input Component', () => {
     it('should have correct ID', () => {
-        expect(INPUT_ID).toBe('input');
+        expect(Input.id).toBe('input');
     });
 
     it('should initialize with an empty deterministic state', () => {

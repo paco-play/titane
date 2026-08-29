@@ -1,37 +1,43 @@
-import { TitaneEngine } from '../../runtime/engine';
+import type { Scheduler } from './scheduler';
+import type { IRenderer } from '../../runtime/renderer-interface';
 import { registerSystem } from './scheduler';
 import { Phase } from './system';
-import { movementSystem } from '../systems/movement';
+import { integrateVelocitySystem } from '../systems/movement';
 import { clearInputSystem } from '../systems/input-system';
 import { transformSystem } from '../systems/transform';
 
 /**
- * Configures the default execution pipeline for the Titane Engine.
- * Registers core systems into their respective lifecycle phases.
- * @param engine - The engine instance to configure.
+ * Registers the engine's built-in systems into their lifecycle phases.
+ *
+ * Only engine-level concerns live here (integration, input cleanup, transform
+ * hierarchy, draw call). Gameplay systems are registered by the game through
+ * `engine.addSystem`.
+ *
+ * @param scheduler - The scheduler to populate.
+ * @param renderer - The driver performing the final draw call.
+ * @param isPaused - Reads whether simulation systems should be skipped.
  */
-export const setupDefaultPipeline = (engine: TitaneEngine): void => {
-
-    // Gameplay / Physics Phase
-    registerSystem(engine.scheduler, Phase.PHYSICS, (world, deltaTime) => {
-        if (!engine.isPaused) {
-            movementSystem(world, deltaTime);
-        }
+export const setupDefaultPipeline = (
+    scheduler: Scheduler,
+    renderer: IRenderer,
+    isPaused: () => boolean
+): void => {
+    // Physics: integrate velocities into positions
+    registerSystem(scheduler, Phase.PHYSICS, (world, deltaTime) => {
+        if (!isPaused()) integrateVelocitySystem(world, deltaTime);
     });
 
-    // Frame Cleanup: Wipe inputs that last one frame exactly
-    registerSystem(engine.scheduler, Phase.POST_PHYSICS, (world) => {
-        if (!engine.isPaused) {
-            clearInputSystem(world);
-        }
-        
-        // Transform Hierarchy must always run, even when paused,
-        // so that Editor updates are correctly computed into world matrices.
+    registerSystem(scheduler, Phase.POST_PHYSICS, (world) => {
+        // Frame cleanup: wipe inputs that last one frame exactly
+        if (!isPaused()) clearInputSystem(world);
+
+        // Transform hierarchy must always run, even when paused, so that
+        // Editor updates are correctly computed into world matrices.
         transformSystem(world);
     });
 
-    // Rendering Phase (Always runs to keep the editor responsive)
-    registerSystem(engine.scheduler, Phase.RENDER, (world) => {
-        engine.renderer.render(world);
+    // Rendering always runs, to keep the editor responsive while paused
+    registerSystem(scheduler, Phase.RENDER, (world) => {
+        renderer.render(world);
     });
 };

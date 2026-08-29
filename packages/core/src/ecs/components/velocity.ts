@@ -1,12 +1,7 @@
-import { ComponentId } from '../types';
+import { defineComponent } from '../kernel/registry';
 
 /**
- * Unique identifier for the Velocity component.
- */
-export const VELOCITY_ID: ComponentId = 'velocity';
-
-/**
- * Data structure representing linear velocity.
+ * Data structure representing linear velocity, in units per second.
  */
 export interface Velocity {
     x: number;
@@ -19,3 +14,8 @@ export interface Velocity {
  * @returns A clean Velocity object.
  */
 export const createVelocity = (x = 0, y = 0, z = 0): Velocity => ({ x, y, z });
+
+/**
+ * Typed handle for the Velocity component.
+ */
+export const Velocity = defineComponent<Velocity>('velocity', createVelocity);

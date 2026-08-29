@@ -1,47 +1,43 @@
 <template>
-    <div v-if="componentName">
-        <UInput
-            v-model="entityName"
-            variant="soft"
-            placeholder="GameObject Name..."
-            size="sm"
-            :ui="{
-                base: 'text-sm'
-            }" />
-    </div>
+  <div v-if="hasName">
+    <UInput
+      v-model="entityName"
+      variant="soft"
+      placeholder="GameObject Name..."
+      size="sm"
+      :ui="{ base: 'text-sm' }"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { NAME_ID, type Name, getComponent, updateComponent } from '@titane/core';
+import { getComponent, updateComponent, Name } from '@titane/core';
 
 const { engine, selectedEntityId, syncWorld } = useTitane();
 
-
-const componentName = computed(() => {
-    if (selectedEntityId.value === null || !engine.value) return null;
-
-    return getComponent<Name>(engine.value.world, selectedEntityId.value, NAME_ID);
+/** Name component of the selected entity, if any. */
+const nameComponent = computed(() => {
+  if (selectedEntityId.value === null || !engine.value) return undefined;
+  return getComponent(engine.value.world, selectedEntityId.value, Name);
 });
+
+const hasName = computed(() => nameComponent.value !== undefined);
 
 /**
  * Computed proxy for v-model.
- * The 'set' uses the engine's secure command API.
+ * The setter goes through the engine's safe mutation API.
  */
-const entityName = computed({
-    get: () => componentName.value?.value || '',
-    set: (newValue: string) => {
-        if (selectedEntityId.value === null || !engine.value) return;
+const entityName = computed<string>({
+  get: () => nameComponent.value?.value ?? '',
+  set: (newValue) => {
+    if (selectedEntityId.value === null || !engine.value) return;
 
-        // Use the Fortress API to modify the data
-        updateComponent<Name>(
-            engine.value.world,
-            selectedEntityId.value,
-            NAME_ID,
-            (data) => { data.value = newValue; }
-        );
+    updateComponent(engine.value.world, selectedEntityId.value, Name, (data) => {
+      data.value = newValue;
+    });
 
-        // Refresh the world to update the hierarchy
-        syncWorld();
-    }
+    // Refresh the hierarchy labels
+    syncWorld();
+  }
 });
 </script>

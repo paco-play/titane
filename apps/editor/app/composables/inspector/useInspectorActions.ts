@@ -1,4 +1,4 @@
-import { destroyEntity, createEntity, addComponent, TRANSFORM_ID } from '@titane/core';
+import { cloneEntity, destroyEntity, updateComponent, Transform } from '@titane/core';
 import { useTitane } from '../useTitane';
 
 /**
@@ -6,53 +6,40 @@ import { useTitane } from '../useTitane';
  * (Deletion, Duplication, etc.)
  */
 export const useInspectorActions = () => {
-    const { engine, selectedEntityId, syncWorld } = useTitane();
+  const { engine, selectedEntityId, syncWorld } = useTitane();
 
-    /**
-     * Removes the currently selected entity from the world
-     */
-    const deleteSelectedEntity = () => {
-        if (!engine.value || selectedEntityId.value === null) return;
+  /**
+   * Removes the currently selected entity from the world.
+   */
+  const deleteSelectedEntity = (): void => {
+    if (!engine.value || selectedEntityId.value === null) return;
 
-        destroyEntity(engine.value.world, selectedEntityId.value);
+    destroyEntity(engine.value.world, selectedEntityId.value);
 
-        // Reset selection and notify UI
-        selectedEntityId.value = null;
-        syncWorld();
-    };
+    selectedEntityId.value = null;
+    syncWorld();
+  };
 
-    /**
-     * Clones the selected entity's data into a new one
-     */
-    const duplicateSelectedEntity = () => {
-        if (!engine.value || selectedEntityId.value === null) return;
+  /**
+   * Clones the selected entity, offsetting the copy so it stays visible.
+   */
+  const duplicateSelectedEntity = (): void => {
+    if (!engine.value || selectedEntityId.value === null) return;
 
-        const world = engine.value.world;
-        const sourceId = selectedEntityId.value;
-        const newId = createEntity(world);
+    const world = engine.value.world;
+    const cloneId = cloneEntity(world, selectedEntityId.value);
 
-        // Deep clone each component store entry
-        world._components.forEach((store, componentId) => {
-            const sourceData = store.get(sourceId);
-            if (sourceData) {
-                const clonedData = JSON.parse(JSON.stringify(sourceData));
+    updateComponent(world, cloneId, Transform, (transform) => {
+      transform.position.x += 1;
+      transform.isDirty = true;
+    });
 
-                // Visual offset to distinguish the duplicate
-                if (componentId === TRANSFORM_ID) {
-                    clonedData.position.x += 1;
-                }
+    selectedEntityId.value = cloneId;
+    syncWorld();
+  };
 
-                addComponent(world, newId, componentId, clonedData);
-            }
-        });
-
-        // Focus the new entity and notify UI
-        selectedEntityId.value = newId;
-        syncWorld();
-    };
-
-    return {
-        deleteSelectedEntity,
-        duplicateSelectedEntity
-    };
-}
+  return {
+    deleteSelectedEntity,
+    duplicateSelectedEntity
+  };
+};

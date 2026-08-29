@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TitaneEngine } from '../runtime/engine';
 import { IRenderer } from '../runtime/renderer-interface';
-import { Name, NAME_ID } from '../ecs/components/name';
+import { Name } from '../ecs/components/name';
 import { addComponent, getComponent } from '../ecs/kernel/component';
 import { createEntity } from '../ecs/kernel/entity';
+import { Phase } from '../ecs/pipeline/system';
+import { Input } from '../ecs/components/input';
 
 /**
  * Mock Renderer to avoid WebGL dependencies in Node environment.
@@ -50,30 +52,52 @@ describe('Engine Lifecycle & State Management', () => {
         expect(engine.world.entities.active.has(engine.globalInputEntity)).toBe(true);
     });
 
-    it('should capture and restore snapshots by allocating a new World reference', () => {
+    it('should restore snapshots in place, keeping the World reference stable', () => {
         // 1. Setup initial state
         const entity = createEntity(engine.world);
-        addComponent(engine.world, entity, NAME_ID, { value: 'Original' } as Name);
+        addComponent(engine.world, entity, Name, { value: 'Original' });
 
         const originalWorldReference = engine.world;
+        const originalStore = engine.world._stores[Name.index];
 
         // 2. Save Snapshot
         engine.saveSnapshot();
 
         // 3. Mutate the world
-        const nameComp = getComponent<Name>(engine.world, entity, NAME_ID);
+        const nameComp = getComponent(engine.world, entity, Name);
         if (nameComp) nameComp.value = 'Modified During Play';
 
         // 4. Restore Snapshot
         engine.restoreSnapshot();
 
-        // ASSERTIONS
-        // Reference must be a completely new clone to avoid mutating the snapshot
-        expect(engine.world).not.toBe(originalWorldReference);
+        // The World and its stores must keep their identity: the input driver,
+        // renderer and editor UI all hold these references.
+        expect(engine.world).toBe(originalWorldReference);
+        expect(engine.world._stores[Name.index]).toBe(originalStore);
 
         // Data must be restored to original values
-        const restoredName = getComponent<Name>(engine.world, entity, NAME_ID);
-        expect(restoredName?.value).toBe('Original');
+        expect(getComponent(engine.world, entity, Name)?.value).toBe('Original');
+    });
+
+    it('should keep the input driver bound to live data after a restore', () => {
+        engine.saveSnapshot();
+        engine.restoreSnapshot();
+
+        // The global input entity survives the restore and is still writable
+        window.dispatchEvent({ type: 'keydown', code: 'KeyW' } as unknown as Event);
+
+        const input = getComponent(engine.world, engine.globalInputEntity, Input);
+        expect(input?.keys['KeyW']).toBe(true);
+    });
+
+    it('should run game systems registered through addSystem', () => {
+        const gameSystem = vi.fn();
+        engine.addSystem(Phase.UPDATE, gameSystem);
+
+        engine.tick();
+
+        expect(gameSystem).toHaveBeenCalledTimes(1);
+        expect(gameSystem).toHaveBeenCalledWith(engine.world, expect.any(Number));
     });
 
     it('should respect the isPaused flag in the execution loop', async () => {

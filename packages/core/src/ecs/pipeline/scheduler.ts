@@ -1,5 +1,6 @@
-import { World } from '../kernel/world';
-import { System, Phase } from './system';
+import type { World } from '../kernel/world';
+import type { System } from './system';
+import { PHASE_ORDER, Phase } from './system';
 
 /**
  * Data structure representing the system execution pipeline.
@@ -24,6 +25,7 @@ export const createScheduler = (): Scheduler => ({
 
 /**
  * Registers a system into a specific execution phase.
+ * Systems run in registration order within a phase.
  * @param scheduler The scheduler state.
  * @param phase The target execution phase.
  * @param system The system function to register.
@@ -37,6 +39,26 @@ export const registerSystem = (
 };
 
 /**
+ * Removes a previously registered system from a phase.
+ * @param scheduler The scheduler state.
+ * @param phase The phase the system was registered into.
+ * @param system The exact system reference to remove.
+ * @returns True if the system was found and removed.
+ */
+export const unregisterSystem = (
+    scheduler: Scheduler,
+    phase: Phase,
+    system: System
+): boolean => {
+    const phaseSystems = scheduler.systems[phase];
+    const index = phaseSystems.indexOf(system);
+    if (index === -1) return false;
+
+    phaseSystems.splice(index, 1);
+    return true;
+};
+
+/**
  * Executes all registered systems in the strict deterministic order of phases.
  * @param scheduler The scheduler state.
  * @param world The current world state.
@@ -47,18 +69,8 @@ export const runScheduler = (
     world: World,
     deltaTime: number
 ): void => {
-    // We enforce the order via an array to avoid any JS object key ordering issues
-    const phases = [
-        Phase.INPUT,
-        Phase.UPDATE,
-        Phase.PHYSICS,
-        Phase.POST_PHYSICS,
-        Phase.RENDER
-    ];
-
-    for (const phase of phases) {
-        const phaseSystems = scheduler.systems[phase];
-        for (const system of phaseSystems) {
+    for (const phase of PHASE_ORDER) {
+        for (const system of scheduler.systems[phase]) {
             system(world, deltaTime);
         }
     }

@@ -1,5 +1,6 @@
-import { TitaneEngine, ThreeRenderer, type Entity } from '@titane/core';
-import { type ShallowRef } from 'vue';
+import type { Entity } from '@titane/core';
+import type { ShallowRef } from 'vue';
+import { TitaneEngine, ThreeRenderer, Phase, createPlayerControlSystem } from '@titane/core';
 
 const engineInstance = shallowRef<TitaneEngine | null>(null);
 const isInitialized = ref(false);
@@ -14,39 +15,43 @@ const selectedEntityId = ref<Entity | null>(null);
 
 export const useTitane = () => {
 
-    const initEngine = (canvas: HTMLCanvasElement): TitaneEngine => {
-        if (engineInstance.value) return engineInstance.value;
+  /**
+   * Boots the engine on a canvas, or returns the already running instance.
+   * @param canvas - The canvas the renderer draws into.
+   */
+  const initEngine = (canvas: HTMLCanvasElement): TitaneEngine => {
+    if (engineInstance.value) return engineInstance.value;
 
-        const renderer = new ThreeRenderer();
-        const engine = new TitaneEngine(renderer, canvas);
-        engineInstance.value = engine;
+    const engine = new TitaneEngine(new ThreeRenderer(), canvas);
 
-        // Link our ref to the engine's active entities set
-        activeEntities.value = engine.world.entities.active;
-        isInitialized.value = true;
+    // Gameplay is opt-in: the engine ships no player controls of its own.
+    engine.addSystem(Phase.UPDATE, createPlayerControlSystem());
 
-        return engine;
-    };
+    engineInstance.value = engine;
 
-    /**
-     * Notifies Vue that the world state has changed.
-     * Call this after adding/removing entities or restoring the world state.
-     */
-    const syncWorld = () => {
-        if (engineInstance.value) {
-            // Ensure the ref always points to the current active world instance
-            activeEntities.value = engineInstance.value.world.entities.active;
-        }
-        triggerRef(activeEntities);
-    };
+    // The engine keeps its World reference for its whole lifetime, so this
+    // Set identity is stable: only triggerRef is needed to notify Vue.
+    activeEntities.value = engine.world.entities.active;
+    isInitialized.value = true;
 
-    return {
-        engine: engineInstance,
-        isInitialized,
-        /** This ref updates only when syncWorld() is called */
-        entities: activeEntities as ShallowRef<Set<Entity>>,
-        selectedEntityId,
-        initEngine,
-        syncWorld
-    };
+    return engine;
+  };
+
+  /**
+   * Notifies Vue that the world state has changed.
+   * Call this after adding/removing entities or restoring the world state.
+   */
+  const syncWorld = (): void => {
+    triggerRef(activeEntities);
+  };
+
+  return {
+    engine: engineInstance,
+    isInitialized,
+    /** This ref updates only when syncWorld() is called */
+    entities: activeEntities as ShallowRef<Set<Entity>>,
+    selectedEntityId,
+    initEngine,
+    syncWorld
+  };
 };

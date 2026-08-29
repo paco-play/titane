@@ -1,5 +1,5 @@
-import { World } from './world';
-import { Entity, ComponentId } from '../types';
+import type { World, ComponentStore } from './world';
+import type { Entity } from '../types';
 
 /**
  * Creates a deep copy of the entire ECS World.
@@ -15,22 +15,20 @@ export const cloneWorld = (world: World): World => {
         recycled: [...world.entities.recycled]
     };
 
-    // Clone component stores
-    const clonedComponents = new Map<ComponentId, Map<Entity, unknown>>();
+    // Clone component stores, preserving the dense slot layout
+    const clonedStores: (ComponentStore | undefined)[] = world._stores.map((store) => {
+        if (!store) return undefined;
 
-    world._components.forEach((store, componentId) => {
         const newStore = new Map<Entity, unknown>();
-
         store.forEach((data, entityId) => {
             // structuredClone ensures a deep copy of the pure data
             newStore.set(entityId, structuredClone(data));
         });
-
-        clonedComponents.set(componentId, newStore);
+        return newStore;
     });
 
     return {
         entities: clonedEntities,
-        _components: clonedComponents
+        _stores: clonedStores
     };
 };

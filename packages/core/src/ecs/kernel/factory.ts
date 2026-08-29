@@ -1,23 +1,38 @@
-import { World } from './world';
-import { Entity } from '../types';
+import type { World } from './world';
+import type { Entity } from '../types';
 import { createEntity } from './entity';
 import { addComponent } from './component';
-import { TRANSFORM_ID, createTransform } from '../components/transform';
-import { MESH_ID, createMesh } from '../components/mesh';
-import { NAME_ID, createName } from '../components/name';
+import { Transform, createTransform, type Vec3 } from '../components/transform';
+import { Mesh, createMesh, type PrimitiveType } from '../components/mesh';
+import { Name, createName } from '../components/name';
 
 /**
- * Helper functions to quickly spawn common entities.
+ * Options accepted when spawning a primitive game object.
  */
-export const EntityFactory = {
-    /**
-     * Spawns a basic 3D mesh entity with a transform.
-     */
-    createBox: (world: World, color = '#4ade80', position = { x: 0, y: 0, z: 0 }): Entity => {
-        const entity = createEntity(world);
-        addComponent(world, entity, NAME_ID, createName('Box'));
-        addComponent(world, entity, TRANSFORM_ID, createTransform(position));
-        addComponent(world, entity, MESH_ID, createMesh('box', color));
-        return entity;
-    }
+export interface PrimitiveOptions {
+    name?: string;
+    primitive?: PrimitiveType;
+    color?: string;
+    position?: Vec3;
+}
+
+/** Capitalized primitive name, used as the default entity name. */
+const defaultName = (primitive: PrimitiveType): string =>
+    primitive.charAt(0).toUpperCase() + primitive.slice(1);
+
+/**
+ * Spawns a named, renderable entity with a Transform and a Mesh.
+ * @param world - The world to spawn into.
+ * @param options - Overrides for the shape, color, name and position.
+ * @returns The newly created entity.
+ */
+export const createPrimitive = (world: World, options: PrimitiveOptions = {}): Entity => {
+    const primitive = options.primitive ?? 'box';
+
+    const entity = createEntity(world);
+    addComponent(world, entity, Name, createName(options.name ?? defaultName(primitive)));
+    addComponent(world, entity, Transform, createTransform(options.position));
+    addComponent(world, entity, Mesh, createMesh(primitive, options.color));
+
+    return entity;
 };

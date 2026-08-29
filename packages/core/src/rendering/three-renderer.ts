@@ -1,10 +1,13 @@
 import * as THREE from 'three';
-import { IRenderer } from '../runtime/renderer-interface';
-import { World } from '../ecs/kernel/world';
-import { query } from '../ecs/kernel/query';
+import type { IRenderer } from '../runtime/renderer-interface';
+import type { World } from '../ecs/kernel/world';
+import type { Entity } from '../ecs/types';
+import { defineQuery, runQuery } from '../ecs/kernel/query';
 import { getComponent } from '../ecs/kernel/component';
-import { TRANSFORM_ID, Transform } from '../ecs/components/transform';
-import { MESH_ID, MeshData } from '../ecs/components/mesh';
+import { Transform } from '../ecs/components/transform';
+import { Mesh } from '../ecs/components/mesh';
+
+const renderableQuery = defineQuery([Transform, Mesh]);
 
 /**
  * Three.js implementation of the Titane Renderer.
@@ -16,7 +19,10 @@ export class ThreeRenderer implements IRenderer {
     private renderer!: THREE.WebGLRenderer;
     private gridHelper!: THREE.GridHelper;
     /** Internal cache to link ECS entities to Three.js objects */
-    private entityObjectMap = new Map<number, THREE.Mesh>();
+    private entityObjectMap = new Map<Entity, THREE.Mesh>();
+
+    /** Entities matched during the current frame, reused to avoid per-frame allocation */
+    private liveEntities = new Set<Entity>();
 
     public init(canvas: HTMLCanvasElement): void {
         this.scene = new THREE.Scene();
@@ -64,59 +70,69 @@ export class ThreeRenderer implements IRenderer {
     }
 
     public render(world: World): void {
-        const activeEntities = query(world, [TRANSFORM_ID, MESH_ID]);
-        const activeEntitiesSet = new Set(activeEntities);
+        const activeEntities = runQuery(world, renderableQuery);
 
-        // 1. PHASE DE NETTOYAGE (Cleanup)
-        for (const [entityId, threeMesh] of this.entityObjectMap.entries()) {
-            if (!activeEntitiesSet.has(entityId)) {
-                this.scene.remove(threeMesh);
-
-                // Clean up GPU memory
-                threeMesh.geometry.dispose();
-                if (Array.isArray(threeMesh.material)) {
-                    threeMesh.material.forEach(m => m.dispose());
-                } else {
-                    threeMesh.material.dispose();
-                }
-
-                this.entityObjectMap.delete(entityId);
-            }
+        this.liveEntities.clear();
+        for (const entityId of activeEntities) {
+            this.liveEntities.add(entityId);
         }
 
-        // 2. UPDATE & SYNC
+        // 1. Cleanup: release GPU resources of entities that no longer render
+        for (const [entityId, threeMesh] of this.entityObjectMap) {
+            if (this.liveEntities.has(entityId)) continue;
+
+            this.scene.remove(threeMesh);
+            this.disposeMesh(threeMesh);
+            this.entityObjectMap.delete(entityId);
+        }
+
+        // 2. Update & sync
         for (const entityId of activeEntities) {
-            const transform = getComponent<Transform>(world, entityId, TRANSFORM_ID);
-            const meshData = getComponent<MeshData>(world, entityId, MESH_ID);
+            const transform = getComponent(world, entityId, Transform);
+            const meshData = getComponent(world, entityId, Mesh);
             if (!transform || !meshData) continue;
 
-            // Creation if new
-            if (!this.entityObjectMap.has(entityId)) {
+            let mesh = this.entityObjectMap.get(entityId);
+
+            if (!mesh) {
                 const geometry = new THREE.BoxGeometry(1, 1, 1);
                 const material = new THREE.MeshStandardMaterial({ color: meshData.color });
-                const mesh = new THREE.Mesh(geometry, material);
+                mesh = new THREE.Mesh(geometry, material);
                 mesh.matrixAutoUpdate = false;
                 this.scene.add(mesh);
                 this.entityObjectMap.set(entityId, mesh);
             }
 
             // Sync transformations exclusively using the DOD calculated World Matrix
-            const mesh = this.entityObjectMap.get(entityId)!;
             mesh.matrix.fromArray(transform.worldMatrix);
         }
 
-        // 3. FINAL DRAW
+        // 3. Final draw
         this.renderer.render(this.scene, this.camera);
+    }
+
+    /**
+     * Releases the GPU resources owned by a mesh.
+     * @param mesh The mesh to tear down.
+     */
+    private disposeMesh(mesh: THREE.Mesh): void {
+        mesh.geometry.dispose();
+
+        if (Array.isArray(mesh.material)) {
+            mesh.material.forEach(material => material.dispose());
+        } else {
+            mesh.material.dispose();
+        }
     }
 
     public dispose(): void {
         this.renderer.dispose();
-        // Clean up all remaining objects
+
         for (const mesh of this.entityObjectMap.values()) {
-            mesh.geometry.dispose();
-            if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
-            else mesh.material.dispose();
+            this.disposeMesh(mesh);
         }
+
         this.entityObjectMap.clear();
+        this.liveEntities.clear();
     }
 }
