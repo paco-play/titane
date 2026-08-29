@@ -1,6 +1,6 @@
 {
   "name": "@titane/editor",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "private": true,
   "scripts": {
@@ -15,6 +15,7 @@
   "dependencies": {
     "@nuxt/ui": "^4.6.0",
     "@titane/core": "file:../../packages/core",
+    "@titane/renderer": "file:../../packages/renderer",
     "nuxt": "^4.4.2",
     "tailwindcss": "^4.2.2",
     "vue": "^3.5.30",
