@@ -12,6 +12,10 @@
   "scripts": {
     "core:dev": "npm run dev -w @titane/core",
     "editor:dev": "npm run dev -w @titane/editor",
+    "core:build": "npm run build -w @titane/core",
+    "test": "npm run test:run -w @titane/core",
+    "lint": "npm run lint -w @titane/editor",
+    "typecheck": "npm run typecheck -w @titane/core && npm run typecheck -w @titane/editor",
     "bump:patch": "npm version patch --workspaces --include-workspace-root --no-git-tag-version",
     "bump:minor": "npm version minor --workspaces --include-workspace-root --no-git-tag-version",
     "bump:major": "npm version major --workspaces --include-workspace-root --no-git-tag-version"
