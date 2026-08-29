@@ -14,11 +14,19 @@ package-lock.json
 packages/**/dist/
 packages/**/build/
 
-# Nuxt
-editor/**/.nuxt/
-editor/**/.output/
-editor/**/dist/
-editor/**/public/_nuxt/
+# Incremental compilation caches: derived from the sources, and a guaranteed
+# conflict on every merge if tracked.
+*.tsbuildinfo
+
+# Nuxt. The editor also ships its own .gitignore; these patterns keep the root
+# accurate for any future app under apps/.
+apps/**/.nuxt/
+apps/**/.output/
+apps/**/.nitro/
+apps/**/.data/
+apps/**/.cache/
+apps/**/dist/
+apps/**/public/_nuxt/
 
 # =========================
 # Environment variables
