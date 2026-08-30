@@ -68,7 +68,7 @@ for the wrong component is a compile error rather than a silent `undefined` at r
 | **2. Typed Core** | Public API | `defineComponent` handles, zero-allocation queries, open system registration. | Done |
 | **3. Elite Editor** | Visual Tooling | Hierarchy, dynamic Inspector, live sync. | Done |
 | **4. Renderer Split** | Decoupling | Extract `packages/renderer`, primitive support, resource pooling. | Done |
-| **5. Interaction** | Viewport | Raycast selection, orbit camera, transform gizmos. | Next |
+| **5. Interaction** | Viewport | Raycast selection, orbit camera, transform gizmos. | Done |
 | **6. Simulation** | Physics | Rapier (WASM) in the PHYSICS phase, fixed timestep. | Planned |
 | **7. Scale** | Storage | Archetype / SoA buffers, cached queries, instancing. | Planned |
 

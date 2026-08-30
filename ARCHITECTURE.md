@@ -197,7 +197,8 @@ The `Renderer` is a driver behind the `IRenderer` interface, invoked in the REND
    material swapped. Two string comparisons per entity is how a data-oriented driver notices an
    inspector edit without the ECS emitting a single event.
 6. Every object has `Transform.worldMatrix` copied straight into `Object3D.matrix`, with
-   `matrixAutoUpdate = false`: the ECS is the single source of truth for spatial data.
+   `matrixAutoUpdate = false`: the ECS is the single source of truth for spatial data. The copy
+   is skipped while a gizmo is dragging that object, so the handle can own the pose for one gesture.
 
 ### Resource pooling
 A geometry is fully determined by its primitive type, and a material by its color, so `ResourceCache`
@@ -206,10 +207,31 @@ single `Object3D` rather than its own geometry and material pair, and disposal h
 renderer shuts down, instead of per entity removal. This is also the groundwork for instancing:
 entities already share the exact objects a draw call would need to batch.
 
-### What does not belong on `IRenderer`
-Editor chrome. `setGridVisible` lives on `ThreeRenderer` alone, and the editor reaches it by keeping
-a reference to the driver it constructed. The engine contract describes rendering a world, not the
-helpers a particular tool draws around it.
+### Viewport helpers (not on `IRenderer`)
+Orbit, picking and gizmos live on `ThreeRenderer` the same way `setGridVisible` does: the engine
+contract describes rendering a world, not the chrome of a particular tool. The editor keeps a typed
+reference to the driver it constructed.
+
+| Input | Action |
+| --- | --- |
+| Left click | Select the mesh under the cursor, or clear the selection on a miss |
+| Middle drag | Orbit around the current target |
+| Shift + middle drag | Pan |
+| Wheel | Zoom |
+| W / E / R | Translate / rotate / scale gizmo |
+| Gizmo drag | Writes local TRS back through `onGizmoTransform`; parented entities convert world → local |
+
+The gizmo helper is not an ECS entity. Picking raycasts only mapped meshes, so handles never
+resolve as a hit. A click that starts on a handle is consumed and does not change the selection.
+
+A gizmo drag is world-space. `worldMatrixToLocalTrs` inverts the parent world matrix when there is
+one, then decomposes with Euler XYZ so the result round-trips through `mat4FromTRS`. The Inspector
+refreshes through `inspectTick`, because the Transform object identity does not change.
+
+### Reset vs Play
+Play still snapshots the world at unpause and restores it on pause. Reset uses a separate
+**edit baseline**, captured after a load or after the demo scene is seeded, so restoring the
+authored scene does not depend on having pressed Play.
 
 ---
 
