@@ -17,11 +17,12 @@
 import type { Axis, TransformField } from '~/types/inspector';
 import { getComponent, updateComponent, Transform } from '@titane/core';
 
-const { engine, selectedEntityId } = useTitane();
+const { engine, selectedEntityId, inspectTick } = useTitane();
 const { saveToStorage } = usePersistence();
 
 /** Transform data of the selected entity, if any. */
 const transform = computed<Transform | undefined>(() => {
+  void inspectTick.value;
   if (selectedEntityId.value === null || !engine.value) return undefined;
   return getComponent(engine.value.world, selectedEntityId.value, Transform);
 });

@@ -1,16 +1,20 @@
+import { captureWorldState, restoreWorldState, type World } from '@titane/core';
 import { useTitane } from './useTitane';
 
 const isPlaying = ref<boolean>(false);
 const isGridVisible = ref<boolean>(true);
 
+/** Scene as it was after the last load or first seed. Independent of play snapshots. */
+const editBaseline = shallowRef<World | null>(null);
+
 /**
  * Controls the engine's execution state.
  */
 export const useRuntime = () => {
-  const { engine, renderer, syncWorld } = useTitane();
+  const { engine, renderer, syncWorld, selectedEntityId, notifyInspect } = useTitane();
 
   /**
-     * Toggles between Simulation mode (Play) and Edit mode (Pause). 
+     * Toggles between Simulation mode (Play) and Edit mode (Pause).
      */
   const togglePlay = () => {
     if (!engine.value) return;
@@ -23,12 +27,11 @@ export const useRuntime = () => {
       engine.value.isPaused = false;
     } else {
       engine.value.isPaused = true;
-      // Optionnel : we restore directly to return to the initial state
       engine.value.restoreSnapshot();
       syncWorld();
+      notifyInspect();
     }
   };
-
 
   /**
      * Toggles the visibility of the ground grid.
@@ -53,11 +56,35 @@ export const useRuntime = () => {
     }, 16);
   };
 
+  /**
+   * Remembers the current world as the scene Reset returns to.
+   * Call after a load or after seeding the demo entities.
+   */
+  const captureBaseline = (): void => {
+    if (!engine.value) return;
+    editBaseline.value = captureWorldState(engine.value.world);
+  };
+
+  /**
+   * Restores the world to the last captured baseline without reloading the page.
+   */
+  const resetScene = (): void => {
+    if (!engine.value || !editBaseline.value) return;
+
+    restoreWorldState(engine.value.world, editBaseline.value);
+    selectedEntityId.value = null;
+    syncWorld();
+    notifyInspect();
+  };
+
   return {
     isPlaying,
     togglePlay,
     isGridVisible,
     toggleGrid,
-    stepFrame
+    stepFrame,
+    captureBaseline,
+    resetScene,
+    canReset: computed(() => editBaseline.value !== null)
   };
-}
+};

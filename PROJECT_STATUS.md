@@ -22,7 +22,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ## Quality Gates
 | Command | Checks |
 | --- | --- |
-| `npm test` | 59 tests: 53 on the core, 6 on the renderer (Vitest) |
+| `npm test` | 68 tests: 53 on the core, 15 on the renderer (Vitest) |
 | `npm run build` | `tsc -b` on the core, then the renderer |
 | `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor |
 | `npm run lint` | ESLint on the editor |
@@ -30,9 +30,15 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Renderer Extraction** — done. Next up: viewport interaction (raycast selection, orbit camera, gizmos).
+**Viewport Interaction** — done. Next up: expose primitives and color in the editor.
 
 ## Completed
+
+### Viewport Interaction
+- [x] **Click to select.** `ThreeRenderer.pick` raycasts only mapped meshes, so the grid and gizmo handles never resolve as a hit. A miss clears the selection. Clicks that start on a handle are consumed and do not change the selection.
+- [x] **Orbit camera.** Middle-drag orbits, right-drag pans, the wheel zooms. The left button is left free for picking, so camera and selection do not fight.
+- [x] **Transform gizmos.** Translate / rotate / scale handles (W / E / R, or the toolbar) write local TRS back into the ECS. Parented entities convert the gizmo's world pose through `worldMatrixToLocalTrs`. Handles hide while the simulation is playing.
+- [x] **Reset scene.** An edit baseline is captured after load or after seeding the demo cube, independent of the play snapshot. Reset restores that baseline without reloading the page.
 
 ### Renderer Extraction
 - [x] **`packages/renderer` exists.** The Three.js driver moved out of `packages/core/src/rendering/`, and `three` is no longer a dependency of the core. The "renderer agnostic core" claim is now enforced by the package boundary rather than by convention.
@@ -95,13 +101,7 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-### 1. Viewport Interaction (High Priority)
-1. **Raycasting**: select an entity by clicking its mesh in the viewport.
-2. **Orbit camera**: the camera is currently fixed at `(5, 5, 5)` looking at the origin.
-3. **Transformation gizmos**: on-screen translate/rotate/scale handles for the selection.
-4. **Manual "Reset Scene"**: revert to the initial snapshot without reloading the page.
-
-### 2. Reach the New Rendering Features (High Priority)
+### 1. Reach the New Rendering Features (High Priority)
 The driver now supports spheres and planes and reacts to color changes, but nothing in the editor
 can produce either: the Hierarchy "+" button hardcodes `primitive: 'box'` and no UI edits a color.
 The capability is shipped and tested, yet unreachable from the tool.
@@ -109,20 +109,20 @@ The capability is shipped and tested, yet unreachable from the tool.
 2. **Color picker** in the Inspector's Mesh section.
 3. **Bound the material pool**: `ResourceCache` keeps one material per distinct color forever, which is fine for hand-authored scenes but would grow unbounded behind a color picker dragged through thousands of values.
 
-### 3. Editor Performance (Medium Priority)
+### 2. Editor Performance (Medium Priority)
 1. **`useHierarchy` is O(n^2)**: `buildHierarchyLevels` re-filters the full entity list at every depth. Build the parent-to-children index once per recomputation.
 2. **Auto-save granularity**: the editor watches the entity `Set`, so it only reacts to structural changes and otherwise re-serializes the entire world on a timer. Component edits deserve a cheaper dirty-tracking path.
 
-### 4. Storage & Scale (Medium Priority)
+### 3. Storage & Scale (Medium Priority)
 1. **Archetype / SoA storage**: move hot components into dense `Float32Array` buffers. The `ComponentType.index` indirection is the seam that makes this swap possible without touching call sites.
 2. **Query caching**: keep query results across frames and invalidate them on structural change, instead of rescanning the smallest store.
 3. **Instanced rendering**: entities sharing a geometry and material already share the exact objects a draw call would batch, so `InstancedMesh` is the natural next step.
 
-### 5. Simulation (Medium Priority)
+### 4. Simulation (Medium Priority)
 1. **Rapier (WASM) integration** in the `PHYSICS` phase. The dependency is already declared but unused.
 2. **Fixed timestep** for physics, decoupled from the render frame rate.
 3. **Proper single-step**: `useRuntime.stepFrame` currently unpauses and re-pauses via a 16 ms `setTimeout`; it should drive `engine.tick()` directly.
 
-### 6. Deprioritized
+### 5. Deprioritized
 1. **File System Access API**: native `CTRL+S` overwriting a file on disk without re-downloading.
 2. **Asset metadata**: structure for tracking external dependencies (textures, glTF models).
