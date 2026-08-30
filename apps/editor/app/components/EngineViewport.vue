@@ -5,6 +5,7 @@
       class="w-full h-full block outline-none transition-opacity duration-700"
       :class="{ 'opacity-0': !canvasReference, 'opacity-100': canvasReference }"
       tabindex="0"
+      @click.left="onCanvasClick"
     />
   </div>
 </template>
@@ -18,6 +19,8 @@ const AUTOSAVE_INTERVAL_MS = 60_000;
 const canvasReference = ref<HTMLCanvasElement | null>(null);
 const { initEngine, entities, syncWorld } = useTitane();
 const { saveToStorage, loadFromStorage } = usePersistence();
+const { captureBaseline } = useRuntime();
+const { onCanvasClick, onKeyDown } = useViewport();
 
 let autoSaveInterval: number | undefined;
 let stopEntityWatch: (() => void) | undefined;
@@ -52,11 +55,14 @@ onMounted(() => {
     syncWorld();
   }
 
+  captureBaseline();
+
   // 4. Periodic auto-save, to also capture component edits
   autoSaveInterval = window.setInterval(saveToStorage, AUTOSAVE_INTERVAL_MS);
 
   // 5. Start simulation and listen for resize
   window.addEventListener('resize', onResize);
+  window.addEventListener('keydown', onKeyDown);
   engine.start();
 });
 
@@ -65,5 +71,6 @@ onBeforeUnmount(() => {
 
   if (autoSaveInterval !== undefined) window.clearInterval(autoSaveInterval);
   window.removeEventListener('resize', onResize);
+  window.removeEventListener('keydown', onKeyDown);
 });
 </script>

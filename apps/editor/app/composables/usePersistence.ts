@@ -5,7 +5,8 @@ import { useTitane } from './useTitane';
 const AUTOSAVE_KEY = 'titane_autosave_buffer';
 
 export const usePersistence = () => {
-  const { engine, syncWorld } = useTitane();
+  const { engine, syncWorld, selectedEntityId } = useTitane();
+  const { captureBaseline } = useRuntime();
 
   /**
    * Exports the current scene as a .titane file.
@@ -37,7 +38,9 @@ export const usePersistence = () => {
     // In-place load: the engine keeps its World reference so the input driver,
     // the renderer and this UI stay bound to live data.
     engine.value.loadWorld(deserializeWorld(data));
+    selectedEntityId.value = null;
     syncWorld();
+    captureBaseline();
   };
 
   /**
@@ -74,12 +77,14 @@ export const usePersistence = () => {
     try {
       const data = JSON.parse(stored) as SerializedWorld;
       engine.value.loadWorld(deserializeWorld(data));
+      selectedEntityId.value = null;
       syncWorld();
       return true;
     } catch (error) {
       console.error('[Titane] Failed to recover session. Corrupted data.', error);
       clearStorage();
       engine.value.loadWorld(createWorld());
+      selectedEntityId.value = null;
       syncWorld();
       return false;
     }

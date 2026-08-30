@@ -24,6 +24,13 @@ const activeEntities = shallowRef<Set<Entity>>(new Set());
 
 const selectedEntityId = ref<Entity | null>(null);
 
+/**
+ * Bumped whenever an in-place component edit should refresh the Inspector.
+ * Structural changes already go through `syncWorld`; this covers gizmo drags
+ * that mutate the same Transform object Vue is already holding.
+ */
+const inspectTick = ref(0);
+
 export const useTitane = () => {
 
   /**
@@ -58,6 +65,10 @@ export const useTitane = () => {
     triggerRef(activeEntities);
   };
 
+  const notifyInspect = (): void => {
+    inspectTick.value += 1;
+  };
+
   return {
     engine: engineInstance,
     renderer: rendererInstance,
@@ -65,7 +76,9 @@ export const useTitane = () => {
     /** This ref updates only when syncWorld() is called */
     entities: activeEntities as ShallowRef<Set<Entity>>,
     selectedEntityId,
+    inspectTick,
     initEngine,
-    syncWorld
+    syncWorld,
+    notifyInspect
   };
 };
