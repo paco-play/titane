@@ -44,16 +44,15 @@ export const useRuntime = () => {
   };
 
   /**
-     * Steps the simulation by exactly one frame (useful for debugging).
-     */
-  const stepFrame = () => {
+   * Advances the simulation by one fixed timestep without entering play mode.
+   */
+  const stepFrame = (): void => {
     if (!engine.value) return;
     isPlaying.value = false;
-    engine.value.isPaused = false;
-    // Let the loop run once then pause again
-    setTimeout(() => {
-      if (engine.value) engine.value.isPaused = true;
-    }, 16);
+    engine.value.isPaused = true;
+    engine.value.step();
+    syncWorld();
+    notifyInspect();
   };
 
   /**

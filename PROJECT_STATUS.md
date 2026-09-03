@@ -22,7 +22,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ## Quality Gates
 | Command | Checks |
 | --- | --- |
-| `npm test` | 94 tests: 60 on the core, 26 on the renderer, 8 on the editor (Vitest) |
+| `npm test` | 107 tests: 73 on the core, 26 on the renderer, 8 on the editor (Vitest) |
 | `npm run build` | `tsc -b` on the core, then the renderer |
 | `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor |
 | `npm run lint` | ESLint on the editor |
@@ -30,9 +30,14 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Storage & Scale** — done. Next up: simulation.
+**Simulation** — done. Next up: deprioritized editor polish.
 
 ## Completed
+
+### Simulation
+- [x] **Rapier in the PHYSICS phase.** `@dimforge/rapier3d-compat` (inlined WASM) drives entities with a `RigidBody` (`dynamic` or `fixed`). Collider shape comes from `Mesh.primitive` and `Transform.scale`. The demo cube keeps `Velocity` only, so it still slides and does not fall. Bodies with `Velocity` and no `RigidBody` still use the kinematic integrator.
+- [x] **Fixed timestep.** While playing, UPDATE and PHYSICS run at 1/60 s with a capped accumulator. INPUT, POST_PHYSICS and RENDER keep the frame delta. A paused tick still runs the full pipeline so gizmos and hierarchy stay live.
+- [x] **Proper single-step.** `engine.step()` advances one fixed step without unpausing. The toolbar Step button calls it directly (no 16 ms `setTimeout`).
 
 ### Storage & Scale
 - [x] **SoA storage for hot components.** `Transform` and `Velocity` live in packed typed arrays behind the existing accessors. `ComponentType.createStore` is the seam: other components still use a sparse map. `addComponent` keeps object identity by binding the caller's object to the buffers, so the transform system, Inspector and tests do not change. Recycled IDs detach stale views so they cannot write the new occupant.
@@ -116,11 +121,6 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-### 1. Simulation (Medium Priority)
-1. **Rapier (WASM) integration** in the `PHYSICS` phase. The dependency is already declared but unused.
-2. **Fixed timestep** for physics, decoupled from the render frame rate.
-3. **Proper single-step**: `useRuntime.stepFrame` currently unpauses and re-pauses via a 16 ms `setTimeout`; it should drive `engine.tick()` directly.
-
-### 2. Deprioritized
+### 1. Deprioritized
 1. **File System Access API**: native `CTRL+S` overwriting a file on disk without re-downloading.
 2. **Asset metadata**: structure for tracking external dependencies (textures, glTF models).

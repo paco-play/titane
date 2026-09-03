@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { addComponent, createPrimitive, Velocity, createVelocity } from '@titane/core';
+import { addComponent, createPrimitive, Velocity, createVelocity, initPhysics } from '@titane/core';
 
 /** Interval between periodic auto-saves, in milliseconds. */
 const AUTOSAVE_INTERVAL_MS = 60_000;
@@ -33,9 +33,10 @@ const onResize = (): void => {
   engine.value?.renderer.handleResize();
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (!canvasReference.value) return;
 
+  await initPhysics();
   const engine = initEngine(canvasReference.value);
 
   // 1. Persist on every structural change. Registered before the scene exists

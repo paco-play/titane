@@ -17,11 +17,11 @@
   "author": "",
   "license": "MIT",
   "type": "module",
-  "dependencies": {
-    "@dimforge/rapier3d": "^0.19.3"
-  },
   "devDependencies": {
     "typescript": "^5.9.3",
     "vitest": "^4.1.2"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.19.3"
   }
 }

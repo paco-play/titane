@@ -28,5 +28,8 @@
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
     "eslint": "^10.1.0"
+  },
+  "overrides": {
+    "@dimforge/rapier3d-compat": "0.19.3"
   }
 }

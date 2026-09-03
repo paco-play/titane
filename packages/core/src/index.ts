@@ -23,12 +23,14 @@ export * from './ecs/components/mesh';
 export * from './ecs/components/name';
 export * from './ecs/components/input';
 export * from './ecs/components/player-controlled';
+export * from './ecs/components/rigid-body';
 
 // Built-in Systems
 export * from './ecs/systems/movement';
 export * from './ecs/systems/transform';
 export * from './ecs/systems/input-system';
 export * from './ecs/systems/player-control';
+export * from './ecs/systems/physics';
 
 // Scene Persistence
 export * from './ecs/serialization';
@@ -40,3 +42,5 @@ export * from './runtime/renderer-interface';
 // Utils
 export * from './utils/clock';
 export * from './utils/math';
+export * from './utils/fixed-step';
+export { initPhysics, isPhysicsReady } from './physics/session';
