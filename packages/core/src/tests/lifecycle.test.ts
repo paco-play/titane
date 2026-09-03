@@ -6,6 +6,7 @@ import { addComponent, getComponent } from '../ecs/kernel/component';
 import { createEntity } from '../ecs/kernel/entity';
 import { Phase } from '../ecs/pipeline/system';
 import { Input } from '../ecs/components/input';
+import { isPhysicsReady } from '../physics/session';
 
 /**
  * Mock Renderer to avoid WebGL dependencies in Node environment.
@@ -100,7 +101,7 @@ describe('Engine Lifecycle & State Management', () => {
     });
 
     it('should respect the isPaused flag in the execution loop', async () => {
-        engine.start();
+        await engine.start();
 
         // Case 1: Paused (Editor Mode)
         engine.isPaused = true;
@@ -127,5 +128,10 @@ describe('Engine Lifecycle & State Management', () => {
 
         expect(stopSpy).toHaveBeenCalled();
         // This confirms the engine orchestration refactor keeps cleanup intact.
+    });
+
+    it('resolves ready once Rapier is initialized', async () => {
+        await engine.ready;
+        expect(isPhysicsReady()).toBe(true);
     });
 });

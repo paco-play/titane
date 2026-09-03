@@ -3,8 +3,14 @@ import { TitaneEngine } from '../../runtime/engine';
 import type { IRenderer } from '../../runtime/renderer-interface';
 import { createWorld } from '../../ecs/kernel/world';
 import { createEntity } from '../../ecs/kernel/entity';
-import { hasComponent } from '../../ecs/kernel/component';
+import { addComponent, getComponent, hasComponent } from '../../ecs/kernel/component';
+import { createPrimitive } from '../../ecs/kernel/factory';
 import { Input } from '../../ecs/components/input';
+import { Name } from '../../ecs/components/name';
+import { Transform } from '../../ecs/components/transform';
+import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
+import { PlayerControlled, createPlayerControlled } from '../../ecs/components/player-controlled';
+import { serializeWorld, deserializeWorld, type SerializedWorld } from '../../ecs/serialization';
 import { createSparseStore } from '../../ecs/kernel/store';
 
 const createMockRenderer = (): IRenderer => ({
@@ -50,6 +56,38 @@ describe('Engine world loading', () => {
 
         expect(engine.world.entities.recycled).not.toContain(engine.globalInputEntity);
         expect(createEntity(engine.world)).not.toBe(engine.globalInputEntity);
+    });
+
+    it('keeps scene entities when id 0 was reserved for the input singleton', () => {
+        const source = createWorld();
+        createEntity(source);
+
+        const ground = createPrimitive(source, {
+            name: 'Ground',
+            scale: { x: 12, y: 0.5, z: 12 },
+            position: { x: 0, y: -0.25, z: 0 }
+        });
+        addComponent(source, ground, RigidBody, createRigidBody('fixed'));
+
+        const player = createPrimitive(source, {
+            name: 'Player',
+            primitive: 'sphere',
+            position: { x: 0, y: 1.5, z: 0 }
+        });
+        addComponent(source, player, RigidBody, createRigidBody('dynamic'));
+        addComponent(source, player, PlayerControlled, createPlayerControlled());
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(source))) as SerializedWorld
+        );
+        engine.loadWorld(restored);
+
+        expect(hasComponent(engine.world, engine.globalInputEntity, Input)).toBe(true);
+        expect(getComponent(engine.world, ground, Name)?.value).toBe('Ground');
+        expect(getComponent(engine.world, ground, Transform)?.scale).toEqual({ x: 12, y: 0.5, z: 12 });
+        expect(getComponent(engine.world, ground, RigidBody)?.kind).toBe('fixed');
+        expect(hasComponent(engine.world, player, PlayerControlled)).toBe(true);
+        expect(getComponent(engine.world, player, RigidBody)?.kind).toBe('dynamic');
     });
 
     it('keeps exactly one input singleton after loading a scene that carried its own', () => {

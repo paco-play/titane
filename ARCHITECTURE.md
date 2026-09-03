@@ -166,9 +166,9 @@ matrices, and **rendering still runs**, so the viewport stays responsive.
 | Create an entity | `createEntity(world)` |
 | Destroy an entity and its subtree | `destroyEntity(world, entity)` |
 | Duplicate an entity and its subtree | `cloneEntity(world, entity)` |
-| Spawn a renderable | `createPrimitive(world, { name, primitive, color, position })` |
+| Spawn a renderable | `createPrimitive(world, { name, primitive, color, position, rotation, scale })` |
 | Physics body | `addComponent(world, entity, RigidBody, createRigidBody('dynamic' or 'fixed'))` |
-| Await Rapier WASM | `await initPhysics()` |
+| Await Rapier WASM | `await engine.ready` (or `await engine.start()`, which waits on it) |
 | Game camera (Three.js driver) | `new ThreeRenderer({ mode: 'game' })` then `renderer.setCamera({ position, lookAt })` |
 | Add data | `addComponent(world, entity, Type, data)` |
 | Read data | `getComponent(world, entity, Type)` |
