@@ -53,7 +53,7 @@
             :min="0"
             :max="1"
             :step="0.1"
-            @update:model-value="onUnit('updateRoughness', $event)"
+            @update:model-value="onRoughness"
             @change="emit('commit')"
           />
         </div>
@@ -67,7 +67,7 @@
             :min="0"
             :max="1"
             :step="0.1"
-            @update:model-value="onUnit('updateMetalness', $event)"
+            @update:model-value="onMetalness"
             @change="emit('commit')"
           />
         </div>
@@ -181,14 +181,23 @@ const onAlbedo = (value: string | number | undefined): void => {
   emit('updateAlbedo', url);
 };
 
-const onUnit = (
-  event: 'updateRoughness' | 'updateMetalness',
-  raw: string | number | undefined
-): void => {
-  if (raw === undefined) return;
+const parseUnit = (raw: string | number | undefined): number | undefined => {
+  if (raw === undefined) return undefined;
   const value = typeof raw === 'string' ? parseFloat(raw) : raw;
-  if (!Number.isFinite(value)) return;
-  emit(event, Math.min(1, Math.max(0, value)));
+  if (!Number.isFinite(value)) return undefined;
+  return Math.min(1, Math.max(0, value));
+};
+
+const onRoughness = (raw: string | number | undefined): void => {
+  const value = parseUnit(raw);
+  if (value === undefined) return;
+  emit('updateRoughness', value);
+};
+
+const onMetalness = (raw: string | number | undefined): void => {
+  const value = parseUnit(raw);
+  if (value === undefined) return;
+  emit('updateMetalness', value);
 };
 
 const onEmissive = (value: string | undefined): void => {
