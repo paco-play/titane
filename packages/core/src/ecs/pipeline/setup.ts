@@ -3,6 +3,7 @@ import type { IRenderer } from '../../runtime/renderer-interface';
 import { registerSystem } from './scheduler';
 import { Phase } from './system';
 import { integrateVelocitySystem } from '../systems/movement';
+import { rapierPhysicsSystem } from '../systems/physics';
 import { clearInputSystem } from '../systems/input-system';
 import { transformSystem } from '../systems/transform';
 
@@ -22,9 +23,10 @@ export const setupDefaultPipeline = (
     renderer: IRenderer,
     isPaused: () => boolean
 ): void => {
-    // Physics: integrate velocities into positions
     registerSystem(scheduler, Phase.PHYSICS, (world, deltaTime) => {
-        if (!isPaused()) integrateVelocitySystem(world, deltaTime);
+        if (isPaused()) return;
+        integrateVelocitySystem(world, deltaTime);
+        rapierPhysicsSystem(world, deltaTime);
     });
 
     registerSystem(scheduler, Phase.POST_PHYSICS, (world) => {

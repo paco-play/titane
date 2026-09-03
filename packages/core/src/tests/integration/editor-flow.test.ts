@@ -9,6 +9,7 @@ import { Velocity, createVelocity } from '../../ecs/components/velocity';
 import { Name } from '../../ecs/components/name';
 import { Input } from '../../ecs/components/input';
 import { serializeWorld, deserializeWorld, type SerializedWorld } from '../../ecs/serialization';
+import { FIXED_DT } from '../../utils/fixed-step';
 
 const createMockRenderer = (): IRenderer => ({
     init: vi.fn(),
@@ -42,7 +43,7 @@ describe('Integration: editor flow', () => {
         addComponent(engine.world, cube, Velocity, createVelocity(10, 0, 0));
 
         engine.isPaused = false;
-        engine.tick();
+        engine.tick(FIXED_DT);
 
         const transform = getComponent(engine.world, cube, Transform)!;
 
@@ -92,7 +93,7 @@ describe('Integration: editor flow', () => {
 
         engine.saveSnapshot();
         engine.isPaused = false;
-        engine.tick();
+        engine.tick(FIXED_DT);
         expect(getComponent(engine.world, cube, Transform)!.position.x).toBeGreaterThan(0);
 
         engine.isPaused = true;

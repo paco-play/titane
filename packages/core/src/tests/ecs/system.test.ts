@@ -6,7 +6,8 @@ import {
     createScheduler,
     registerSystem,
     unregisterSystem,
-    runScheduler
+    runScheduler,
+    runPhases
 } from '../../ecs/pipeline/scheduler';
 import { Phase } from '../../ecs/pipeline/system';
 import { defineComponent } from '../../ecs/kernel/registry';
@@ -40,6 +41,20 @@ describe('ECS: System Execution', () => {
             Phase.POST_PHYSICS,
             Phase.RENDER
         ]);
+    });
+
+    it('should run only the requested phases', () => {
+        const scheduler = createScheduler();
+        const seen: Phase[] = [];
+
+        registerSystem(scheduler, Phase.INPUT, () => seen.push(Phase.INPUT));
+        registerSystem(scheduler, Phase.UPDATE, () => seen.push(Phase.UPDATE));
+        registerSystem(scheduler, Phase.PHYSICS, () => seen.push(Phase.PHYSICS));
+        registerSystem(scheduler, Phase.RENDER, () => seen.push(Phase.RENDER));
+
+        runPhases(scheduler, world, 0.016, [Phase.UPDATE, Phase.PHYSICS]);
+
+        expect(seen).toEqual([Phase.UPDATE, Phase.PHYSICS]);
     });
 
     it('should pass correct deltaTime and world to systems', () => {

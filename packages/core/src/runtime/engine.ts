@@ -5,15 +5,17 @@ import type { Scheduler } from '../ecs/pipeline/scheduler';
 import type { System } from '../ecs/pipeline/system';
 import { createWorld } from '../ecs/kernel/world';
 import { Clock } from '../utils/clock';
-import { createScheduler, registerSystem, runScheduler } from '../ecs/pipeline/scheduler';
+import { FixedStep } from '../utils/fixed-step';
+import { createScheduler, registerSystem } from '../ecs/pipeline/scheduler';
 import { Phase } from '../ecs/pipeline/system';
 import { createEntity } from '../ecs/kernel/entity';
-import { addComponent } from '../ecs/kernel/component';
-import { Input, createDefaultInput } from '../ecs/components/input';
-import { Name, createName } from '../ecs/components/name';
+import { Input } from '../ecs/components/input';
 import { InputDriver } from './input-driver';
 import { setupDefaultPipeline } from '../ecs/pipeline/setup';
 import { captureWorldState, restoreWorldState } from '../ecs/kernel/state-manager';
+import { resetPhysicsSession, initPhysics } from '../physics/session';
+import { stepOnce, tickPaused, tickPlaying } from './advance';
+import { seedGlobalInput } from './global-input';
 
 /**
  * The high-level runner for the Titane Engine.
@@ -34,8 +36,11 @@ export class TitaneEngine {
 
     private snapshot: World | null = null;
     private readonly clock: Clock;
+    private readonly fixedStep = new FixedStep();
     private readonly inputDriver: InputDriver;
     private isRunning: boolean = false;
+    /** True while UPDATE/PHYSICS should run (playing tick or an explicit step). */
+    private simulating = false;
 
     /**
      * @param renderer - The renderer implementation (driver) to use.
@@ -51,14 +56,15 @@ export class TitaneEngine {
 
         // 2. Spawn the Core Global Input Entity dynamically
         this.globalInputEntity = createEntity(this.world);
-        this.seedGlobalInput();
+        seedGlobalInput(this.world, this.globalInputEntity);
 
         // 3. Mount the Input Driver logic matching standard Editor Window APIs
         this.inputDriver = new InputDriver(this.world, this.globalInputEntity, canvasElement);
 
         // 4. Build the deterministic engine pipeline
         this.scheduler = createScheduler();
-        setupDefaultPipeline(this.scheduler, this.renderer, () => this.isPaused);
+        setupDefaultPipeline(this.scheduler, this.renderer, () => !this.simulating);
+        void initPhysics();
     }
 
     /**
@@ -94,6 +100,7 @@ export class TitaneEngine {
     public dispose(): void {
         this.stop();
         this.inputDriver.dispose();
+        resetPhysicsSession(this.world);
     }
 
     /**
@@ -115,6 +122,7 @@ export class TitaneEngine {
             return;
         }
         restoreWorldState(this.world, this.snapshot);
+        resetPhysicsSession(this.world);
     }
 
     /**
@@ -127,53 +135,60 @@ export class TitaneEngine {
     public loadWorld(source: World): void {
         this.snapshot = null;
         restoreWorldState(this.world, source);
+        resetPhysicsSession(this.world);
 
         // Input state is live runtime data, never authored content. Whatever a
         // scene file carried is dropped so the engine keeps exactly one input
         // singleton, the one the InputDriver writes to.
         this.world._stores[Input.index]?.clear();
-        this.seedGlobalInput();
-    }
-
-    /**
-     * (Re)installs the Input and Name components on the global input entity,
-     * and re-reserves its ID against the freshly loaded entity counters.
-     *
-     * A loaded scene brings its own `nextId` and free list, which may both
-     * consider this ID available. Handing it out again would let a game object
-     * overwrite the input singleton: it would render in the viewport while
-     * disappearing from any UI that filters engine-owned entities out.
-     */
-    private seedGlobalInput(): void {
-        const { entities } = this.world;
-
-        entities.active.add(this.globalInputEntity);
-
-        if (entities.nextId <= this.globalInputEntity) {
-            entities.nextId = this.globalInputEntity + 1;
-        }
-
-        const freeSlot = entities.recycled.indexOf(this.globalInputEntity);
-        if (freeSlot !== -1) entities.recycled.splice(freeSlot, 1);
-
-        addComponent(this.world, this.globalInputEntity, Input, createDefaultInput());
-        addComponent(this.world, this.globalInputEntity, Name, createName('System (Global Input)'));
+        seedGlobalInput(this.world, this.globalInputEntity);
     }
 
     /**
      * Runs exactly one frame of the pipeline, regardless of the loop state.
+     *
+     * While paused, the full pipeline runs at frame dt so the editor stays live.
+     * While playing, UPDATE and PHYSICS run on a fixed 1/60 s step.
+     * Pass `deltaSeconds` to drive the frame from tests without the clock.
+     *
+     * @param deltaSeconds - Optional override for the frame delta, in seconds.
      * @returns The delta time used for this frame, in seconds.
      */
-    public tick(): number {
-        const deltaTime = this.clock.getDelta();
-        runScheduler(this.scheduler, this.world, deltaTime);
+    public tick(deltaSeconds?: number): number {
+        const measured = this.clock.getDelta();
+        const deltaTime = deltaSeconds ?? measured;
+
+        if (this.isPaused) {
+            this.fixedStep.reset();
+            tickPaused(this.scheduler, this.world, deltaTime);
+            return deltaTime;
+        }
+
+        this.simulating = true;
+        try {
+            tickPlaying(this.scheduler, this.world, this.fixedStep, deltaTime);
+        } finally {
+            this.simulating = false;
+        }
+
         return deltaTime;
     }
 
     /**
-     * The main execution loop.
-     * Delegates all system execution to the functional Scheduler.
+     * Advances simulation by one fixed step without unpausing.
+     * UPDATE, PHYSICS, POST_PHYSICS and RENDER all run at 1/60 s.
+     * @returns The fixed delta that was applied, in seconds.
      */
+    public step(): number {
+        this.simulating = true;
+        try {
+            return stepOnce(this.scheduler, this.world);
+        } finally {
+            this.simulating = false;
+        }
+    }
+
+    /** Main loop: one tick, then schedule the next animation frame. */
     private loop(): void {
         if (!this.isRunning) return;
 

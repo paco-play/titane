@@ -21,7 +21,17 @@
         color="neutral"
         variant="link"
         size="xs"
+        :title="isPlaying ? 'Pause' : 'Play'"
         @click="togglePlay"
+      />
+      <UButton
+        icon="i-lucide-skip-forward"
+        color="neutral"
+        variant="link"
+        size="xs"
+        title="Step one frame"
+        :disabled="isPlaying"
+        @click="stepFrame"
       />
       <UButton
         :icon="isGridVisible ? 'i-lucide-grid-2x2-x' : 'i-lucide-grid-2x2'"
@@ -37,7 +47,7 @@
 <script setup lang="ts">
 import type { GizmoModeOption } from './GizmoModes.vue';
 
-const { isPlaying, togglePlay, isGridVisible, toggleGrid, resetScene, canReset } = useRuntime();
+const { isPlaying, togglePlay, isGridVisible, toggleGrid, resetScene, canReset, stepFrame } = useRuntime();
 const { gizmoMode, setGizmoMode } = useViewport();
 
 const GIZMO_MODES = [

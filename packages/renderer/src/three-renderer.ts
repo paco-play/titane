@@ -3,16 +3,15 @@ import type { IRenderer, World, Entity } from '@titane/core';
 import { defineQuery, runQuery, getComponent, Transform, Mesh } from '@titane/core';
 import { ResourceCache } from './resource-cache';
 import { pointerToNdc, entityFromHits } from './picking';
-import { worldMatrixToLocalTrs, type LocalTrs } from './local-trs';
 import { createOrbitControls } from './orbit';
-import { createTransformGizmo, type GizmoMode, type TransformGizmo } from './gizmo';
 import { InstancePool } from './instance-pool';
+import { GizmoController, type GizmoTransformHandler } from './gizmo-controller';
+import type { GizmoMode } from './gizmo';
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-const renderableQuery = defineQuery([Transform, Mesh]);
+export type { GizmoTransformHandler };
 
-/** Called when the gizmo writes a new local TRS for an entity. */
-export type GizmoTransformHandler = (entity: Entity, trs: LocalTrs) => void;
+const renderableQuery = defineQuery([Transform, Mesh]);
 
 /**
  * Three.js implementation of the Titane renderer contract.
@@ -24,24 +23,22 @@ export class ThreeRenderer implements IRenderer {
     private renderer!: THREE.WebGLRenderer;
     private gridHelper!: THREE.GridHelper;
     private orbit: OrbitControls | undefined;
-    private gizmo: TransformGizmo | undefined;
     private pool: InstancePool | undefined;
-    private world: World | undefined;
-    private gizmoConsumedPick = false;
-    private gizmoEntity: Entity | null = null;
-    private gizmoAllowed = true;
-    /** True between TransformControls `dragging-changed` start and end. */
-    private gizmoDragging = false;
 
     private readonly resources = new ResourceCache();
     private readonly liveEntities = new Set<Entity>();
-    private readonly focusPoint = new THREE.Vector3();
-    private readonly scratchFocus = new THREE.Matrix4();
-    /** TransformControls needs an Object3D; instances have none per entity. */
-    private readonly gizmoProxy = new THREE.Object3D();
+    private readonly gizmos = new GizmoController();
 
-    /** Editor writes local TRS back into the ECS through this hook. */
-    public onGizmoTransform: GizmoTransformHandler | null = null;
+    /**
+     * Editor writes local TRS back into the ECS through this hook.
+     */
+    public get onGizmoTransform(): GizmoTransformHandler | null {
+        return this.gizmos.onTransform;
+    }
+
+    public set onGizmoTransform(handler: GizmoTransformHandler | null) {
+        this.gizmos.onTransform = handler;
+    }
 
     public init(canvas: HTMLCanvasElement): void {
         this.scene = new THREE.Scene();
@@ -64,21 +61,8 @@ export class ThreeRenderer implements IRenderer {
         this.scene.add(this.gridHelper);
 
         this.pool = new InstancePool(this.scene, this.resources);
-        this.gizmoProxy.matrixAutoUpdate = true;
-        this.scene.add(this.gizmoProxy);
-
         this.orbit = createOrbitControls(this.camera, canvas);
-        this.gizmo = createTransformGizmo(this.camera, canvas, this.scene);
-        this.gizmo.setVisible(false);
-
-        this.gizmo.controls.addEventListener('mouseDown', () => {
-            this.gizmoConsumedPick = true;
-        });
-        this.gizmo.controls.addEventListener('dragging-changed', (event) => {
-            this.gizmoDragging = event.value === true;
-            if (this.orbit) this.orbit.enabled = !this.gizmoDragging;
-        });
-        this.gizmo.controls.addEventListener('objectChange', () => this.commitGizmo());
+        this.gizmos.attach(this.camera, canvas, this.scene, this.orbit);
     }
 
     public handleResize(): void {
@@ -110,7 +94,7 @@ export class ThreeRenderer implements IRenderer {
     }
 
     public render(world: World): void {
-        this.world = world;
+        this.gizmos.bindWorld(world);
         const activeEntities = runQuery(world, renderableQuery);
         if (!this.pool) return;
 
@@ -126,23 +110,18 @@ export class ThreeRenderer implements IRenderer {
             const meshData = getComponent(world, entityId, Mesh);
             if (!transform || !meshData) continue;
 
-            const matrix = this.gizmoDragging && entityId === this.gizmoEntity
-                ? this.draggedMatrix()
+            const matrix = this.gizmos.dragging && entityId === this.gizmos.entity
+                ? this.gizmos.draggedMatrix()
                 : transform.worldMatrix;
 
             this.pool.sync(entityId, meshData.primitive, meshData.color, matrix);
 
-            if (entityId === this.gizmoEntity && !this.gizmoDragging) {
-                this.gizmoProxy.matrix.fromArray(transform.worldMatrix);
-                this.gizmoProxy.matrix.decompose(
-                    this.gizmoProxy.position,
-                    this.gizmoProxy.quaternion,
-                    this.gizmoProxy.scale
-                );
+            if (entityId === this.gizmos.entity && !this.gizmos.dragging) {
+                this.gizmos.syncProxy(transform.worldMatrix);
             }
         }
 
-        this.applyGizmo();
+        this.gizmos.apply();
         this.renderer.render(this.scene, this.camera);
     }
 
@@ -162,80 +141,31 @@ export class ThreeRenderer implements IRenderer {
     }
 
     public consumeGizmoPick(): boolean {
-        const consumed = this.gizmoConsumedPick;
-        this.gizmoConsumedPick = false;
-        return consumed;
+        return this.gizmos.consumePick();
     }
 
     public setGizmoTarget(entityId: Entity | null): void {
-        this.gizmoEntity = entityId;
-        this.applyGizmo();
-        if (entityId !== null) this.focus(entityId);
+        this.gizmos.setTarget(entityId);
     }
 
     public setGizmoMode(mode: GizmoMode): void {
-        if (this.gizmo) this.gizmo.controls.mode = mode;
+        this.gizmos.setMode(mode);
     }
 
     public setGizmoVisible(visible: boolean): void {
-        this.gizmoAllowed = visible;
-        this.applyGizmo();
+        this.gizmos.setAllowed(visible);
     }
 
     public focus(entityId: Entity): void {
-        if (!this.world || !this.orbit) return;
-        const transform = getComponent(this.world, entityId, Transform);
-        if (!transform) return;
-
-        this.focusPoint.setFromMatrixPosition(this.scratchFocus.fromArray(transform.worldMatrix));
-        this.orbit.target.copy(this.focusPoint);
+        this.gizmos.focus(entityId);
     }
 
     public dispose(): void {
-        this.gizmo?.dispose();
+        this.gizmos.dispose();
         this.orbit?.dispose();
         this.pool?.dispose();
         this.liveEntities.clear();
         this.resources.dispose();
         this.renderer.dispose();
-    }
-
-    private draggedMatrix(): ArrayLike<number> {
-        this.gizmoProxy.updateMatrix();
-        return this.gizmoProxy.matrix.elements;
-    }
-
-    private applyGizmo(): void {
-        if (!this.gizmo) return;
-
-        if (!this.gizmoAllowed || this.gizmoEntity === null) {
-            this.gizmo.controls.detach();
-            this.gizmo.setVisible(false);
-            return;
-        }
-
-        if (this.gizmo.controls.object !== this.gizmoProxy) {
-            this.gizmo.controls.attach(this.gizmoProxy);
-        }
-
-        this.gizmo.setVisible(true);
-    }
-
-    private commitGizmo(): void {
-        const world = this.world;
-        if (!world || !this.onGizmoTransform || this.gizmoEntity === null) return;
-
-        this.gizmoProxy.updateMatrix();
-        this.gizmoProxy.updateMatrixWorld();
-
-        const transform = getComponent(world, this.gizmoEntity, Transform);
-        const parentWorld = transform?.parent !== undefined && transform.parent !== null
-            ? getComponent(world, transform.parent, Transform)?.worldMatrix ?? null
-            : null;
-
-        this.onGizmoTransform(
-            this.gizmoEntity,
-            worldMatrixToLocalTrs(this.gizmoProxy.matrixWorld, parentWorld)
-        );
     }
 }

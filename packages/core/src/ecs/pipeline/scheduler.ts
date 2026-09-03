@@ -59,6 +59,26 @@ export const unregisterSystem = (
 };
 
 /**
+ * Executes the given phases in the order supplied.
+ * @param scheduler The scheduler state.
+ * @param world The current world state.
+ * @param deltaTime Time elapsed since the last frame.
+ * @param phases Phases to run. Callers choose the subset and the order.
+ */
+export const runPhases = (
+    scheduler: Scheduler,
+    world: World,
+    deltaTime: number,
+    phases: readonly Phase[]
+): void => {
+    for (const phase of phases) {
+        for (const system of scheduler.systems[phase]) {
+            system(world, deltaTime);
+        }
+    }
+};
+
+/**
  * Executes all registered systems in the strict deterministic order of phases.
  * @param scheduler The scheduler state.
  * @param world The current world state.
@@ -69,9 +89,5 @@ export const runScheduler = (
     world: World,
     deltaTime: number
 ): void => {
-    for (const phase of PHASE_ORDER) {
-        for (const system of scheduler.systems[phase]) {
-            system(world, deltaTime);
-        }
-    }
+    runPhases(scheduler, world, deltaTime, PHASE_ORDER);
 };
