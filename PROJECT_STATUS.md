@@ -31,9 +31,16 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Lights, textures, glTF, audio** — lights are on `release`. Albedo textures land in this slice: `Mesh.albedo` is a URL, `ResourceCache` pools the map, and instancing batches by `(primitive, color, albedo)`. Next: glTF import, then audio.
+**Lights, textures, glTF, audio** — lights and albedo are on `release`. This slice adds glTF: a `Gltf` component holds a URL, `ModelPool` loads and clones the scene graph, and `Transform.worldMatrix` poses it. Next: audio.
 
 ## Completed
+
+### glTF import
+- [x] **`Gltf` component.** `url` string. Empty draws nothing. Pose stays on `Transform`.
+- [x] **`ModelPool`.** Loads each URL once, clones per entity, cancels stale loads, disposes the template when the last user drops.
+- [x] **Picking.** Loaded roots are raycast with the instanced batches. A hit walks up to `userData.titaneEntity`.
+- [x] **Gizmo on model-only entities.** The proxy syncs from the selected `Transform` even when there is no `Mesh`.
+- [x] **Inspector + Hierarchy.** Dumb URL field / remove; Hierarchy `+` spawns a Model entity without a primitive mesh.
 
 ### Albedo textures
 - [x] **`Mesh.albedo`.** Optional texture URL on `MeshData`. Empty string means untextured. Older scenes revive with `albedo: ''`.
@@ -161,7 +168,7 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ### 1. Next recommended
 
-- glTF import, audio.
+- Audio.
 - Sharing a live session between editor and demo.
 - File System Access API: native CTRL+S overwriting a file on disk.
 

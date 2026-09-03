@@ -1,5 +1,6 @@
 export * from './three-renderer';
 export * from './light-pool';
+export * from './model-pool';
 export * from './renderer-mode';
 export * from './resource-cache';
 export * from './instance-pool';

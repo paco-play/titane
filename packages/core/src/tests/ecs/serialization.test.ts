@@ -5,6 +5,7 @@ import { addComponent, getComponent } from '../../ecs/kernel/component';
 import { Transform, createTransform } from '../../ecs/components/transform';
 import { Name, createName } from '../../ecs/components/name';
 import { Mesh, createMesh } from '../../ecs/components/mesh';
+import { Gltf, createGltf } from '../../ecs/components/gltf';
 import {
     SCENE_FORMAT_VERSION,
     serializeWorld,
@@ -107,6 +108,18 @@ describe('ECS: Scene Serialization', () => {
         );
 
         expect(getComponent(restored, entity, Mesh)?.albedo).toBe('wall.png');
+    });
+
+    it('should round-trip a glTF URL', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Gltf, createGltf('hero.glb'));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Gltf)?.url).toBe('hero.glb');
     });
 
     it('should refuse scenes written by a newer format', () => {
