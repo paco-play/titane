@@ -8,26 +8,52 @@ import { InstancePool } from './instance-pool';
 import { GizmoController, type GizmoTransformHandler } from './gizmo-controller';
 import type { GizmoMode } from './gizmo';
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import {
+    applyCameraPose,
+    resolveRendererMode,
+    usesEditorChrome,
+    type CameraPose,
+    type RendererMode,
+    type ThreeRendererOptions
+} from './renderer-mode';
 
-export type { GizmoTransformHandler };
+export type { GizmoTransformHandler, CameraPose, RendererMode, ThreeRendererOptions };
 
 const renderableQuery = defineQuery([Transform, Mesh]);
 
 /**
  * Three.js implementation of the Titane renderer contract.
- * Maps ECS data onto instanced meshes and owns editor viewport helpers.
+ * Maps ECS data onto instanced meshes. Editor chrome (orbit, gizmos, grid)
+ * is installed only in `editor` mode.
  */
 export class ThreeRenderer implements IRenderer {
+    /** Resolved construction mode. Exposed so hosts can branch without peeking at internals. */
+    public readonly mode: RendererMode;
+
     private scene!: THREE.Scene;
     private camera!: THREE.PerspectiveCamera;
     private renderer!: THREE.WebGLRenderer;
-    private gridHelper!: THREE.GridHelper;
+    private gridHelper: THREE.GridHelper | undefined;
     private orbit: OrbitControls | undefined;
     private pool: InstancePool | undefined;
 
     private readonly resources = new ResourceCache();
     private readonly liveEntities = new Set<Entity>();
     private readonly gizmos = new GizmoController();
+
+    /**
+     * @param options - `mode` defaults to `editor` so `new ThreeRenderer()` stays the viewport.
+     */
+    constructor(options: ThreeRendererOptions = {}) {
+        this.mode = resolveRendererMode(options);
+    }
+
+    /**
+     * Whether this instance installed orbit, gizmos and the ground grid.
+     */
+    public get usesEditorChrome(): boolean {
+        return usesEditorChrome(this.mode);
+    }
 
     /**
      * Editor writes local TRS back into the ECS through this hook.
@@ -57,12 +83,23 @@ export class ThreeRenderer implements IRenderer {
         this.scene.add(light);
         this.scene.add(new THREE.AmbientLight(0x404040, 0.8));
 
+        this.pool = new InstancePool(this.scene, this.resources);
+
+        if (!this.usesEditorChrome) return;
+
         this.gridHelper = new THREE.GridHelper(20, 20, '#444444', '#222222');
         this.scene.add(this.gridHelper);
-
-        this.pool = new InstancePool(this.scene, this.resources);
         this.orbit = createOrbitControls(this.camera, canvas);
         this.gizmos.attach(this.camera, canvas, this.scene, this.orbit);
+    }
+
+    /**
+     * Places the perspective camera. Game hosts call this instead of orbit.
+     * No-op until `init` has run.
+     */
+    public setCamera(pose: CameraPose): void {
+        if (!this.camera) return;
+        applyCameraPose(this.camera, pose);
     }
 
     public handleResize(): void {
@@ -83,7 +120,7 @@ export class ThreeRenderer implements IRenderer {
      * @param visible Whether the grid should be drawn.
      */
     public setGridVisible(visible: boolean): void {
-        this.gridHelper.visible = visible;
+        if (this.gridHelper) this.gridHelper.visible = visible;
     }
 
     /**
