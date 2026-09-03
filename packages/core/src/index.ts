@@ -30,6 +30,7 @@ export * from './ecs/systems/movement';
 export * from './ecs/systems/transform';
 export * from './ecs/systems/input-system';
 export * from './ecs/systems/player-control';
+export * from './ecs/systems/physics-player-control';
 export * from './ecs/systems/physics';
 
 // Scene Persistence
