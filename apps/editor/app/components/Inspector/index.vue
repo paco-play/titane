@@ -16,6 +16,9 @@
         @update-primitive="setPrimitive"
         @update-color="setColor"
         @update-albedo="setAlbedo"
+        @update-roughness="setRoughness"
+        @update-metalness="setMetalness"
+        @update-emissive="setEmissive"
         @commit="saveToStorage"
       />
       <InspectorGltf
@@ -97,7 +100,7 @@
 
 <script setup lang="ts">
 import type { Axis, TransformField } from '~/types/inspector';
-import type { MeshData, PrimitiveType, RigidBodyKind, LightData, LightKind } from '@titane/core';
+import type { RigidBodyKind, LightData, LightKind } from '@titane/core';
 import {
   addComponent,
   createLight,
@@ -106,7 +109,6 @@ import {
   getComponent,
   hasComponent,
   Light,
-  Mesh,
   PlayerControlled,
   removeComponent,
   RigidBody,
@@ -116,6 +118,15 @@ import {
 
 const { engine, selectedEntityId, inspectTick, notifyInspect, markDirty } = useTitane();
 const { saveToStorage } = usePersistence();
+const {
+  mesh,
+  setPrimitive,
+  setColor,
+  setAlbedo,
+  setRoughness,
+  setMetalness,
+  setEmissive,
+} = useInspectorMesh();
 const { gltf, addGltf, removeGltf, setGltfUrl } = useInspectorGltf();
 const {
   sound,
@@ -133,13 +144,6 @@ const transform = computed<Transform | undefined>(() => {
   void inspectTick.value;
   if (selectedEntityId.value === null || !engine.value) return undefined;
   return getComponent(engine.value.world, selectedEntityId.value, Transform);
-});
-
-/** Mesh data of the selected entity, if any. */
-const mesh = computed<MeshData | undefined>(() => {
-  void inspectTick.value;
-  if (selectedEntityId.value === null || !engine.value) return undefined;
-  return getComponent(engine.value.world, selectedEntityId.value, Mesh);
 });
 
 /** Light data of the selected entity, or undefined when absent. */
@@ -173,45 +177,6 @@ const setAxis = (field: TransformField, axis: Axis, value: number): void => {
     data[field][axis] = value;
     data.isDirty = true;
   });
-  markDirty();
-};
-
-/**
- * Writes a new primitive type into the selected entity's Mesh.
- */
-const setPrimitive = (primitive: PrimitiveType): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-
-  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
-    data.primitive = primitive;
-  });
-  notifyInspect();
-  markDirty();
-};
-
-/**
- * Writes a new color into the selected entity's Mesh.
- */
-const setColor = (color: string): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-
-  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
-    data.color = color;
-  });
-  notifyInspect();
-  markDirty();
-};
-
-/**
- * Writes a new albedo URL into the selected entity's Mesh.
- */
-const setAlbedo = (albedo: string): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-
-  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
-    data.albedo = albedo;
-  });
-  notifyInspect();
   markDirty();
 };
 

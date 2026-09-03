@@ -31,7 +31,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Mesh material** — `Mesh` still only has `color` + `albedo`. Next: roughness / metalness / emissive through the existing cache and Inspector Mesh section.
+**Shadows** — `Mesh.castShadow` / `Mesh.receiveShadow` plus `Light.castShadow` on directional and point lights.
 
 ## Completed
 
@@ -54,6 +54,11 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 - [x] **Picking.** Loaded roots are raycast with the instanced batches. A hit walks up to `userData.titaneEntity`.
 - [x] **Gizmo on model-only entities.** The proxy syncs from the selected `Transform` even when there is no `Mesh`.
 - [x] **Inspector + Hierarchy.** Dumb URL field / remove; Hierarchy `+` spawns a Model entity without a primitive mesh.
+
+### Mesh material
+- [x] **`Mesh.roughness` / `Mesh.metalness` / `Mesh.emissive`.** PBR fields on `MeshData`. Defaults match Three.js (`1`, `0`, `#000000`). Older scenes revive with those defaults.
+- [x] **Material key.** `ResourceCache` and `InstancePool` key by the full spec so two cubes with different roughness do not share a GPU material or instanced batch.
+- [x] **Inspector Mesh.** Dumb roughness / metalness inputs and an emissive picker; `useInspectorMesh` writes the selected entity.
 
 ### Albedo textures
 - [x] **`Mesh.albedo`.** Optional texture URL on `MeshData`. Empty string means untextured. Older scenes revive with `albedo: ''`.
@@ -183,13 +188,12 @@ Engine features stay first. The demo is a sandbox only — do not grow it.
 
 ### 1. Next recommended
 
-1. **Mesh material.** `roughness`, `metalness`, `emissive` on `MeshData`. `ResourceCache` keys include them. Inspector Mesh stays dumb.
-2. **Shadows.** Shadow maps on directional / point lights; one flag on `Light`.
-3. **glTF animation.** Play a named clip on `Gltf` (`clip`, `playing`, `loop`). Models are static today.
-4. **Physics material.** Friction / restitution on `RigidBody`. Collider still inferred from mesh unless an explicit shape is added later.
-5. **Engine plugin.** `type TitanePlugin = { name: string; register(engine: TitaneEngine): void }` and `engine.use(plugin)`. Registers systems (and later components) without forking core. No sandbox, no remote registry.
-6. **Editor play-in-place.** Game-mode renderer inside the editor so the demo is not required to try a scene. Editor-only.
-7. **Docus.** `apps/docs` (Nuxt Docus) covering kernel, components, systems, and the `.titane` format. After the plugin seam so examples have a real extension point.
+1. **Shadows.** Shadow maps on directional / point lights; `Light.castShadow` plus `Mesh.castShadow` / `Mesh.receiveShadow`.
+2. **glTF animation.** Play a named clip on `Gltf` (`clip`, `playing`, `loop`). Models are static today.
+3. **Physics material.** Friction / restitution on `RigidBody`. Collider still inferred from mesh unless an explicit shape is added later.
+4. **Engine plugin.** `type TitanePlugin = { name: string; register(engine: TitaneEngine): void }` and `engine.use(plugin)`. Registers systems (and later components) without forking core. No sandbox, no remote registry.
+5. **Editor play-in-place.** Game-mode renderer inside the editor so the demo is not required to try a scene. Editor-only.
+6. **Docus.** `apps/docs` (Nuxt Docus) covering kernel, components, systems, and the `.titane` format. After the plugin seam so examples have a real extension point.
 
 Do not put a Camera component in core yet. `ThreeRenderer.setCamera` plus a follow system is enough until play-in-place feels wrong.
 

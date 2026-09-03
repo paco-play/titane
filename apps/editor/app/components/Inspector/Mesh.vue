@@ -45,6 +45,64 @@
         </div>
 
         <div class="space-y-2">
+          <UiFormLabel label="Roughness" />
+          <UInput
+            :model-value="mesh.roughness"
+            type="number"
+            size="xs"
+            :min="0"
+            :max="1"
+            :step="0.1"
+            @update:model-value="onUnit('updateRoughness', $event)"
+            @change="emit('commit')"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <UiFormLabel label="Metalness" />
+          <UInput
+            :model-value="mesh.metalness"
+            type="number"
+            size="xs"
+            :min="0"
+            :max="1"
+            :step="0.1"
+            @update:model-value="onUnit('updateMetalness', $event)"
+            @change="emit('commit')"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <UiFormLabel label="Emissive" />
+          <UPopover @update:open="onPickerOpen">
+            <UButton
+              :label="mesh.emissive"
+              color="neutral"
+              variant="outline"
+              size="xs"
+              block
+            >
+              <template #leading>
+                <span
+                  class="size-3 rounded-full ring ring-inset ring-accented"
+                  :style="{ backgroundColor: mesh.emissive }"
+                />
+              </template>
+            </UButton>
+
+            <template #content>
+              <UColorPicker
+                :model-value="mesh.emissive"
+                format="hex"
+                size="sm"
+                class="p-2"
+                @update:model-value="onEmissive"
+              />
+            </template>
+          </UPopover>
+        </div>
+
+        <div class="space-y-2">
           <UiFormLabel label="Color" />
           <UPopover @update:open="onPickerOpen">
             <UButton
@@ -89,13 +147,12 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** The primitive type was changed. The parent owns the mutation. */
   updatePrimitive: [primitive: PrimitiveType];
-  /** The color was changed. The parent owns the mutation. */
   updateColor: [color: string];
-  /** The albedo URL was changed. The parent owns the mutation. */
   updateAlbedo: [albedo: string];
-  /** Editing ended, the value can be persisted. */
+  updateRoughness: [roughness: number];
+  updateMetalness: [metalness: number];
+  updateEmissive: [emissive: string];
   commit: [];
 }>();
 
@@ -122,6 +179,21 @@ const onColor = (value: string | undefined): void => {
 const onAlbedo = (value: string | number | undefined): void => {
   const url = typeof value === 'string' ? value.trim() : '';
   emit('updateAlbedo', url);
+};
+
+const onUnit = (
+  event: 'updateRoughness' | 'updateMetalness',
+  raw: string | number | undefined
+): void => {
+  if (raw === undefined) return;
+  const value = typeof raw === 'string' ? parseFloat(raw) : raw;
+  if (!Number.isFinite(value)) return;
+  emit(event, Math.min(1, Math.max(0, value)));
+};
+
+const onEmissive = (value: string | undefined): void => {
+  if (!value) return;
+  emit('updateEmissive', value.toLowerCase());
 };
 
 /**

@@ -1,5 +1,11 @@
 import * as THREE from 'three';
 import type { PrimitiveType } from '@titane/core';
+import {
+    materialKey,
+    normalizeMaterialSpec,
+    type MaterialSpec,
+    type NormalizedMaterialSpec
+} from './material-spec';
 
 /**
  * Builds the geometry backing a primitive type.
@@ -31,7 +37,7 @@ const createGeometry = (primitive: PrimitiveType): THREE.BufferGeometry => {
 interface PooledMaterial {
     material: THREE.MeshStandardMaterial;
     refs: number;
-    albedo: string;
+    spec: NormalizedMaterialSpec;
 }
 
 /**
@@ -58,26 +64,11 @@ const loadAlbedo = (url: string): THREE.Texture => {
 };
 
 /**
- * Canonical cache key for a CSS color string.
- * @param color Any CSS color string accepted by THREE.Color.
- */
-const colorKey = (color: string): string => color.toLowerCase();
-
-/**
- * Canonical cache key for a material: color plus optional albedo URL.
- * A newline cannot appear in a CSS color, so the pair cannot collide.
- */
-const materialKey = (color: string, albedo: string): string =>
-    `${colorKey(color)}\n${albedo}`;
-
-/**
  * Pool of GPU resources shared across entities.
  *
- * A geometry is fully determined by its primitive type (three of them, kept
- * for the lifetime of the renderer). A material is determined by its color
- * and albedo URL, and is refcounted: the last user to drop a pair disposes
- * it, so dragging a color picker through thousands of values cannot grow
- * the pool without bound. Albedo textures are refcounted the same way.
+ * A geometry is fully determined by its primitive type. A material is
+ * determined by color, albedo, roughness, metalness and emissive, and is
+ * refcounted so a dragged picker cannot grow the pool without bound.
  */
 export class ResourceCache {
     private readonly geometries = new Map<PrimitiveType, THREE.BufferGeometry>();
@@ -118,42 +109,44 @@ export class ResourceCache {
     }
 
     /**
-     * Returns the shared material for a color and optional albedo, creating it on first use.
+     * Returns the shared material for a spec, creating it on first use.
      * Each call retains the material; pair it with {@link releaseMaterial}.
-     * @param color Any CSS color string accepted by THREE.Color.
-     * @param albedo Albedo texture URL. Empty string means untextured.
-     * @returns A material owned by the cache. Callers must not dispose it.
      */
-    public material(color: string, albedo = ''): THREE.MeshStandardMaterial {
-        const key = materialKey(color, albedo);
+    public material(spec: MaterialSpec): THREE.MeshStandardMaterial {
+        const normalized = normalizeMaterialSpec(spec);
+        const key = materialKey(normalized);
         const cached = this.materials.get(key);
         if (cached) {
             cached.refs += 1;
             return cached.material;
         }
 
-        const map = albedo === '' ? null : this.retainTexture(albedo);
-        const material = new THREE.MeshStandardMaterial({ color, map });
-        this.materials.set(key, { material, refs: 1, albedo });
+        const map = normalized.albedo === '' ? null : this.retainTexture(normalized.albedo);
+        const material = new THREE.MeshStandardMaterial({
+            color: normalized.color,
+            map,
+            roughness: normalized.roughness,
+            metalness: normalized.metalness,
+            emissive: normalized.emissive
+        });
+        this.materials.set(key, { material, refs: 1, spec: normalized });
         return material;
     }
 
     /**
-     * Drops one retainer of a color / albedo pair. Disposes the material when nothing uses it.
-     * @param color The color previously passed to {@link material}.
-     * @param albedo The albedo URL previously passed to {@link material}.
+     * Drops one retainer of a spec. Disposes the material when nothing uses it.
      */
-    public releaseMaterial(color: string, albedo = ''): void {
-        const key = materialKey(color, albedo);
-        const pooled = this.materials.get(key);
+    public releaseMaterial(spec: MaterialSpec): void {
+        const normalized = normalizeMaterialSpec(spec);
+        const pooled = this.materials.get(materialKey(normalized));
         if (!pooled) return;
 
         pooled.refs -= 1;
         if (pooled.refs > 0) return;
 
         pooled.material.dispose();
-        this.materials.delete(key);
-        if (pooled.albedo !== '') this.releaseTexture(pooled.albedo);
+        this.materials.delete(materialKey(normalized));
+        if (pooled.spec.albedo !== '') this.releaseTexture(pooled.spec.albedo);
     }
 
     /**

@@ -187,13 +187,7 @@ export class ThreeRenderer implements IRenderer {
                 ? this.gizmos.draggedMatrix()
                 : transform.worldMatrix;
 
-            this.pool.sync(
-                entityId,
-                meshData.primitive,
-                meshData.color,
-                matrix,
-                meshData.albedo ?? ''
-            );
+            this.pool.sync(entityId, meshData, matrix);
         }
 
         if (this.gizmos.entity !== null && !this.gizmos.dragging) {

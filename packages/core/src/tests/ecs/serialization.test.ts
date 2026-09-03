@@ -95,7 +95,10 @@ describe('ECS: Scene Serialization', () => {
         expect(getComponent(restored, 0, Mesh)).toEqual({
             primitive: 'box',
             color: '#00ff00',
-            albedo: ''
+            albedo: '',
+            roughness: 1,
+            metalness: 0,
+            emissive: '#000000'
         });
     });
 
@@ -109,6 +112,22 @@ describe('ECS: Scene Serialization', () => {
         );
 
         expect(getComponent(restored, entity, Mesh)?.albedo).toBe('wall.png');
+    });
+
+    it('should round-trip mesh material fields', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Mesh, createMesh('box', '#ffffff', '', 0.25, 0.9, '#112233'));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Mesh)).toMatchObject({
+            roughness: 0.25,
+            metalness: 0.9,
+            emissive: '#112233'
+        });
     });
 
     it('should round-trip a glTF URL', () => {

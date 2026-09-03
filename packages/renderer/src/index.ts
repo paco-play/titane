@@ -5,6 +5,7 @@ export * from './audio-pool';
 export * from './audio-browser';
 export * from './renderer-mode';
 export * from './resource-cache';
+export * from './material-spec';
 export * from './instance-pool';
 export * from './picking';
 export * from './local-trs';
