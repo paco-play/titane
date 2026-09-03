@@ -31,9 +31,16 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Lights, textures, glTF, audio** — lights, albedo and glTF are on `release`. This slice adds audio: a `Sound` component holds a clip URL plus volume / loop / positional / playing. `AudioPool` decodes each URL once and drives Three.js voices. The listener sits on the camera.
+**Live editor → demo session** — the editor can push the current world into a demo tab over `postMessage`. The demo hot-reloads with `engine.loadWorld` and rebinds follow-camera / kill-zone systems. No file download, no shared origin required.
 
 ## Completed
+
+### Live editor → demo session
+- [x] **Preview envelope.** `createLivePreviewEnvelope` / `parseLivePreviewEnvelope` in core. Typed `postMessage` payload with a revision so stale frames are ignored.
+- [x] **Editor publish.** Menu → Preview in Demo opens `demoUrl/?live=1`. Each `saveToStorage` (and the ready handshake) posts the current world to that tab.
+- [x] **Demo subscribe.** `?live=1` waits for the first envelope, then hot-reloads later ones. Timeout falls back to `drop.titane` / seed. A "Live from editor" badge shows when a push landed.
+- [x] **Gameplay rebind.** `bindGameplay` drops the previous follow / trigger systems (they close over entity IDs) and attaches new ones after `findPlayer` / `findKillZone`. `engine.removeSystem` is the public seam.
+- [x] **Kill zone on loaded scenes.** The demo now finds a `Sensor` tagged `kill-zone` after a file or live load, not only after `seedDropScene`.
 
 ### Audio
 - [x] **`Sound` component.** `url`, `volume`, `loop`, `positional`, `playing`. Empty URL is silent. Pose for positional sources comes from `Transform`.
@@ -174,7 +181,6 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ### 1. Next recommended
 
-- Sharing a live session between editor and demo.
 - File System Access API: native CTRL+S overwriting a file on disk.
 
 Do not put a Camera component in core yet. `ThreeRenderer.setCamera` plus a demo follow system is enough until playing it feels wrong.

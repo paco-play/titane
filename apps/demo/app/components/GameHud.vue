@@ -1,13 +1,23 @@
 <template>
   <div class="pointer-events-none absolute inset-0 flex flex-col justify-between p-4">
     <div class="flex items-start justify-between gap-3">
-      <UBadge
-        :color="status === 'fallen' ? 'error' : 'success'"
-        variant="subtle"
-        size="lg"
-      >
-        {{ status === 'fallen' ? 'Fallen' : 'Playing' }}
-      </UBadge>
+      <div class="flex items-center gap-2">
+        <UBadge
+          :color="status === 'fallen' ? 'error' : 'success'"
+          variant="subtle"
+          size="lg"
+        >
+          {{ status === 'fallen' ? 'Fallen' : 'Playing' }}
+        </UBadge>
+        <UBadge
+          v-if="live"
+          color="info"
+          variant="subtle"
+          size="lg"
+        >
+          Live from editor
+        </UBadge>
+      </div>
       <p class="text-sm text-muted">
         WASD / arrows to move, Space to jump. Stay on the slab.
       </p>
@@ -42,6 +52,7 @@ import type { GameStatus } from '~/types/hud';
 
 defineProps<{
   status: GameStatus
+  live?: boolean
 }>();
 
 const emit = defineEmits<{

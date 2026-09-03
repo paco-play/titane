@@ -18,6 +18,11 @@ export default defineNuxtConfig({
       'composables/**',
     ]
   },
+  runtimeConfig: {
+    public: {
+      demoUrl: 'http://localhost:3001'
+    }
+  },
   typescript: {
     shim: false,
     strict: true
