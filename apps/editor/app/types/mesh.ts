@@ -17,10 +17,3 @@ export const PRIMITIVE_OPTIONS = [
   { value: 'sphere', label: 'Sphere', icon: 'i-lucide-circle' },
   { value: 'plane', label: 'Plane', icon: 'i-lucide-square' }
 ] as const satisfies readonly PrimitiveOption[];
-
-/**
- * Narrows an unknown select value to a known primitive.
- * @param value - The raw value emitted by a Nuxt UI Select.
- */
-export const isPrimitiveType = (value: unknown): value is PrimitiveType =>
-  PRIMITIVE_OPTIONS.some(option => option.value === value);

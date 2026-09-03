@@ -13,14 +13,20 @@
       <div class="space-y-2 py-2">
         <div class="space-y-2">
           <UiFormLabel label="Primitive" />
-          <USelect
-            :model-value="mesh.primitive"
-            :items="[...PRIMITIVE_OPTIONS]"
-            size="xs"
-            color="primary"
-            class="w-full"
-            @update:model-value="onPrimitive"
-          />
+          <div class="flex items-center">
+            <UButton
+              v-for="option in PRIMITIVE_OPTIONS"
+              :key="option.value"
+              :icon="option.icon"
+              :label="option.label"
+              color="neutral"
+              variant="link"
+              size="xs"
+              :title="option.label"
+              :class="mesh.primitive === option.value ? 'text-highlighted' : undefined"
+              @click="onPrimitive(option.value)"
+            />
+          </div>
         </div>
 
         <div class="space-y-2">
@@ -58,8 +64,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MeshData } from '@titane/core';
-import { isPrimitiveType, PRIMITIVE_OPTIONS } from '~/types/mesh';
+import type { MeshData, PrimitiveType } from '@titane/core';
+import { PRIMITIVE_OPTIONS } from '~/types/mesh';
 
 defineProps<{
   mesh: MeshData;
@@ -67,7 +73,7 @@ defineProps<{
 
 const emit = defineEmits<{
   /** The primitive type was changed. The parent owns the mutation. */
-  updatePrimitive: [primitive: MeshData['primitive']];
+  updatePrimitive: [primitive: PrimitiveType];
   /** The color was changed. The parent owns the mutation. */
   updateColor: [color: string];
   /** Editing ended, the value can be persisted. */
@@ -75,12 +81,10 @@ const emit = defineEmits<{
 }>();
 
 /**
- * Accepts a Select value only when it is a known primitive, then persists.
+ * Forwards a primitive choice. The click already carries a typed value.
  */
-const onPrimitive = (value: unknown): void => {
-  if (!isPrimitiveType(value)) return;
-
-  emit('updatePrimitive', value);
+const onPrimitive = (primitive: PrimitiveType): void => {
+  emit('updatePrimitive', primitive);
   emit('commit');
 };
 

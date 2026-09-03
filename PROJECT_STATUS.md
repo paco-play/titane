@@ -36,7 +36,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 
 ### Reach the New Rendering Features
 - [x] **Primitive choice on create.** The Hierarchy "+" opens a dropdown (Box / Sphere / Plane) instead of hardcoding `primitive: 'box'`. The new entity is still parented under the current selection when there is one.
-- [x] **Primitive selector in the Inspector.** A dumb `InspectorMesh` section writes `Mesh.primitive` through `updateComponent`. The renderer already swapped geometries on mismatch; the tool can now produce a sphere or a plane.
+- [x] **Primitive selector in the Inspector.** A dumb `InspectorMesh` section writes `Mesh.primitive` through `updateComponent` via a button group (same pattern as the gizmo toolbar). The renderer already swapped geometries on mismatch; the tool can now produce a sphere or a plane.
 - [x] **Color picker in the Inspector.** A Nuxt UI color picker writes `Mesh.color` live; persistence waits until the popover closes so a drag does not flood autosave.
 - [x] **Bounded material pool.** `ResourceCache` refcounts materials and disposes a color when its last user drops it. A picker dragged through thousands of values can no longer grow the pool without bound.
 

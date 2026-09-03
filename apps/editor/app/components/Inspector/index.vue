@@ -25,7 +25,7 @@ import type { Axis, TransformField } from '~/types/inspector';
 import type { MeshData, PrimitiveType } from '@titane/core';
 import { getComponent, updateComponent, Transform, Mesh } from '@titane/core';
 
-const { engine, selectedEntityId, inspectTick } = useTitane();
+const { engine, selectedEntityId, inspectTick, notifyInspect } = useTitane();
 const { saveToStorage } = usePersistence();
 
 /** Transform data of the selected entity, if any. */
@@ -64,6 +64,7 @@ const setPrimitive = (primitive: PrimitiveType): void => {
   updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
     data.primitive = primitive;
   });
+  notifyInspect();
 };
 
 /**
@@ -75,5 +76,6 @@ const setColor = (color: string): void => {
   updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
     data.color = color;
   });
+  notifyInspect();
 };
 </script>
