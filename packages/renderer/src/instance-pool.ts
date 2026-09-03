@@ -5,14 +5,22 @@ import { InstanceBatch } from './instance-batch';
 
 const INITIAL_CAPACITY = 8;
 
-const batchKey = (primitive: PrimitiveType, color: string): string =>
-    `${primitive}:${color.toLowerCase()}`;
+/** Identity of one instanced batch: shared geometry and material. */
+interface BatchSpec {
+    primitive: PrimitiveType;
+    color: string;
+    albedo: string;
+}
+
+const batchKey = (spec: BatchSpec): string =>
+    `${spec.primitive}\0${spec.color.toLowerCase()}\0${spec.albedo}`;
 
 /**
- * Groups renderable entities into one InstancedMesh per (primitive, color).
+ * Groups renderable entities into one InstancedMesh per (primitive, color, albedo).
  */
 export class InstancePool {
     private readonly batches = new Map<string, InstanceBatch>();
+    private readonly specs = new Map<string, BatchSpec>();
     private readonly entityKey = new Map<Entity, string>();
     private readonly scratch = new THREE.Matrix4();
 
@@ -36,14 +44,16 @@ export class InstancePool {
         entityId: Entity,
         primitive: PrimitiveType,
         color: string,
-        worldMatrix: ArrayLike<number>
+        worldMatrix: ArrayLike<number>,
+        albedo = ''
     ): void {
-        const key = batchKey(primitive, color);
+        const spec: BatchSpec = { primitive, color, albedo };
+        const key = batchKey(spec);
         const previous = this.entityKey.get(entityId);
         if (previous !== undefined && previous !== key) this.remove(entityId);
 
         this.scratch.fromArray(worldMatrix);
-        const batch = this.batches.get(key) ?? this.spawnBatch(key, primitive, color);
+        const batch = this.batches.get(key) ?? this.spawnBatch(key, spec);
         batch.add(entityId, this.scratch);
         this.entityKey.set(entityId, key);
     }
@@ -88,20 +98,22 @@ export class InstancePool {
         this.entityKey.clear();
     }
 
-    private spawnBatch(key: string, primitive: PrimitiveType, color: string): InstanceBatch {
-        const geometry = this.resources.geometry(primitive);
-        const material = this.resources.material(color);
+    private spawnBatch(key: string, spec: BatchSpec): InstanceBatch {
+        const geometry = this.resources.geometry(spec.primitive);
+        const material = this.resources.material(spec.color, spec.albedo);
         const batch = new InstanceBatch(geometry, material, INITIAL_CAPACITY);
         this.scene.add(batch.mesh);
         this.batches.set(key, batch);
+        this.specs.set(key, spec);
         return batch;
     }
 
     private disposeBatch(key: string, batch: InstanceBatch): void {
         this.scene.remove(batch.mesh);
         batch.mesh.dispose();
-        const color = key.slice(key.indexOf(':') + 1);
-        this.resources.releaseMaterial(color);
+        const spec = this.specs.get(key);
+        if (spec) this.resources.releaseMaterial(spec.color, spec.albedo);
         this.batches.delete(key);
+        this.specs.delete(key);
     }
 }

@@ -17,20 +17,35 @@ export type PrimitiveType = (typeof PRIMITIVE_TYPES)[number];
 export interface MeshData {
     primitive: PrimitiveType;
     color: string;
+    /**
+     * Albedo texture URL. Empty string means the mesh is untextured.
+     * The color still tints the surface when a texture is present.
+     */
+    albedo: string;
 }
 
 /**
  * Factory function to create a new Mesh data object.
  * @param primitive The shape of the mesh.
  * @param color The hex color string.
+ * @param albedo Albedo texture URL. Empty for an untextured mesh.
  * @returns A clean MeshData object.
  */
 export const createMesh = (
     primitive: PrimitiveType = 'box',
-    color = '#ff0000'
-): MeshData => ({ primitive, color });
+    color = '#ff0000',
+    albedo = ''
+): MeshData => ({ primitive, color, albedo });
+
+/**
+ * Fills fields that older scenes omitted so every live Mesh has a complete shape.
+ */
+const reviveMesh = (raw: unknown): MeshData => {
+    const source = raw as Partial<MeshData>;
+    return createMesh(source.primitive, source.color, source.albedo ?? '');
+};
 
 /**
  * Typed handle for the Mesh component.
  */
-export const Mesh = defineComponent<MeshData>('mesh', createMesh);
+export const Mesh = defineComponent<MeshData>('mesh', createMesh, reviveMesh);

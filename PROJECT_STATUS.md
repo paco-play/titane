@@ -31,9 +31,22 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Contact events / triggers** — done. A `Sensor` component turns any `RigidBody` into a Rapier intersection-only collider. The physics step drains collision events and maintains a per-entity overlap set. `createTriggerSystem` fires `onEnter`/`onExit` callbacks for game code. The demo's Y-threshold lose condition is replaced by a large fixed sensor box below the slab.
+**Lights, textures, glTF, audio** — lights are on `release`. Albedo textures land in this slice: `Mesh.albedo` is a URL, `ResourceCache` pools the map, and instancing batches by `(primitive, color, albedo)`. Next: glTF import, then audio.
 
 ## Completed
+
+### Albedo textures
+- [x] **`Mesh.albedo`.** Optional texture URL on `MeshData`. Empty string means untextured. Older scenes revive with `albedo: ''`.
+- [x] **Pooled maps.** `ResourceCache` keys materials by `(color, albedo)` and refcounts textures so two colors sharing a URL share one GPU texture.
+- [x] **Instancing.** `InstancePool` batches by `(primitive, color, albedo)` so a texture edit moves the entity between batches and releases the previous material.
+- [x] **Inspector Mesh.** Dumb albedo URL field; the smart Inspector writes `Mesh.albedo` and persists on commit.
+
+### Lights
+- [x] **`Light` component.** `defineComponent('light')` with `kind` (`directional` | `point` | `ambient`), `color`, `intensity`, and point-only `distance`.
+- [x] **`LightPool`.** Creates, syncs and removes Three.js lights from ECS data each frame. Directional lights aim along the entity `-Z`. Point lights take world position. Ambient lights ignore the transform.
+- [x] **Fallback lighting.** The renderer keeps the previous directional + ambient pair visible only while no `Light` entities exist, so older scenes stay lit.
+- [x] **Inspector Light.** Dumb `InspectorLight` section (kind, color, intensity, distance, remove) plus an Add Light button on the selection.
+- [x] **Hierarchy spawn.** The `+` menu creates Directional / Point / Ambient light entities.
 
 ### Contact events / triggers
 - [x] **`Sensor` component.** `defineComponent('sensor')` with an optional `tag` string. Pairing it with `RigidBody` marks the Rapier collider as `sensor: true` with `COLLISION_EVENTS` enabled.
@@ -148,7 +161,7 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ### 1. Next recommended
 
-- Lights, textures, glTF, audio.
+- glTF import, audio.
 - Sharing a live session between editor and demo.
 - File System Access API: native CTRL+S overwriting a file on disk.
 

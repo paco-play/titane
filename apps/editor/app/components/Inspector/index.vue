@@ -15,6 +15,7 @@
         :inspect-tick="inspectTick"
         @update-primitive="setPrimitive"
         @update-color="setColor"
+        @update-albedo="setAlbedo"
         @commit="saveToStorage"
       />
       <InspectorLight
@@ -145,6 +146,19 @@ const setColor = (color: string): void => {
 
   updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
     data.color = color;
+  });
+  notifyInspect();
+  markDirty();
+};
+
+/**
+ * Writes a new albedo URL into the selected entity's Mesh.
+ */
+const setAlbedo = (albedo: string): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+
+  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
+    data.albedo = albedo;
   });
   notifyInspect();
   markDirty();
