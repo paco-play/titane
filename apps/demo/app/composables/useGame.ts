@@ -1,7 +1,6 @@
 import type { Ref } from 'vue';
 import {
   TitaneEngine,
-  initPhysics,
   Phase,
   createPhysicsPlayerControlSystem
 } from '@titane/core';
@@ -9,6 +8,8 @@ import { ThreeRenderer } from '@titane/renderer';
 import type { GameStatus } from '~/types/hud';
 import { FALL_Y } from '~/game/constants';
 import { seedDropScene } from '~/game/seed';
+import { findPlayer } from '~/game/find-player';
+import { tryLoadDropScene } from '~/game/load-scene';
 import { createLoseSystem } from '~/game/lose-system';
 import { createFollowCameraSystem } from '~/game/follow-camera';
 
@@ -29,28 +30,33 @@ const status = ref<GameStatus>('playing');
  */
 export const useGame = (): GameSession => {
   /**
-   * Creates the engine on `canvas`, seeds the slab, and starts playing.
+   * Creates the engine on `canvas`, loads or seeds the slab, and starts playing.
    */
   const boot = async (canvas: HTMLCanvasElement): Promise<void> => {
     if (engineRef.value) return;
 
-    await initPhysics();
-
     const renderer = new ThreeRenderer({ mode: 'game' });
     const engine = new TitaneEngine(renderer, canvas);
-    const { player } = seedDropScene(engine.world);
+    await engine.ready;
+
+    const loaded = await tryLoadDropScene(engine);
+    if (!loaded) seedDropScene(engine.world);
+
+    const player = findPlayer(engine.world);
 
     engine.addSystem(Phase.UPDATE, createPhysicsPlayerControlSystem());
-    engine.addSystem(Phase.UPDATE, createLoseSystem(player, FALL_Y, () => {
-      if (status.value === 'fallen') return;
-      status.value = 'fallen';
-      engine.isPaused = true;
-    }));
-    engine.addSystem(Phase.POST_PHYSICS, createFollowCameraSystem(player, renderer));
+    if (player !== null) {
+      engine.addSystem(Phase.UPDATE, createLoseSystem(player, FALL_Y, () => {
+        if (status.value === 'fallen') return;
+        status.value = 'fallen';
+        engine.isPaused = true;
+      }));
+      engine.addSystem(Phase.POST_PHYSICS, createFollowCameraSystem(player, renderer));
+    }
 
     engine.saveSnapshot();
     engine.isPaused = false;
-    engine.start();
+    await engine.start();
     engineRef.value = engine;
   };
 

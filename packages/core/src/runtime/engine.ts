@@ -34,6 +34,12 @@ export class TitaneEngine {
     /** Public access to the singleton entity ID hosting tracking inputs */
     public readonly globalInputEntity: Entity;
 
+    /**
+     * Resolves when Rapier WASM is ready. The constructor starts the load;
+     * `start()` waits on this so hosts do not call `initPhysics` themselves.
+     */
+    public readonly ready: Promise<void>;
+
     private snapshot: World | null = null;
     private readonly clock: Clock;
     private readonly fixedStep = new FixedStep();
@@ -64,7 +70,7 @@ export class TitaneEngine {
         // 4. Build the deterministic engine pipeline
         this.scheduler = createScheduler();
         setupDefaultPipeline(this.scheduler, this.renderer, () => !this.simulating);
-        void initPhysics();
+        this.ready = initPhysics();
     }
 
     /**
@@ -79,8 +85,11 @@ export class TitaneEngine {
 
     /**
      * Starts the engine execution loop.
+     * Waits until {@link ready} so the first physics step is not a no-op.
+     * Safe to call more than once; a second call while running is ignored.
      */
-    public start(): void {
+    public async start(): Promise<void> {
+        await this.ready;
         if (this.isRunning) return;
         this.isRunning = true;
         this.clock.getDelta();

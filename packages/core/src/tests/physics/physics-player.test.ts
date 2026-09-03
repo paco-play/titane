@@ -25,18 +25,6 @@ const createMockCanvas = (): HTMLCanvasElement => ({
     getContext: vi.fn()
 } as unknown as HTMLCanvasElement);
 
-const scaleTransform = (
-    transform: Transform,
-    x: number,
-    y: number,
-    z: number
-): void => {
-    transform.scale.x = x;
-    transform.scale.y = y;
-    transform.scale.z = z;
-    transform.isDirty = true;
-};
-
 describe('createPhysicsPlayerControlSystem', () => {
     let engine: TitaneEngine;
 
@@ -47,9 +35,9 @@ describe('createPhysicsPlayerControlSystem', () => {
 
         const ground = createPrimitive(engine.world, {
             name: 'Ground',
-            position: { x: 0, y: -0.5, z: 0 }
+            position: { x: 0, y: -0.5, z: 0 },
+            scale: { x: 20, y: 1, z: 20 }
         });
-        scaleTransform(getComponent(engine.world, ground, Transform)!, 20, 1, 20);
         addComponent(engine.world, ground, RigidBody, createRigidBody('fixed'));
     });
 

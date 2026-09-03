@@ -1,6 +1,6 @@
 import type { Entity } from '@titane/core';
 import type { ShallowRef } from 'vue';
-import { TitaneEngine, Phase, createPlayerControlSystem } from '@titane/core';
+import { TitaneEngine, Phase, createPlayerControlSystem, createPhysicsPlayerControlSystem } from '@titane/core';
 import { ThreeRenderer } from '@titane/renderer';
 import { markPersistenceDirty } from '~/utils/persistence-dirty';
 
@@ -46,6 +46,7 @@ export const useTitane = () => {
 
     // Gameplay is opt-in: the engine ships no player controls of its own.
     engine.addSystem(Phase.UPDATE, createPlayerControlSystem());
+    engine.addSystem(Phase.UPDATE, createPhysicsPlayerControlSystem());
 
     rendererInstance.value = renderer;
     engineInstance.value = engine;

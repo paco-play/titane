@@ -31,11 +31,15 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Author → Play** — the game demo is done. Next is making a physics scene you can edit, save, and run.
-
-The Drop demo proved the engine boots outside the editor. It also showed the pipeline is still split: the editor cannot author `RigidBody`, `createPrimitive` has no scale, and the demo hard-codes its world instead of loading a `.titane`. Until those close, Titane is an editor plus a sample, not an authoring loop.
+**Author → Play** — done. A physics scene can be spawned with scale, authored in the Inspector, saved as `.titane`, and run in the demo.
 
 ## Completed
+
+### Author → Play
+- [x] **`createPrimitive` scale and rotation.** Spawn options include `scale` and `rotation`. The demo no longer mutates Transform by hand.
+- [x] **`engine.ready` / `start()` waits for Rapier.** The constructor still starts the WASM load; `await engine.start()` is the one boot seam. Hosts no longer call `initPhysics()` themselves.
+- [x] **`RigidBody` in the Inspector.** Add / remove, kind `dynamic` | `fixed`. A Control checkbox tags `PlayerControlled` so an editor-authored body can be driven by WASD. The editor also registers `createPhysicsPlayerControlSystem()`.
+- [x] **Demo loads `public/drop.titane`.** `engine.loadWorld(deserializeWorld(...))` on boot; `seedDropScene` remains the fallback if the file is missing.
 
 ### Game demo
 - [x] **Renderer game mode.** `new ThreeRenderer({ mode: 'game' })` skips orbit, gizmos and the grid. `setCamera({ position, lookAt })` aims the perspective camera. Default remains `editor`, so the existing viewport is unchanged.
@@ -129,26 +133,17 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-Ordered by what writing `apps/demo` already made painful. Play the demo if you want to reorder this; do not invent glTF, audio, or a character controller first.
+### 1. After the authoring loop (recommended next)
 
-### 1. Author → Play loop (recommended next)
+Play the demo and the editor together before growing the engine. Likely follow-ups, not a wishlist:
 
-Goal: build the Drop scene in the editor, save it, run it in the demo.
-
-1. **`createPrimitive` scale (and rotation).** [`PrimitiveOptions`](packages/core/src/ecs/kernel/factory.ts) only has `name`, `primitive`, `color`, `position`. The demo had to mutate `Transform.scale` by hand ([`apps/demo/app/game/apply-scale.ts`](apps/demo/app/game/apply-scale.ts)). Add `scale` / `rotation` on the factory; delete the helper.
-2. **Physics readiness on the engine.** `TitaneEngine` already calls `void initPhysics()`, but every host still `await initPhysics()` before play or the first steps are no-ops. Expose `engine.ready` (or make `start()` wait) so a game has one boot seam.
-3. **`RigidBody` in the Inspector.** Add / remove, kind `dynamic` | `fixed`. Same dumb-section pattern as Mesh. Without this the editor cannot author the demo scene.
-4. **Demo loads a `.titane`.** Keep the code seed as a fallback. Add a committed scene (editor export into `apps/demo/public/`) and `engine.loadWorld(deserializeWorld(...))` on boot. That is the real serialization + Rapier-rebuild check, and the API you will actually feel.
+- Jump / grounded raycast / lock rotations (the player sphere still rolls).
+- Contact events or triggers (lose is still `Transform.y < threshold`).
+- Lights, textures, glTF, audio.
+- Sharing a live session between editor and demo.
 
 Do not put a Camera component in core yet. `ThreeRenderer.setCamera` plus a demo follow system is enough until playing it feels wrong.
 
-### 2. After the loop exists (not now)
-
-- Jump / grounded raycast / lock rotations (sphere rolls; a box would tumble).
-- Contact events or triggers (lose is still `Transform.y < threshold`).
-- Lights, textures, glTF, audio.
-- Sharing live sessions between editor and demo.
-
-### 3. Deprioritized
+### 2. Deprioritized
 1. **File System Access API**: native `CTRL+S` overwriting a file on disk without re-downloading.
 2. **Asset metadata**: structure for tracking external dependencies (textures, glTF models).

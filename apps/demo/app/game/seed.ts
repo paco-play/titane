@@ -7,7 +7,6 @@ import {
   RigidBody,
   PlayerControlled
 } from '@titane/core';
-import { applyScale } from './apply-scale';
 import { SLAB_SIZE } from './constants';
 
 /** Entities the Drop demo needs after seeding. */
@@ -31,9 +30,9 @@ export const seedDropScene = (world: World): SeededScene => {
     name: 'Ground',
     primitive: 'box',
     color: '#3f3f46',
-    position: { x: 0, y: -0.25, z: 0 }
+    position: { x: 0, y: -0.25, z: 0 },
+    scale: { x: SLAB_SIZE, y: 0.5, z: SLAB_SIZE }
   });
-  applyScale(world, ground, SLAB_SIZE, 0.5, SLAB_SIZE);
   addComponent(world, ground, RigidBody, createRigidBody('fixed'));
 
   const player = createPrimitive(world, {
@@ -50,9 +49,9 @@ export const seedDropScene = (world: World): SeededScene => {
       name: `Crate ${index + 1}`,
       primitive: 'box',
       color: '#f59e0b',
-      position: { x: offset.x, y: 2 + index * 0.9, z: offset.z }
+      position: { x: offset.x, y: 2 + index * 0.9, z: offset.z },
+      scale: { x: 0.8, y: 0.8, z: 0.8 }
     });
-    applyScale(world, crate, 0.8, 0.8, 0.8);
     addComponent(world, crate, RigidBody, createRigidBody('dynamic'));
   });
 
