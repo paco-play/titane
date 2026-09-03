@@ -2,15 +2,14 @@ import type { Ref } from 'vue';
 import {
   TitaneEngine,
   Phase,
-  createPhysicsPlayerControlSystem
+  createPhysicsPlayerControlSystem,
+  createTriggerSystem
 } from '@titane/core';
 import { ThreeRenderer } from '@titane/renderer';
 import type { GameStatus } from '~/types/hud';
-import { FALL_Y } from '~/game/constants';
 import { seedDropScene } from '~/game/seed';
 import { findPlayer } from '~/game/find-player';
 import { tryLoadDropScene } from '~/game/load-scene';
-import { createLoseSystem } from '~/game/lose-system';
 import { createFollowCameraSystem } from '~/game/follow-camera';
 
 /** Handle returned by {@link useGame}. */
@@ -40,18 +39,31 @@ export const useGame = (): GameSession => {
     await engine.ready;
 
     const loaded = await tryLoadDropScene(engine);
-    if (!loaded) seedDropScene(engine.world);
+    const seeded = loaded ? null : seedDropScene(engine.world);
 
     const player = findPlayer(engine.world);
 
     engine.addSystem(Phase.UPDATE, createPhysicsPlayerControlSystem());
     if (player !== null) {
-      engine.addSystem(Phase.UPDATE, createLoseSystem(player, FALL_Y, () => {
-        if (status.value === 'fallen') return;
-        status.value = 'fallen';
-        engine.isPaused = true;
-      }));
       engine.addSystem(Phase.POST_PHYSICS, createFollowCameraSystem(player, renderer));
+    }
+
+    // The kill-zone sensor is either loaded from the scene file or freshly seeded.
+    // `tryLoadDropScene` restores serialised entities including the sensor;
+    // `findPlayer` already resolved the player entity from the world.
+    // We find the kill-zone entity by its sensor tag when loaded, or use the
+    // seeded reference when the scene was built from scratch.
+    const killZone = seeded?.killZone ?? null;
+    if (killZone !== null) {
+      engine.addSystem(Phase.POST_PHYSICS, createTriggerSystem(
+        killZone,
+        () => {
+          if (status.value === 'fallen') return;
+          status.value = 'fallen';
+          engine.isPaused = true;
+        },
+        () => { /* exit — no-op for the kill zone */ }
+      ));
     }
 
     engine.saveSnapshot();

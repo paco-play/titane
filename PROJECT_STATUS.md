@@ -31,9 +31,17 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Character feel** — done. The Rapier player stays upright, only jumps when grounded, and Space is the jump key.
+**Contact events / triggers** — done. A `Sensor` component turns any `RigidBody` into a Rapier intersection-only collider. The physics step drains collision events and maintains a per-entity overlap set. `createTriggerSystem` fires `onEnter`/`onExit` callbacks for game code. The demo's Y-threshold lose condition is replaced by a large fixed sensor box below the slab.
 
 ## Completed
+
+### Contact events / triggers
+- [x] **`Sensor` component.** `defineComponent('sensor')` with an optional `tag` string. Pairing it with `RigidBody` marks the Rapier collider as `sensor: true` with `COLLISION_EVENTS` enabled.
+- [x] **`asSensorDesc` collider helper.** Wraps any `ColliderDesc` with `setSensor(true).setActiveEvents(...)` so the sync system applies the flag without duplicating shape logic.
+- [x] **Intersection tracking in `PhysicsSession`.** `eventQueue` (a single `RAPIER.EventQueue`) is stepped with the world each tick. `drainCollisionEvents` updates a `Map<Entity, Set<Entity>>` (`started=true` adds, `started=false` removes) so persistent overlaps are always visible.
+- [x] **`getIntersections(session, entity)`.** Public query returning the live set of entities currently overlapping a sensor.
+- [x] **`createTriggerSystem`.** Stateful system factory: compares current overlaps against the previous tick to fire `onEnter` / `onExit` exactly once per transition.
+- [x] **Demo kill-zone.** `seedDropScene` now spawns a large fixed `Sensor` box well below the slab. `useGame` wires `createTriggerSystem` to it instead of the Y-threshold `createLoseSystem`.
 
 ### Character feel
 - [x] **Locked rotations.** `createPhysicsPlayerControlSystem` locks Rapier rotations and zeros angular velocity so a sphere does not roll.
@@ -138,11 +146,11 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-### 1. After character feel (recommended next)
+### 1. Next recommended
 
-- Contact events or triggers (lose is still `Transform.y < threshold`).
 - Lights, textures, glTF, audio.
 - Sharing a live session between editor and demo.
+- File System Access API: native CTRL+S overwriting a file on disk.
 
 Do not put a Camera component in core yet. `ThreeRenderer.setCamera` plus a demo follow system is enough until playing it feels wrong.
 

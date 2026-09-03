@@ -24,6 +24,7 @@ export * from './ecs/components/name';
 export * from './ecs/components/input';
 export * from './ecs/components/player-controlled';
 export * from './ecs/components/rigid-body';
+export * from './ecs/components/sensor';
 
 // Built-in Systems
 export * from './ecs/systems/movement';
@@ -32,6 +33,7 @@ export * from './ecs/systems/input-system';
 export * from './ecs/systems/player-control';
 export * from './ecs/systems/physics-player-control';
 export * from './ecs/systems/physics';
+export * from './ecs/systems/trigger';
 
 // Scene Persistence
 export * from './ecs/serialization';
@@ -44,4 +46,6 @@ export * from './runtime/renderer-interface';
 export * from './utils/clock';
 export * from './utils/math';
 export * from './utils/fixed-step';
-export { initPhysics, isPhysicsReady } from './physics/session';
+export { initPhysics, isPhysicsReady, getIntersections } from './physics/session';
+export { colliderHalfHeight, isBodyGrounded } from './physics/ground';
+export { moveAxesFromInput, PLAYER_MOVE_SPEED, PLAYER_JUMP_SPEED } from './ecs/systems/move-axes';

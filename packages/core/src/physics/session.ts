@@ -20,12 +20,31 @@ export interface BodyBinding {
 }
 
 /**
+ * Live intersection pairs for sensor colliders.
+ * Key: sensor entity. Value: set of entities currently overlapping it.
+ */
+export type IntersectionMap = Map<Entity, Set<Entity>>;
+
+/**
  * Rapier world paired with the ECS world that owns it.
  */
 export interface PhysicsSession {
     physics: RAPIER.World;
+    /** Per-step event accumulator; passed to `world.step()`. */
+    eventQueue: RAPIER.EventQueue;
     bodies: Map<Entity, BodyBinding>;
+    /** Reverse map: collider handle → ECS entity. Rebuilt each step. */
+    colliderToEntity: Map<number, Entity>;
+    /** Active sensor intersections, refreshed every physics step. */
+    intersections: IntersectionMap;
 }
+
+/**
+ * Returns the entities currently inside the given sensor entity.
+ * Returns an empty set when the entity has no sensor or no intersections.
+ */
+export const getIntersections = (session: PhysicsSession, entity: Entity): ReadonlySet<Entity> =>
+    session.intersections.get(entity) ?? new Set();
 
 const sessions = new WeakMap<World, PhysicsSession>();
 
@@ -62,7 +81,10 @@ export const getPhysicsSession = (world: World): PhysicsSession | null => {
 
     const session: PhysicsSession = {
         physics: new RAPIER.World(GRAVITY),
-        bodies: new Map()
+        eventQueue: new RAPIER.EventQueue(true),
+        bodies: new Map(),
+        colliderToEntity: new Map(),
+        intersections: new Map()
     };
     sessions.set(world, session);
     return session;
@@ -75,6 +97,7 @@ export const getPhysicsSession = (world: World): PhysicsSession | null => {
 export const resetPhysicsSession = (world: World): void => {
     const session = sessions.get(world);
     if (!session) return;
+    session.eventQueue.free();
     session.physics.free();
     sessions.delete(world);
 };

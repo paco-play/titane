@@ -29,7 +29,18 @@ export const colliderDescFromPrimitive = (
         case 'box':
             return RAPIER.ColliderDesc.cuboid(half(scale.x), half(scale.y), half(scale.z));
     }
+    // TypeScript exhaustiveness; unreachable at runtime.
 };
+
+/**
+ * Applies the sensor flag to a finished `ColliderDesc`.
+ * Rapier records intersection events only when at least one of the two
+ * shapes has `isSensor = true` and both enable `ActiveEvents.COLLISION_EVENTS`.
+ */
+export const asSensorDesc = (desc: RAPIER.ColliderDesc): RAPIER.ColliderDesc =>
+    desc
+        .setSensor(true)
+        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
 
 /**
  * Updates an existing collider when only scale changed.
