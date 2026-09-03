@@ -4,6 +4,7 @@ import { createEntity } from '../../ecs/kernel/entity';
 import { addComponent, getComponent } from '../../ecs/kernel/component';
 import { Transform, createTransform } from '../../ecs/components/transform';
 import { Name, createName } from '../../ecs/components/name';
+import { Mesh, createMesh } from '../../ecs/components/mesh';
 import {
     SCENE_FORMAT_VERSION,
     serializeWorld,
@@ -77,6 +78,35 @@ describe('ECS: Scene Serialization', () => {
         expect(warn).toHaveBeenCalled();
 
         warn.mockRestore();
+    });
+
+    it('should fill Mesh.albedo when an older scene omitted it', () => {
+        const restored = deserializeWorld({
+            version: SCENE_FORMAT_VERSION,
+            nextId: 1,
+            entities: [0],
+            components: {
+                mesh: { 0: { primitive: 'box', color: '#00ff00' } }
+            }
+        });
+
+        expect(getComponent(restored, 0, Mesh)).toEqual({
+            primitive: 'box',
+            color: '#00ff00',
+            albedo: ''
+        });
+    });
+
+    it('should round-trip a mesh albedo URL', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Mesh, createMesh('sphere', '#ffffff', 'wall.png'));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Mesh)?.albedo).toBe('wall.png');
     });
 
     it('should refuse scenes written by a newer format', () => {

@@ -43,6 +43,31 @@ describe('InstancePool', () => {
         expect(cache.materialCount).toBe(0);
     });
 
+    it('splits batches when albedo URLs differ', () => {
+        const textured = new ResourceCache(() => new THREE.Texture());
+        const texturedPool = new InstancePool(scene, textured);
+        const identity = new THREE.Matrix4();
+        texturedPool.sync(1, 'box', '#ff0000', identity.elements, 'a.png');
+        texturedPool.sync(2, 'box', '#ff0000', identity.elements, 'b.png');
+        texturedPool.sync(3, 'box', '#ff0000', identity.elements, 'a.png');
+
+        expect(texturedPool.batchCount).toBe(2);
+    });
+
+    it('releases an albedo material when its batch empties', () => {
+        const textured = new ResourceCache(() => new THREE.Texture());
+        const texturedPool = new InstancePool(scene, textured);
+        const identity = new THREE.Matrix4();
+
+        texturedPool.sync(1, 'box', '#ffffff', identity.elements, 'floor.png');
+        expect(textured.materialCount).toBe(1);
+        expect(textured.textureCount).toBe(1);
+
+        texturedPool.remove(1);
+        expect(textured.materialCount).toBe(0);
+        expect(textured.textureCount).toBe(0);
+    });
+
     it('maps an instance slot back to its entity', () => {
         const identity = new THREE.Matrix4();
         pool.sync(7, 'plane', '#ffffff', identity.elements);

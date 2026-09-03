@@ -33,6 +33,18 @@
         </div>
 
         <div class="space-y-2">
+          <UiFormLabel label="Albedo" />
+          <UInput
+            :model-value="mesh.albedo"
+            placeholder="Texture URL"
+            size="xs"
+            :data-tick="inspectTick"
+            @update:model-value="onAlbedo"
+            @change="emit('commit')"
+          />
+        </div>
+
+        <div class="space-y-2">
           <UiFormLabel label="Color" />
           <UPopover @update:open="onPickerOpen">
             <UButton
@@ -81,6 +93,8 @@ const emit = defineEmits<{
   updatePrimitive: [primitive: PrimitiveType];
   /** The color was changed. The parent owns the mutation. */
   updateColor: [color: string];
+  /** The albedo URL was changed. The parent owns the mutation. */
+  updateAlbedo: [albedo: string];
   /** Editing ended, the value can be persisted. */
   commit: [];
 }>();
@@ -100,6 +114,14 @@ const onColor = (value: string | undefined): void => {
   if (!value) return;
 
   emit('updateColor', value.toLowerCase());
+};
+
+/**
+ * Writes a texture URL back. Whitespace-only values clear the map.
+ */
+const onAlbedo = (value: string | number | undefined): void => {
+  const url = typeof value === 'string' ? value.trim() : '';
+  emit('updateAlbedo', url);
 };
 
 /**
