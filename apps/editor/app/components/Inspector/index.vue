@@ -5,7 +5,16 @@
       <USeparator />
       <InspectorItem
         :transform="transform"
+        :inspect-tick="inspectTick"
         @update="setAxis"
+        @commit="saveToStorage"
+      />
+      <InspectorMesh
+        v-if="mesh"
+        :mesh="mesh"
+        :inspect-tick="inspectTick"
+        @update-primitive="setPrimitive"
+        @update-color="setColor"
         @commit="saveToStorage"
       />
     </div>
@@ -15,9 +24,10 @@
 
 <script setup lang="ts">
 import type { Axis, TransformField } from '~/types/inspector';
-import { getComponent, updateComponent, Transform } from '@titane/core';
+import type { MeshData, PrimitiveType } from '@titane/core';
+import { getComponent, updateComponent, Transform, Mesh } from '@titane/core';
 
-const { engine, selectedEntityId, inspectTick } = useTitane();
+const { engine, selectedEntityId, inspectTick, notifyInspect } = useTitane();
 const { saveToStorage } = usePersistence();
 
 /** Transform data of the selected entity, if any. */
@@ -25,6 +35,13 @@ const transform = computed<Transform | undefined>(() => {
   void inspectTick.value;
   if (selectedEntityId.value === null || !engine.value) return undefined;
   return getComponent(engine.value.world, selectedEntityId.value, Transform);
+});
+
+/** Mesh data of the selected entity, if any. */
+const mesh = computed<MeshData | undefined>(() => {
+  void inspectTick.value;
+  if (selectedEntityId.value === null || !engine.value) return undefined;
+  return getComponent(engine.value.world, selectedEntityId.value, Mesh);
 });
 
 /**
@@ -38,5 +55,29 @@ const setAxis = (field: TransformField, axis: Axis, value: number): void => {
     data[field][axis] = value;
     data.isDirty = true;
   });
+};
+
+/**
+ * Writes a new primitive type into the selected entity's Mesh.
+ */
+const setPrimitive = (primitive: PrimitiveType): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+
+  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
+    data.primitive = primitive;
+  });
+  notifyInspect();
+};
+
+/**
+ * Writes a new color into the selected entity's Mesh.
+ */
+const setColor = (color: string): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+
+  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
+    data.color = color;
+  });
+  notifyInspect();
 };
 </script>

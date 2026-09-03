@@ -203,9 +203,11 @@ The `Renderer` is a driver behind the `IRenderer` interface, invoked in the REND
 ### Resource pooling
 A geometry is fully determined by its primitive type, and a material by its color, so `ResourceCache`
 keeps one instance of each and hands it to every entity asking for it. An entity therefore costs a
-single `Object3D` rather than its own geometry and material pair, and disposal happens once, when the
-renderer shuts down, instead of per entity removal. This is also the groundwork for instancing:
-entities already share the exact objects a draw call would need to batch.
+single `Object3D` rather than its own geometry and material pair. Geometries live for the renderer
+lifetime (there are three primitive types). Materials are refcounted: the last entity to drop a
+color disposes it, so a color picker dragged through thousands of values cannot grow the pool
+without bound. Remaining resources are released when the renderer shuts down. This is also the
+groundwork for instancing: entities already share the exact objects a draw call would need to batch.
 
 ### Viewport helpers (not on `IRenderer`)
 Orbit, picking and gizmos live on `ThreeRenderer` the same way `setGridVisible` does: the engine
@@ -224,7 +226,10 @@ reference to the driver it constructed.
 The gizmo helper is not an ECS entity. Picking raycasts only mapped meshes, so handles never
 resolve as a hit. A click that starts on a handle is consumed and does not change the selection.
 
-A gizmo drag is world-space. `worldMatrixToLocalTrs` inverts the parent world matrix when there is
+A gizmo drag is world-space. TransformControls writes `position` / `quaternion` / `scale`, but
+editor meshes keep `matrixAutoUpdate = false` (the ECS owns the pose). During a drag the renderer
+composes `object.matrix` from those fields instead of copying `worldMatrix`, otherwise the handles
+move and the mesh stays put. `worldMatrixToLocalTrs` inverts the parent world matrix when there is
 one, then decomposes with Euler XYZ so the result round-trips through `mat4FromTRS`. The Inspector
 refreshes through `inspectTick`, because the Transform object identity does not change.
 
