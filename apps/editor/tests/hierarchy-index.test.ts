@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildIndexedForest, indexByParent } from '../../app/utils/hierarchy-index';
+import { buildIndexedForest, indexByParent } from '../app/utils/hierarchy-index';
 
 type Node = {
   id: number;
