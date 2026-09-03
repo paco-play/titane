@@ -9,7 +9,7 @@
         {{ status === 'fallen' ? 'Fallen' : 'Playing' }}
       </UBadge>
       <p class="text-sm text-muted">
-        WASD / arrows to move. Stay on the slab.
+        WASD / arrows to move, Space to jump. Stay on the slab.
       </p>
     </div>
 

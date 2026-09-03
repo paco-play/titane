@@ -31,9 +31,14 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Author → Play** — done. A physics scene can be spawned with scale, authored in the Inspector, saved as `.titane`, and run in the demo.
+**Character feel** — done. The Rapier player stays upright, only jumps when grounded, and Space is the jump key.
 
 ## Completed
+
+### Character feel
+- [x] **Locked rotations.** `createPhysicsPlayerControlSystem` locks Rapier rotations and zeros angular velocity so a sphere does not roll.
+- [x] **Grounded raycast.** A downward ray from the body, excluding itself, decides whether Space may jump.
+- [x] **Jump.** Space sets upward linvel only while grounded. Air Space is ignored.
 
 ### Author → Play
 - [x] **`createPrimitive` scale and rotation.** Spawn options include `scale` and `rotation`. The demo no longer mutates Transform by hand.
@@ -133,11 +138,8 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-### 1. After the authoring loop (recommended next)
+### 1. After character feel (recommended next)
 
-Play the demo and the editor together before growing the engine. Likely follow-ups, not a wishlist:
-
-- Jump / grounded raycast / lock rotations (the player sphere still rolls).
 - Contact events or triggers (lose is still `Transform.y < threshold`).
 - Lights, textures, glTF, audio.
 - Sharing a live session between editor and demo.

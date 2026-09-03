@@ -3,6 +3,9 @@ import type { Input } from '../components/input';
 /** Default WASD speed, in world units per second. */
 export const PLAYER_MOVE_SPEED = 5;
 
+/** Default jump linvel, in world units per second. */
+export const PLAYER_JUMP_SPEED = 6;
+
 /**
  * Horizontal move axes from keyboard state.
  * +X is right, +Z is backward (Three.js / engine convention).
