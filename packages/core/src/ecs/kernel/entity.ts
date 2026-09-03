@@ -72,6 +72,7 @@ export const destroyEntity = (world: World, entityId: Entity): void => {
     // Safety: don't destroy an entity that isn't active
     if (!world.entities.active.has(entityId)) return;
 
+    let removed = false;
     for (const doomedId of collectSubtree(world, entityId)) {
         // Set.delete reports whether the ID was live, which keeps the recycled
         // pool free of duplicates if the tree ever holds a stale reference.
@@ -82,7 +83,10 @@ export const destroyEntity = (world: World, entityId: Entity): void => {
         }
 
         world.entities.recycled.push(doomedId);
+        removed = true;
     }
+
+    if (removed) world._generation += 1;
 };
 
 /**
@@ -111,9 +115,9 @@ export const cloneEntity = (world: World, sourceId: Entity): Entity => {
         for (const store of world._stores) {
             if (!store) continue;
 
-            const data = store.get(originalId);
+            const data = store.snapshot(originalId);
             if (data !== undefined) {
-                store.set(cloneId, structuredClone(data));
+                store.set(cloneId, data);
             }
         }
 
@@ -128,5 +132,6 @@ export const cloneEntity = (world: World, sourceId: Entity): Entity => {
         });
     }
 
+    world._generation += 1;
     return cloneIds.get(sourceId) ?? sourceId;
 };

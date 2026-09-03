@@ -1,10 +1,7 @@
 import type { Entity } from '../types';
+import type { ComponentStore } from './store';
 
-/**
- * A single component store: maps the entities owning the component to its data.
- * `undefined` slots mean the component was never used in this World.
- */
-export type ComponentStore = Map<Entity, unknown>;
+export type { ComponentStore } from './store';
 
 /**
  * The ECS World structure.
@@ -22,6 +19,11 @@ export interface World {
      * Array offsets replace string hashing on every access. Use the API functions.
      */
     readonly _stores: (ComponentStore | undefined)[];
+    /**
+     * @internal Bumped when component membership changes.
+     * Query caches compare against this instead of rescanning every frame.
+     */
+    _generation: number;
 }
 
 /**
@@ -35,4 +37,5 @@ export const createWorld = (): World => ({
         recycled: [],
     },
     _stores: [],
+    _generation: 0,
 });

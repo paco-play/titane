@@ -7,6 +7,7 @@ import type { AnyComponentType } from './component-type';
  *
  * Declare one per system at module scope, then call `runQuery` every frame:
  * the internal buffers are recycled, so iterating entities allocates nothing.
+ * Results are reused across frames until `World._generation` changes.
  */
 export interface Query {
     /** Component types an entity must all possess to match. */
@@ -15,6 +16,10 @@ export interface Query {
     readonly _results: Entity[];
     /** @internal Recycled scratch buffer holding the resolved stores. */
     readonly _stores: ComponentStore[];
+    /** @internal World the cached results were built against. */
+    _cachedWorld: World | null;
+    /** @internal `World._generation` at the last rebuild. */
+    _cachedGeneration: number;
 }
 
 /**
@@ -25,7 +30,9 @@ export interface Query {
 export const defineQuery = (types: readonly AnyComponentType[]): Query => ({
     types,
     _results: [],
-    _stores: []
+    _stores: [],
+    _cachedWorld: null,
+    _cachedGeneration: -1
 });
 
 /**
@@ -33,6 +40,7 @@ export const defineQuery = (types: readonly AnyComponentType[]): Query => ({
  *
  * Optimization: iterates the smallest store first so the number of membership
  * checks is bound by the rarest component instead of the largest one.
+ * Unchanged structure reuses the previous result instead of scanning again.
  *
  * @param world The world state to query.
  * @param query The query to evaluate.
@@ -41,8 +49,18 @@ export const defineQuery = (types: readonly AnyComponentType[]): Query => ({
 export const runQuery = (world: World, query: Query): readonly Entity[] => {
     const { types, _results: results, _stores: stores } = query;
 
+    if (
+        types.length > 0
+        && query._cachedWorld === world
+        && query._cachedGeneration === world._generation
+    ) {
+        return results;
+    }
+
     results.length = 0;
     stores.length = 0;
+    query._cachedWorld = world;
+    query._cachedGeneration = world._generation;
 
     if (types.length === 0) return results;
 

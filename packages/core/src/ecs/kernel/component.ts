@@ -1,6 +1,8 @@
 import type { World } from './world';
 import type { Entity } from '../types';
 import type { AnyComponentType, ComponentType } from './component-type';
+import type { ComponentStore } from './store';
+import { createSparseStore } from './store';
 
 /**
  * Single erasure boundary of the ECS: `World._stores` holds heterogeneous data,
@@ -13,7 +15,7 @@ import type { AnyComponentType, ComponentType } from './component-type';
 const getStore = <T>(
     world: World,
     type: ComponentType<T>
-): Map<Entity, T> | undefined => world._stores[type.index] as Map<Entity, T> | undefined;
+): ComponentStore<T> | undefined => world._stores[type.index] as ComponentStore<T> | undefined;
 
 /**
  * Resolves the store of a component type, creating it on first use.
@@ -21,11 +23,11 @@ const getStore = <T>(
  * @param type The component handle.
  * @returns The store backing this component type.
  */
-const getOrCreateStore = <T>(world: World, type: ComponentType<T>): Map<Entity, T> => {
+const getOrCreateStore = <T>(world: World, type: ComponentType<T>): ComponentStore<T> => {
     const existing = getStore(world, type);
     if (existing) return existing;
 
-    const store = new Map<Entity, T>();
+    const store = type.createStore ? type.createStore() : createSparseStore<T>();
     world._stores[type.index] = store;
     return store;
 };
@@ -44,7 +46,10 @@ export const addComponent = <T>(
     type: ComponentType<T>,
     data: T
 ): void => {
-    getOrCreateStore(world, type).set(entityId, data);
+    const store = getOrCreateStore(world, type);
+    const existed = store.has(entityId);
+    store.set(entityId, data);
+    if (!existed) world._generation += 1;
 };
 
 /**
@@ -84,7 +89,7 @@ export const removeComponent = (
     entityId: Entity,
     type: AnyComponentType
 ): void => {
-    world._stores[type.index]?.delete(entityId);
+    if (world._stores[type.index]?.delete(entityId)) world._generation += 1;
 };
 
 /**

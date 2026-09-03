@@ -5,6 +5,7 @@ import { createWorld } from '../../ecs/kernel/world';
 import { createEntity } from '../../ecs/kernel/entity';
 import { hasComponent } from '../../ecs/kernel/component';
 import { Input } from '../../ecs/components/input';
+import { createSparseStore } from '../../ecs/kernel/store';
 
 const createMockRenderer = (): IRenderer => ({
     init: vi.fn(),
@@ -54,12 +55,14 @@ describe('Engine world loading', () => {
     it('keeps exactly one input singleton after loading a scene that carried its own', () => {
         const source = createWorld();
         const foreignInput = createEntity(source);
-        source._stores[Input.index] = new Map([[foreignInput, { keys: {}, justPressed: {}, mouse: { x: 0, y: 0, buttons: [] } }]]);
+        const inputStore = createSparseStore();
+        inputStore.set(foreignInput, { keys: {}, justPressed: {}, mouse: { x: 0, y: 0, buttons: [] } });
+        source._stores[Input.index] = inputStore;
 
         engine.loadWorld(source);
 
-        const inputStore = engine.world._stores[Input.index];
-        expect(inputStore?.size).toBe(1);
-        expect(inputStore?.has(engine.globalInputEntity)).toBe(true);
+        const liveStore = engine.world._stores[Input.index];
+        expect(liveStore?.size).toBe(1);
+        expect(liveStore?.has(engine.globalInputEntity)).toBe(true);
     });
 });

@@ -1,5 +1,6 @@
 import type { ComponentId } from '../types';
 import type { AnyComponentType, ComponentType } from './component-type';
+import type { ComponentStore } from './store';
 
 /**
  * Dense list of every registered component type, indexed by `ComponentType.index`.
@@ -19,13 +20,15 @@ const typesById = new Map<ComponentId, AnyComponentType>();
  * @param id - Stable textual identifier, also used by serialization.
  * @param create - Factory producing a fresh instance with default values.
  * @param revive - Optional rebuilder for components holding non-JSON values.
+ * @param createStore - Optional packed store factory for hot numeric components.
  * @returns The typed component handle.
  * @throws If `id` has already been registered.
  */
 export const defineComponent = <T>(
     id: ComponentId,
     create: () => T,
-    revive?: (raw: unknown) => T
+    revive?: (raw: unknown) => T,
+    createStore?: () => ComponentStore<T>
 ): ComponentType<T> => {
     if (typesById.has(id)) {
         throw new Error(`[Titane] Component "${id}" is already registered.`);
@@ -35,7 +38,8 @@ export const defineComponent = <T>(
         id,
         index: typesByIndex.length,
         create,
-        revive
+        revive,
+        createStore
     };
 
     typesByIndex.push(type);

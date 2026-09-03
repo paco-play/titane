@@ -1,4 +1,5 @@
 import type { ComponentId } from '../types';
+import type { ComponentStore } from './store';
 
 /**
  * Phantom marker carrying the component data type at compile time.
@@ -29,6 +30,11 @@ export interface ComponentType<T> {
      * Required for components holding non-JSON values (typed arrays, etc.).
      */
     readonly revive?: (raw: unknown) => T;
+    /**
+     * Optional packed store. When omitted, the kernel uses a sparse map.
+     * Hot numeric components pass a SoA factory so accessors stay unchanged.
+     */
+    readonly createStore?: () => ComponentStore<T>;
     /** @internal Compile-time only. Do not read. */
     readonly [COMPONENT_BRAND]?: T;
 }

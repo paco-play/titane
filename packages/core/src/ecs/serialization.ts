@@ -2,6 +2,7 @@ import type { World } from './kernel/world';
 import type { Entity, ComponentId } from './types';
 import { createWorld } from './kernel/world';
 import { getComponentTypeById, getComponentTypeByIndex } from './kernel/registry';
+import { createSparseStore } from './kernel/store';
 
 /** Schema version of the `.titane` scene format. */
 export const SCENE_FORMAT_VERSION = 1;
@@ -45,7 +46,12 @@ export const serializeWorld = (world: World): SerializedWorld => {
         const type = getComponentTypeByIndex(index);
         if (!type) return;
 
-        serialized.components[type.id] = Object.fromEntries(store);
+        serialized.components[type.id] = {};
+        const record = serialized.components[type.id];
+        store.forEach((_data, entityId) => {
+            const snapshot = store.snapshot(entityId);
+            if (snapshot !== undefined) record[String(entityId)] = snapshot;
+        });
     });
 
     return serialized;
@@ -87,7 +93,7 @@ export const deserializeWorld = (data: SerializedWorld): World => {
             continue;
         }
 
-        const store = new Map<Entity, unknown>();
+        const store = type.createStore ? type.createStore() : createSparseStore();
 
         for (const [entityKey, raw] of Object.entries(storeData)) {
             // JSON object keys are always strings, cast back to Entity (number)
