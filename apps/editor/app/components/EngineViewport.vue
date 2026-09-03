@@ -18,7 +18,7 @@ const AUTOSAVE_INTERVAL_MS = 60_000;
 
 const canvasReference = ref<HTMLCanvasElement | null>(null);
 const { initEngine, entities, syncWorld } = useTitane();
-const { saveToStorage, loadFromStorage } = usePersistence();
+const { saveToStorage, saveIfDirty, loadFromStorage } = usePersistence();
 const { captureBaseline } = useRuntime();
 const { onCanvasClick, onKeyDown } = useViewport();
 
@@ -57,8 +57,8 @@ onMounted(() => {
 
   captureBaseline();
 
-  // 4. Periodic auto-save, to also capture component edits
-  autoSaveInterval = window.setInterval(saveToStorage, AUTOSAVE_INTERVAL_MS);
+  // 4. Periodic auto-save for in-place component edits the Set watcher misses.
+  autoSaveInterval = window.setInterval(saveIfDirty, AUTOSAVE_INTERVAL_MS);
 
   // 5. Start simulation and listen for resize
   window.addEventListener('resize', onResize);

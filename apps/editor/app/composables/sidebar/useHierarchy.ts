@@ -1,6 +1,7 @@
 import type { Entity } from '@titane/core';
 import type { TreeItem } from '@nuxt/ui';
 import { getComponent, hasComponent, Name, Input, Transform } from '@titane/core';
+import { buildIndexedForest } from '~/utils/hierarchy-index';
 
 export interface HierarchyItem extends TreeItem {
   id: Entity;
@@ -53,42 +54,27 @@ export const useHierarchy = () => {
   };
 
   /**
-   * Recursively constructs the hierarchy tree structure.
-   * Populates the internal cache for selection lookups.
-   * @param parentId - The ID of the parent to look for (null for root entities).
-   */
-  const buildHierarchyLevels = (parentId: Entity | null = null): HierarchyItem[] => {
-    if (!engine.value) return [];
-    const world = engine.value.world;
-
-    return visibleEntities.value
-      .filter(entityId => resolveDisplayParent(entityId) === parentId)
-      .map((entityId) => {
-        const nameComponent = getComponent(world, entityId, Name);
-        const children = buildHierarchyLevels(entityId);
-
-        const node: HierarchyItem = {
-          id: entityId,
-          label: nameComponent?.value || `GameObject #${entityId}`,
-          children: children.length > 0 ? children : undefined,
-          defaultExpanded: true,
-          value: entityId.toString()
-        };
-
-        // Store in cache for the selection 'get' method
-        entityToNodeCache.set(entityId, node);
-
-        return node;
-      });
-  };
-
-  /**
    * Reactive tree structure for the UTree component.
-   * Clears the cache on each re-calculation to avoid stale references.
+   * Indexes children once, then walks the map so a deep chain is O(n).
    */
   const hierarchyItems = computed<HierarchyItem[]>(() => {
     entityToNodeCache.clear();
-    return buildHierarchyLevels(null);
+    if (!engine.value) return [];
+
+    const world = engine.value.world;
+
+    return buildIndexedForest(visibleEntities.value, resolveDisplayParent, (entityId, children) => {
+      const node: HierarchyItem = {
+        id: entityId,
+        label: getComponent(world, entityId, Name)?.value || `GameObject #${entityId}`,
+        children,
+        defaultExpanded: true,
+        value: entityId.toString()
+      };
+
+      entityToNodeCache.set(entityId, node);
+      return node;
+    });
   });
 
   /**

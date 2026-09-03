@@ -8,7 +8,7 @@ const gizmoMode = ref<GizmoMode>('translate');
  * Wires viewport picking and the transform gizmo to the shared engine state.
  */
 export const useViewport = () => {
-  const { engine, renderer, selectedEntityId, notifyInspect } = useTitane();
+  const { engine, renderer, selectedEntityId, notifyInspect, markDirty } = useTitane();
   const { isPlaying } = useRuntime();
   const { saveToStorage } = usePersistence();
 
@@ -32,6 +32,7 @@ export const useViewport = () => {
     });
 
     notifyInspect();
+    markDirty();
   };
 
   watch(renderer, (driver) => {
