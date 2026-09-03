@@ -36,6 +36,28 @@
         block
         @click="addGltf"
       />
+      <InspectorSound
+        v-if="sound"
+        :sound="sound"
+        :inspect-tick="inspectTick"
+        @update-url="setSoundUrl"
+        @update-volume="setSoundVolume"
+        @update-loop="setSoundLoop"
+        @update-positional="setSoundPositional"
+        @update-playing="setSoundPlaying"
+        @remove="removeSound"
+        @commit="saveToStorage"
+      />
+      <UButton
+        v-else
+        label="Add Sound"
+        color="neutral"
+        variant="outline"
+        size="xs"
+        icon="i-lucide-volume-2"
+        block
+        @click="addSound"
+      />
       <InspectorLight
         v-if="light"
         :light="light"
@@ -95,6 +117,16 @@ import {
 const { engine, selectedEntityId, inspectTick, notifyInspect, markDirty } = useTitane();
 const { saveToStorage } = usePersistence();
 const { gltf, addGltf, removeGltf, setGltfUrl } = useInspectorGltf();
+const {
+  sound,
+  addSound,
+  removeSound,
+  setSoundUrl,
+  setSoundVolume,
+  setSoundLoop,
+  setSoundPositional,
+  setSoundPlaying
+} = useInspectorSound();
 
 /** Transform data of the selected entity, if any. */
 const transform = computed<Transform | undefined>(() => {

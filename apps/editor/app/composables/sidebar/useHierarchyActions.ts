@@ -5,10 +5,12 @@ import {
   createLight,
   createName,
   createPrimitive,
+  createSound,
   createTransform,
   Gltf,
   Light,
   Name,
+  Sound,
   setParent,
   Transform,
   type LightKind,
@@ -86,5 +88,26 @@ export const useHierarchyActions = () => {
     syncWorld();
   };
 
-  return { addPrimitive, addLight, addGltf };
+  /**
+   * Spawns a named sound entity with a `Transform` and an empty `Sound` URL.
+   */
+  const addSound = (): void => {
+    if (!engine.value) return;
+
+    const world = engine.value.world;
+    const parentId = selectedEntityId.value;
+    const entity = createEntity(world);
+    addComponent(world, entity, Name, createName('Sound'));
+    addComponent(world, entity, Transform, createTransform(nextSpawnPosition(world, parentId)));
+    addComponent(world, entity, Sound, createSound());
+
+    if (parentId !== null) {
+      setParent(world, entity, parentId);
+    }
+
+    selectedEntityId.value = entity;
+    syncWorld();
+  };
+
+  return { addPrimitive, addLight, addGltf, addSound };
 };

@@ -4,6 +4,8 @@ import { defineQuery, runQuery, getComponent, Transform, Mesh } from '@titane/co
 import { ResourceCache } from './resource-cache';
 import { LightPool } from './light-pool';
 import { ModelPool } from './model-pool';
+import { AudioPool } from './audio-pool';
+import { createBrowserAudioPool } from './audio-browser';
 import { pointerToNdc, entityFromHits } from './picking';
 import { createOrbitControls } from './orbit';
 import { InstancePool } from './instance-pool';
@@ -44,6 +46,9 @@ export class ThreeRenderer implements IRenderer {
     private readonly gizmos = new GizmoController();
     private lights: LightPool | undefined;
     private models: ModelPool | undefined;
+    private audio: AudioPool | undefined;
+    private resumeAudio: (() => void) | undefined;
+    private disposeAudioListener: (() => void) | undefined;
 
     /**
      * Fallback lights added when no `Light` component entities exist in the world.
@@ -98,6 +103,12 @@ export class ThreeRenderer implements IRenderer {
         this.lights = new LightPool(this.scene);
         this.models = new ModelPool(this.scene);
         this.pool = new InstancePool(this.scene, this.resources);
+
+        const audio = createBrowserAudioPool(this.scene, this.camera);
+        this.audio = audio.pool;
+        this.resumeAudio = audio.resume;
+        this.disposeAudioListener = audio.disposeListener;
+        canvas.addEventListener('pointerdown', this.resumeAudio);
 
         if (!this.usesEditorChrome) return;
 
@@ -155,6 +166,7 @@ export class ThreeRenderer implements IRenderer {
         }
 
         this.models?.sync(world);
+        this.audio?.sync(world);
 
         const activeEntities = runQuery(world, renderableQuery);
         if (!this.pool) return;
@@ -238,6 +250,11 @@ export class ThreeRenderer implements IRenderer {
         this.orbit?.dispose();
         this.lights?.dispose();
         this.models?.dispose();
+        if (this.resumeAudio) {
+            this.renderer.domElement.removeEventListener('pointerdown', this.resumeAudio);
+        }
+        this.audio?.dispose();
+        this.disposeAudioListener?.();
         this.pool?.dispose();
         this.liveEntities.clear();
         this.resources.dispose();

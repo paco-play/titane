@@ -27,6 +27,7 @@ export * from './ecs/components/rigid-body';
 export * from './ecs/components/sensor';
 export * from './ecs/components/light';
 export * from './ecs/components/gltf';
+export * from './ecs/components/sound';
 
 // Built-in Systems
 export * from './ecs/systems/movement';

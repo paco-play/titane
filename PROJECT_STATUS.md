@@ -31,9 +31,15 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Lights, textures, glTF, audio** — lights and albedo are on `release`. This slice adds glTF: a `Gltf` component holds a URL, `ModelPool` loads and clones the scene graph, and `Transform.worldMatrix` poses it. Next: audio.
+**Lights, textures, glTF, audio** — lights, albedo and glTF are on `release`. This slice adds audio: a `Sound` component holds a clip URL plus volume / loop / positional / playing. `AudioPool` decodes each URL once and drives Three.js voices. The listener sits on the camera.
 
 ## Completed
+
+### Audio
+- [x] **`Sound` component.** `url`, `volume`, `loop`, `positional`, `playing`. Empty URL is silent. Pose for positional sources comes from `Transform`.
+- [x] **`AudioPool`.** One decoded buffer per URL, one voice per entity. `play()` only on the rising edge of `playing` so a one-shot is not restarted every frame.
+- [x] **Listener.** `AudioListener` on the camera. A canvas `pointerdown` resumes the AudioContext (browser gesture rule).
+- [x] **Inspector + Hierarchy.** Dumb Sound section (URL, volume, loop, positional, playing, remove). Hierarchy `+` spawns a Sound entity.
 
 ### glTF import
 - [x] **`Gltf` component.** `url` string. Empty draws nothing. Pose stays on `Transform`.
@@ -168,7 +174,6 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ### 1. Next recommended
 
-- Audio.
 - Sharing a live session between editor and demo.
 - File System Access API: native CTRL+S overwriting a file on disk.
 
