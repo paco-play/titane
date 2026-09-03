@@ -1,6 +1,7 @@
 import type { Entity } from '../types';
 import { defineComponent } from '../kernel/registry';
 import { mat4Create } from '../../utils/math';
+import { createTransformStore } from '../kernel/transform-store';
 
 /**
  * A point or direction in 3D space.
@@ -65,5 +66,6 @@ const reviveTransform = (raw: unknown): Transform => {
 export const Transform = defineComponent<Transform>(
     'transform',
     createTransform,
-    reviveTransform
+    reviveTransform,
+    createTransformStore
 );

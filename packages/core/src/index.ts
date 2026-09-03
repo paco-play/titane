@@ -3,6 +3,7 @@ export * from './ecs/types';
 export * from './ecs/kernel/component-type';
 export * from './ecs/kernel/registry';
 export * from './ecs/kernel/world';
+export * from './ecs/kernel/store';
 export * from './ecs/kernel/world-utils';
 export * from './ecs/kernel/state-manager';
 export * from './ecs/kernel/entity';

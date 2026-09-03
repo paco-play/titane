@@ -36,6 +36,14 @@ describe('entityFromHits', () => {
         expect(entityFromHits([{ object: child }], object => object === parent ? 11 : undefined)).toBe(11);
     });
 
+    it('maps an instanced slot through instanceId', () => {
+        const mesh = new Object3D();
+        expect(entityFromHits(
+            [{ object: mesh, instanceId: 2 }],
+            (_object, instanceId) => instanceId === 2 ? 15 : undefined
+        )).toBe(15);
+    });
+
     it('returns null when nothing in the hit list is mapped', () => {
         expect(entityFromHits([{ object: new Object3D() }], () => undefined)).toBeNull();
         expect(entityFromHits([], () => 1)).toBeNull();
