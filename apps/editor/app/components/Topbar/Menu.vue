@@ -21,6 +21,7 @@
 import type { DropdownMenuItem } from '@nuxt/ui';
 
 const { saveToDisk, loadFromDisk } = usePersistence();
+const { openPreview } = useLivePreview();
 
 const fileInput = ref<HTMLInputElement | null>(null);
 
@@ -53,9 +54,16 @@ const saveItem: DropdownMenuItem = {
   onSelect: () => saveToDisk('my-project.titane')
 };
 
+const previewItem: DropdownMenuItem = {
+  label: 'Preview in Demo',
+  icon: 'i-lucide-gamepad-2',
+  onSelect: () => openPreview()
+};
+
 const dropDownItems = computed<DropdownMenuItem[][]>(() => [
   [newSceneItem],
-  [openItem, saveItem]
+  [openItem, saveItem],
+  [previewItem]
 ]);
 
 /**

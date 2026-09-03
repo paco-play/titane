@@ -20,6 +20,11 @@ export default defineNuxtConfig({
       'composables/**'
     ]
   },
+  runtimeConfig: {
+    public: {
+      editorOrigin: 'http://localhost:3000'
+    }
+  },
   typescript: {
     shim: false,
     strict: true

@@ -8,6 +8,7 @@ const AUTOSAVE_KEY = 'titane_autosave_buffer';
 export const usePersistence = () => {
   const { engine, syncWorld, selectedEntityId } = useTitane();
   const { captureBaseline } = useRuntime();
+  const { publish } = useLivePreview();
 
   /**
    * Exports the current scene as a .titane file.
@@ -55,6 +56,7 @@ export const usePersistence = () => {
       const data = serializeWorld(engine.value.world);
       localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
       clearPersistenceDirty();
+      publish();
     } catch (error) {
       console.error('[Titane] Failed to auto-save to local storage.', error);
     }

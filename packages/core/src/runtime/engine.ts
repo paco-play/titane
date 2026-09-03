@@ -6,7 +6,7 @@ import type { System } from '../ecs/pipeline/system';
 import { createWorld } from '../ecs/kernel/world';
 import { Clock } from '../utils/clock';
 import { FixedStep } from '../utils/fixed-step';
-import { createScheduler, registerSystem } from '../ecs/pipeline/scheduler';
+import { createScheduler, registerSystem, unregisterSystem } from '../ecs/pipeline/scheduler';
 import { Phase } from '../ecs/pipeline/system';
 import { createEntity } from '../ecs/kernel/entity';
 import { Input } from '../ecs/components/input';
@@ -81,6 +81,16 @@ export class TitaneEngine {
      */
     public addSystem(phase: Phase, system: System): void {
         registerSystem(this.scheduler, phase, system);
+    }
+
+    /**
+     * Removes a system previously registered with {@link addSystem}.
+     * @param phase - The phase the system was registered into.
+     * @param system - The exact function reference to remove.
+     * @returns True when the system was found.
+     */
+    public removeSystem(phase: Phase, system: System): boolean {
+        return unregisterSystem(this.scheduler, phase, system);
     }
 
     /**

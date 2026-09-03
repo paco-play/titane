@@ -7,6 +7,7 @@
     />
     <GameHud
       :status="status"
+      :live="live"
       @restart="restart"
     />
   </div>
@@ -14,7 +15,7 @@
 
 <script setup lang="ts">
 const canvasReference = ref<HTMLCanvasElement | null>(null);
-const { status, boot, restart, dispose, onResize } = useGame();
+const { status, live, boot, restart, dispose, onResize } = useGame();
 
 onMounted(async () => {
   if (!canvasReference.value) return;

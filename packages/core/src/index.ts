@@ -44,6 +44,7 @@ export * from './ecs/serialization';
 // Runtime Orchestrator
 export * from './runtime/engine';
 export * from './runtime/renderer-interface';
+export * from './runtime/live-preview';
 
 // Utils
 export * from './utils/clock';
