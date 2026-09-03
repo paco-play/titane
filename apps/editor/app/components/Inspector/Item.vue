@@ -10,7 +10,10 @@
     />
 
     <template #content>
-      <div class="space-y-2 py-2">
+      <div
+        class="space-y-2 py-2"
+        :data-tick="inspectTick"
+      >
         <div
           v-for="field in fields"
           :key="field.key"
@@ -46,6 +49,8 @@ import type { Axis, TransformField } from '~/types/inspector';
 
 defineProps<{
   transform: Transform;
+  /** Bumped when an in-place ECS edit should refresh the fields. */
+  inspectTick: number;
 }>();
 
 const emit = defineEmits<{

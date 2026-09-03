@@ -13,7 +13,10 @@
       <div class="space-y-2 py-2">
         <div class="space-y-2">
           <UiFormLabel label="Primitive" />
-          <div class="flex items-center">
+          <div
+            class="flex items-center"
+            :data-tick="inspectTick"
+          >
             <UButton
               v-for="option in PRIMITIVE_OPTIONS"
               :key="option.value"
@@ -69,6 +72,8 @@ import { PRIMITIVE_OPTIONS } from '~/types/mesh';
 
 defineProps<{
   mesh: MeshData;
+  /** Bumped when an in-place ECS edit should refresh the highlight. */
+  inspectTick: number;
 }>();
 
 const emit = defineEmits<{

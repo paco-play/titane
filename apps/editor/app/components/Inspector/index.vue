@@ -5,12 +5,14 @@
       <USeparator />
       <InspectorItem
         :transform="transform"
+        :inspect-tick="inspectTick"
         @update="setAxis"
         @commit="saveToStorage"
       />
       <InspectorMesh
         v-if="mesh"
         :mesh="mesh"
+        :inspect-tick="inspectTick"
         @update-primitive="setPrimitive"
         @update-color="setColor"
         @commit="saveToStorage"
