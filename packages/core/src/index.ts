@@ -25,6 +25,7 @@ export * from './ecs/components/input';
 export * from './ecs/components/player-controlled';
 export * from './ecs/components/rigid-body';
 export * from './ecs/components/sensor';
+export * from './ecs/components/light';
 
 // Built-in Systems
 export * from './ecs/systems/movement';

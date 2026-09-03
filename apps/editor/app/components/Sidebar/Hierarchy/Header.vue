@@ -27,16 +27,22 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { PRIMITIVE_OPTIONS } from '~/types/mesh';
+import { LIGHT_KIND_OPTIONS } from '~/types/light';
 
 const { selectedEntityId } = useTitane();
 const { count } = useHierarchy();
-const { addPrimitive } = useHierarchyActions();
+const { addPrimitive, addLight } = useHierarchyActions();
 
 const createItems: DropdownMenuItem[][] = [
   PRIMITIVE_OPTIONS.map(option => ({
     label: option.label,
     icon: option.icon,
     onSelect: () => addPrimitive(option.value)
-  }))
+  })),
+  LIGHT_KIND_OPTIONS.map(option => ({
+    label: option.label,
+    icon: option.icon,
+    onSelect: () => addLight(option.value)
+  })),
 ];
 </script>

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { IRenderer, World, Entity } from '@titane/core';
 import { defineQuery, runQuery, getComponent, Transform, Mesh } from '@titane/core';
 import { ResourceCache } from './resource-cache';
+import { LightPool } from './light-pool';
 import { pointerToNdc, entityFromHits } from './picking';
 import { createOrbitControls } from './orbit';
 import { InstancePool } from './instance-pool';
@@ -40,6 +41,13 @@ export class ThreeRenderer implements IRenderer {
     private readonly resources = new ResourceCache();
     private readonly liveEntities = new Set<Entity>();
     private readonly gizmos = new GizmoController();
+    private lights: LightPool | undefined;
+
+    /**
+     * Fallback lights added when no `Light` component entities exist in the world.
+     * Kept as an array so we can add/remove them as a group in one call.
+     */
+    private readonly fallbackLights: THREE.Light[] = [];
 
     /**
      * @param options - `mode` defaults to `editor` so `new ThreeRenderer()` stays the viewport.
@@ -78,11 +86,14 @@ export class ThreeRenderer implements IRenderer {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(5, 10, 7.5);
-        this.scene.add(light);
-        this.scene.add(new THREE.AmbientLight(0x404040, 0.8));
+        // Fallback lights are shown only when no Light entities exist in the world.
+        const fallbackDir = new THREE.DirectionalLight(0xffffff, 1);
+        fallbackDir.position.set(5, 10, 7.5);
+        const fallbackAmb = new THREE.AmbientLight(0x404040, 0.8);
+        this.fallbackLights.push(fallbackDir, fallbackAmb);
+        this.scene.add(fallbackDir, fallbackAmb);
 
+        this.lights = new LightPool(this.scene);
         this.pool = new InstancePool(this.scene, this.resources);
 
         if (!this.usesEditorChrome) return;
@@ -132,6 +143,14 @@ export class ThreeRenderer implements IRenderer {
 
     public render(world: World): void {
         this.gizmos.bindWorld(world);
+
+        // Sync ECS-driven lights. Toggle fallbacks based on whether any exist.
+        if (this.lights) {
+            this.lights.sync(world);
+            const useFallback = this.lights.isEmpty;
+            for (const l of this.fallbackLights) l.visible = useFallback;
+        }
+
         const activeEntities = runQuery(world, renderableQuery);
         if (!this.pool) return;
 
@@ -200,6 +219,7 @@ export class ThreeRenderer implements IRenderer {
     public dispose(): void {
         this.gizmos.dispose();
         this.orbit?.dispose();
+        this.lights?.dispose();
         this.pool?.dispose();
         this.liveEntities.clear();
         this.resources.dispose();

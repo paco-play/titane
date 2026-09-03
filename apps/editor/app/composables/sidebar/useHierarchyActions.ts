@@ -1,4 +1,17 @@
-import { createPrimitive, setParent, type PrimitiveType } from '@titane/core';
+import {
+  addComponent,
+  createEntity,
+  createLight,
+  createName,
+  createPrimitive,
+  createTransform,
+  Light,
+  Name,
+  setParent,
+  Transform,
+  type LightKind,
+  type PrimitiveType,
+} from '@titane/core';
 import { useTitane } from '../useTitane';
 import { nextSpawnPosition } from '~/utils/spawn-position';
 
@@ -32,5 +45,22 @@ export const useHierarchyActions = () => {
     syncWorld();
   };
 
-  return { addPrimitive };
+  /**
+   * Spawns a named light entity with a `Transform` and a `Light` component.
+   * @param kind - The type of light to create.
+   */
+  const addLight = (kind: LightKind): void => {
+    if (!engine.value) return;
+
+    const world = engine.value.world;
+    const entity = createEntity(world);
+    addComponent(world, entity, Name, createName(kind.charAt(0).toUpperCase() + kind.slice(1) + ' Light'));
+    addComponent(world, entity, Transform, createTransform({ x: 5, y: 10, z: 7.5 }));
+    addComponent(world, entity, Light, createLight(kind));
+
+    selectedEntityId.value = entity;
+    syncWorld();
+  };
+
+  return { addPrimitive, addLight };
 };

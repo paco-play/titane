@@ -17,6 +17,27 @@
         @update-color="setColor"
         @commit="saveToStorage"
       />
+      <InspectorLight
+        v-if="light"
+        :light="light"
+        :inspect-tick="inspectTick"
+        @update-kind="setLightKind"
+        @update-color="setLightColor"
+        @update-intensity="setLightIntensity"
+        @update-distance="setLightDistance"
+        @remove="removeLight"
+        @commit="saveToStorage"
+      />
+      <UButton
+        v-else
+        label="Add Light"
+        color="neutral"
+        variant="outline"
+        size="xs"
+        icon="i-lucide-sun"
+        block
+        @click="addLight"
+      />
       <InspectorRigidBody
         :kind="rigidKind"
         :inspect-tick="inspectTick"
@@ -35,19 +56,21 @@
 
 <script setup lang="ts">
 import type { Axis, TransformField } from '~/types/inspector';
-import type { MeshData, PrimitiveType, RigidBodyKind } from '@titane/core';
+import type { MeshData, PrimitiveType, RigidBodyKind, LightData, LightKind } from '@titane/core';
 import {
-  getComponent,
-  updateComponent,
   addComponent,
-  removeComponent,
-  hasComponent,
-  Transform,
-  Mesh,
-  RigidBody,
+  createLight,
+  createPlayerControlled,
   createRigidBody,
+  getComponent,
+  hasComponent,
+  Light,
+  Mesh,
   PlayerControlled,
-  createPlayerControlled
+  removeComponent,
+  RigidBody,
+  Transform,
+  updateComponent,
 } from '@titane/core';
 
 const { engine, selectedEntityId, inspectTick, notifyInspect, markDirty } = useTitane();
@@ -65,6 +88,13 @@ const mesh = computed<MeshData | undefined>(() => {
   void inspectTick.value;
   if (selectedEntityId.value === null || !engine.value) return undefined;
   return getComponent(engine.value.world, selectedEntityId.value, Mesh);
+});
+
+/** Light data of the selected entity, or undefined when absent. */
+const light = computed<LightData | undefined>(() => {
+  void inspectTick.value;
+  if (selectedEntityId.value === null || !engine.value) return undefined;
+  return getComponent(engine.value.world, selectedEntityId.value, Light);
 });
 
 /** RigidBody kind of the selection, or null when the component is absent. */
@@ -144,6 +174,56 @@ const setRigidKind = (kind: RigidBodyKind): void => {
   notifyInspect();
   markDirty();
   saveToStorage();
+};
+
+const addLight = (): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+  addComponent(engine.value.world, selectedEntityId.value, Light, createLight());
+  notifyInspect();
+  markDirty();
+  saveToStorage();
+};
+
+const removeLight = (): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+  removeComponent(engine.value.world, selectedEntityId.value, Light);
+  notifyInspect();
+  markDirty();
+  saveToStorage();
+};
+
+const setLightKind = (kind: LightKind): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
+    data.kind = kind;
+  });
+  notifyInspect();
+  markDirty();
+};
+
+const setLightColor = (color: string): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
+    data.color = color;
+  });
+  notifyInspect();
+  markDirty();
+};
+
+const setLightIntensity = (intensity: number): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
+    data.intensity = intensity;
+  });
+  markDirty();
+};
+
+const setLightDistance = (distance: number): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
+    data.distance = distance;
+  });
+  markDirty();
 };
 
 const setPlayerControlled = (controlled: boolean): void => {
