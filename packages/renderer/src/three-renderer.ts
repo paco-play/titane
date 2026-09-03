@@ -40,6 +40,8 @@ export class ThreeRenderer implements IRenderer {
     private gizmoConsumedPick = false;
     private gizmoEntity: Entity | null = null;
     private gizmoAllowed = true;
+    /** True between TransformControls `dragging-changed` start and end. */
+    private gizmoDragging = false;
 
     private readonly resources = new ResourceCache();
     private readonly renderedEntities = new Map<Entity, RenderedEntity>();
@@ -77,11 +79,8 @@ export class ThreeRenderer implements IRenderer {
             this.gizmoConsumedPick = true;
         });
         this.gizmo.controls.addEventListener('dragging-changed', (event) => {
-            const dragging = event.value === true;
-            if (this.orbit) this.orbit.enabled = !dragging;
-
-            const object = this.gizmo?.controls.object;
-            if (object) object.matrixAutoUpdate = dragging;
+            this.gizmoDragging = event.value === true;
+            if (this.orbit) this.orbit.enabled = !this.gizmoDragging;
         });
         this.gizmo.controls.addEventListener('objectChange', () => this.commitGizmo());
     }
@@ -110,7 +109,6 @@ export class ThreeRenderer implements IRenderer {
     public render(world: World): void {
         this.world = world;
         const activeEntities = runQuery(world, renderableQuery);
-        const dragging = this.gizmo?.controls.dragging === true;
         const attached = this.gizmo?.controls.object;
 
         this.liveEntities.clear();
@@ -142,8 +140,14 @@ export class ThreeRenderer implements IRenderer {
                 rendered.color = meshData.color;
             }
 
-            // While the gizmo owns this object, overwriting the matrix would snap it back.
-            if (dragging && rendered.object === attached) continue;
+            // TransformControls writes position/quaternion/scale. Meshes keep
+            // matrixAutoUpdate false so the ECS remains the source of truth,
+            // which means we must compose the matrix ourselves during a drag
+            // or the handles move and the object stays put.
+            if (this.gizmoDragging && rendered.object === attached) {
+                rendered.object.updateMatrix();
+                continue;
+            }
 
             rendered.object.matrix.fromArray(transform.worldMatrix);
             rendered.object.matrix.decompose(
@@ -309,12 +313,13 @@ export class ThreeRenderer implements IRenderer {
         if (typeof entityId !== 'number') return;
 
         object.updateMatrix();
+        object.updateMatrixWorld();
 
         const transform = getComponent(world, entityId, Transform);
         const parentWorld = transform?.parent !== undefined && transform.parent !== null
             ? getComponent(world, transform.parent, Transform)?.worldMatrix ?? null
             : null;
 
-        this.onGizmoTransform(entityId, worldMatrixToLocalTrs(object.matrix, parentWorld));
+        this.onGizmoTransform(entityId, worldMatrixToLocalTrs(object.matrixWorld, parentWorld));
     }
 }

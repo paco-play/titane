@@ -22,7 +22,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ## Quality Gates
 | Command | Checks |
 | --- | --- |
-| `npm test` | 72 tests: 53 on the core, 19 on the renderer (Vitest) |
+| `npm test` | 74 tests: 53 on the core, 21 on the renderer (Vitest) |
 | `npm run build` | `tsc -b` on the core, then the renderer |
 | `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor |
 | `npm run lint` | ESLint on the editor |

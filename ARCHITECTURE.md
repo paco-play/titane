@@ -226,7 +226,10 @@ reference to the driver it constructed.
 The gizmo helper is not an ECS entity. Picking raycasts only mapped meshes, so handles never
 resolve as a hit. A click that starts on a handle is consumed and does not change the selection.
 
-A gizmo drag is world-space. `worldMatrixToLocalTrs` inverts the parent world matrix when there is
+A gizmo drag is world-space. TransformControls writes `position` / `quaternion` / `scale`, but
+editor meshes keep `matrixAutoUpdate = false` (the ECS owns the pose). During a drag the renderer
+composes `object.matrix` from those fields instead of copying `worldMatrix`, otherwise the handles
+move and the mesh stays put. `worldMatrixToLocalTrs` inverts the parent world matrix when there is
 one, then decomposes with Euler XYZ so the result round-trips through `mat4FromTRS`. The Inspector
 refreshes through `inspectTick`, because the Transform object identity does not change.
 
