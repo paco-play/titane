@@ -9,37 +9,34 @@
         color="neutral"
       />
     </div>
-    <UButton
-      icon="i-lucide-plus"
-      variant="ghost"
-      color="neutral"
+    <UDropdownMenu
+      :items="createItems"
       size="xs"
-      :title="selectedEntityId === null ? 'Add box' : 'Add box as child of selection'"
-      @click="createBox"
-    />
+    >
+      <UButton
+        icon="i-lucide-plus"
+        variant="ghost"
+        color="neutral"
+        size="xs"
+        :title="selectedEntityId === null ? 'Add primitive' : 'Add as child of selection'"
+      />
+    </UDropdownMenu>
   </div>
 </template>
 
 <script setup lang="ts">
-import { createPrimitive, setParent } from '@titane/core';
+import type { DropdownMenuItem } from '@nuxt/ui';
+import { PRIMITIVE_OPTIONS } from '~/types/mesh';
 
-const { engine, syncWorld, selectedEntityId } = useTitane();
+const { selectedEntityId } = useTitane();
 const { count } = useHierarchy();
+const { addPrimitive } = useHierarchyActions();
 
-/**
- * Creates a box entity, parented under the current selection when there is one,
- * then synchronizes the world state.
- */
-const createBox = (): void => {
-  if (!engine.value) return;
-
-  const entity = createPrimitive(engine.value.world, { primitive: 'box' });
-
-  if (selectedEntityId.value !== null) {
-    setParent(engine.value.world, entity, selectedEntityId.value);
-  }
-
-  selectedEntityId.value = entity;
-  syncWorld();
-};
+const createItems: DropdownMenuItem[][] = [
+  PRIMITIVE_OPTIONS.map(option => ({
+    label: option.label,
+    icon: option.icon,
+    onSelect: () => addPrimitive(option.value)
+  }))
+];
 </script>

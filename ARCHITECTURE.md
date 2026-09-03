@@ -203,9 +203,11 @@ The `Renderer` is a driver behind the `IRenderer` interface, invoked in the REND
 ### Resource pooling
 A geometry is fully determined by its primitive type, and a material by its color, so `ResourceCache`
 keeps one instance of each and hands it to every entity asking for it. An entity therefore costs a
-single `Object3D` rather than its own geometry and material pair, and disposal happens once, when the
-renderer shuts down, instead of per entity removal. This is also the groundwork for instancing:
-entities already share the exact objects a draw call would need to batch.
+single `Object3D` rather than its own geometry and material pair. Geometries live for the renderer
+lifetime (there are three primitive types). Materials are refcounted: the last entity to drop a
+color disposes it, so a color picker dragged through thousands of values cannot grow the pool
+without bound. Remaining resources are released when the renderer shuts down. This is also the
+groundwork for instancing: entities already share the exact objects a draw call would need to batch.
 
 ### Viewport helpers (not on `IRenderer`)
 Orbit, picking and gizmos live on `ThreeRenderer` the same way `setGridVisible` does: the engine

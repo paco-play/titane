@@ -118,8 +118,7 @@ export class ThreeRenderer implements IRenderer {
 
         for (const [entityId, rendered] of this.renderedEntities) {
             if (this.liveEntities.has(entityId)) continue;
-            this.scene.remove(rendered.object);
-            this.renderedEntities.delete(entityId);
+            this.unspawn(entityId, rendered);
         }
 
         for (const entityId of activeEntities) {
@@ -135,7 +134,11 @@ export class ThreeRenderer implements IRenderer {
             }
 
             if (rendered.color !== meshData.color) {
-                rendered.object.material = this.resources.material(meshData.color);
+                // Attach the new material before dropping the old one, so the
+                // mesh never holds a disposed GPU resource.
+                const next = this.resources.material(meshData.color);
+                rendered.object.material = next;
+                this.resources.releaseMaterial(rendered.color);
                 rendered.color = meshData.color;
             }
 
@@ -229,11 +232,10 @@ export class ThreeRenderer implements IRenderer {
         this.gizmo?.dispose();
         this.orbit?.dispose();
 
-        for (const rendered of this.renderedEntities.values()) {
-            this.scene.remove(rendered.object);
+        for (const [entityId, rendered] of [...this.renderedEntities]) {
+            this.unspawn(entityId, rendered);
         }
 
-        this.renderedEntities.clear();
         this.liveEntities.clear();
         this.resources.dispose();
         this.renderer.dispose();
@@ -257,6 +259,15 @@ export class ThreeRenderer implements IRenderer {
 
         this.renderedEntities.set(entityId, rendered);
         return rendered;
+    }
+
+    /**
+     * Removes an entity's object from the scene and drops its material retainer.
+     */
+    private unspawn(entityId: Entity, rendered: RenderedEntity): void {
+        this.scene.remove(rendered.object);
+        this.resources.releaseMaterial(rendered.color);
+        this.renderedEntities.delete(entityId);
     }
 
     /**

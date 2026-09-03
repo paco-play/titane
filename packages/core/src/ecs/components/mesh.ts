@@ -1,9 +1,15 @@
 import { defineComponent } from '../kernel/registry';
 
 /**
+ * Primitive shapes the engine can spawn. The union is derived from this list
+ * so the editor and the renderer cannot drift from each other.
+ */
+export const PRIMITIVE_TYPES = ['box', 'sphere', 'plane'] as const;
+
+/**
  * Types of primitive shapes supported by the engine.
  */
-export type PrimitiveType = 'box' | 'sphere' | 'plane';
+export type PrimitiveType = (typeof PRIMITIVE_TYPES)[number];
 
 /**
  * Data structure representing a 3D mesh.
