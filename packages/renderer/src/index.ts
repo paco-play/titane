@@ -1,4 +1,5 @@
 export * from './three-renderer';
+export * from './renderer-mode';
 export * from './resource-cache';
 export * from './instance-pool';
 export * from './picking';
