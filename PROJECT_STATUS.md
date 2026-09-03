@@ -31,7 +31,9 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Game demo** — Nuxt Drop loop on the public API. Simulation is done.
+**Author → Play** — the game demo is done. Next is making a physics scene you can edit, save, and run.
+
+The Drop demo proved the engine boots outside the editor. It also showed the pipeline is still split: the editor cannot author `RigidBody`, `createPrimitive` has no scale, and the demo hard-codes its world instead of loading a `.titane`. Until those close, Titane is an editor plus a sample, not an authoring loop.
 
 ## Completed
 
@@ -127,9 +129,26 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-### 1. After playing the demo
-Judge the public API from `apps/demo`. Follow-up work should come from what felt awkward (camera ownership, `initPhysics`, player vs RigidBody split) rather than from a pre-built engine wishlist.
+Ordered by what writing `apps/demo` already made painful. Play the demo if you want to reorder this; do not invent glTF, audio, or a character controller first.
 
-### 2. Deprioritized
+### 1. Author → Play loop (recommended next)
+
+Goal: build the Drop scene in the editor, save it, run it in the demo.
+
+1. **`createPrimitive` scale (and rotation).** [`PrimitiveOptions`](packages/core/src/ecs/kernel/factory.ts) only has `name`, `primitive`, `color`, `position`. The demo had to mutate `Transform.scale` by hand ([`apps/demo/app/game/apply-scale.ts`](apps/demo/app/game/apply-scale.ts)). Add `scale` / `rotation` on the factory; delete the helper.
+2. **Physics readiness on the engine.** `TitaneEngine` already calls `void initPhysics()`, but every host still `await initPhysics()` before play or the first steps are no-ops. Expose `engine.ready` (or make `start()` wait) so a game has one boot seam.
+3. **`RigidBody` in the Inspector.** Add / remove, kind `dynamic` | `fixed`. Same dumb-section pattern as Mesh. Without this the editor cannot author the demo scene.
+4. **Demo loads a `.titane`.** Keep the code seed as a fallback. Add a committed scene (editor export into `apps/demo/public/`) and `engine.loadWorld(deserializeWorld(...))` on boot. That is the real serialization + Rapier-rebuild check, and the API you will actually feel.
+
+Do not put a Camera component in core yet. `ThreeRenderer.setCamera` plus a demo follow system is enough until playing it feels wrong.
+
+### 2. After the loop exists (not now)
+
+- Jump / grounded raycast / lock rotations (sphere rolls; a box would tumble).
+- Contact events or triggers (lose is still `Transform.y < threshold`).
+- Lights, textures, glTF, audio.
+- Sharing live sessions between editor and demo.
+
+### 3. Deprioritized
 1. **File System Access API**: native `CTRL+S` overwriting a file on disk without re-downloading.
 2. **Asset metadata**: structure for tracking external dependencies (textures, glTF models).

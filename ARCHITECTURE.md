@@ -17,6 +17,7 @@ It follows a strict **Entity-Component-System (ECS)** pattern to ensure maximum 
 - `packages/core`: the engine. ECS kernel, execution pipeline, standard components, built-in systems, scene serialization and runtime orchestrator. Depends on no graphics library.
 - `packages/renderer`: the Three.js driver implementing `IRenderer`. The only package that imports `three`.
 - `apps/editor`: Nuxt 4 application. Visualizes the ECS World and allows real-time data editing.
+- `apps/demo`: Nuxt 4 game that boots the engine with no editor chrome.
 
 The dependency arrow points one way only: the renderer depends on the core, never the reverse.
 Swapping to WebGPU, a headless driver or a canvas 2D debug view means adding a package next to
@@ -166,6 +167,9 @@ matrices, and **rendering still runs**, so the viewport stays responsive.
 | Destroy an entity and its subtree | `destroyEntity(world, entity)` |
 | Duplicate an entity and its subtree | `cloneEntity(world, entity)` |
 | Spawn a renderable | `createPrimitive(world, { name, primitive, color, position })` |
+| Physics body | `addComponent(world, entity, RigidBody, createRigidBody('dynamic' or 'fixed'))` |
+| Await Rapier WASM | `await initPhysics()` |
+| Game camera (Three.js driver) | `new ThreeRenderer({ mode: 'game' })` then `renderer.setCamera({ position, lookAt })` |
 | Add data | `addComponent(world, entity, Type, data)` |
 | Read data | `getComponent(world, entity, Type)` |
 | Test presence | `hasComponent(world, entity, Type)` |
