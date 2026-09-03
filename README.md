@@ -69,8 +69,9 @@ for the wrong component is a compile error rather than a silent `undefined` at r
 | **3. Elite Editor** | Visual Tooling | Hierarchy, dynamic Inspector, live sync. | Done |
 | **4. Renderer Split** | Decoupling | Extract `packages/renderer`, primitive support, resource pooling. | Done |
 | **5. Interaction** | Viewport | Raycast selection, orbit camera, transform gizmos. | Done |
-| **6. Simulation** | Physics | Rapier (WASM) in the PHYSICS phase, fixed timestep. | Planned |
-| **7. Scale** | Storage | Archetype / SoA buffers, cached queries, instancing. | Planned |
+| **6. Simulation** | Physics | Rapier (WASM) in the PHYSICS phase, fixed timestep. | Done |
+| **7. Scale** | Storage | Archetype / SoA buffers, cached queries, instancing. | Done |
+| **8. Game demo** | Public API | Nuxt Drop loop: game-mode renderer, Rapier player, snapshot restart. | Done |
 
 See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the detailed task breakdown.
 
@@ -81,6 +82,7 @@ See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the detailed task breakdown.
 - `packages/core` — the engine: ECS kernel, execution pipeline, standard components, built-in systems, scene serialization, runtime orchestrator. Imports no graphics library.
 - `packages/renderer` — the Three.js driver implementing `IRenderer`. The only package that imports `three`.
 - `apps/editor` — the Nuxt 4 editor UI.
+- `apps/demo` — a Nuxt 4 game that uses the engine without editor chrome.
 
 For an in-depth look at the internal data flow, ECS definitions and the engine loop, read the [Architecture Specification](ARCHITECTURE.md).
 
@@ -108,6 +110,9 @@ in the engine.
 # Run the editor with HMR
 npm run editor:dev
 
+# Run the Drop demo (no editor chrome) on http://localhost:3001
+npm run demo:dev
+
 # Compile the engine packages in watch mode
 npm run core:dev
 npm run renderer:dev
@@ -115,12 +120,12 @@ npm run renderer:dev
 # Quality gates
 npm test          # Vitest suites on the core and the renderer
 npm run build     # tsc on the core, then the renderer
-npm run typecheck # tsc on core and renderer, vue-tsc on the editor
-npm run lint      # ESLint on the editor
+npm run typecheck # tsc on core and renderer, vue-tsc on the editor and the demo
+npm run lint      # ESLint on the editor and the demo
 ```
 
-The editor consumes the packages' build output, so run `npm run build` once beforehand, or keep
-`npm run core:dev` and `npm run renderer:dev` running alongside `npm run editor:dev`.
+The editor and the demo consume the packages' build output, so run `npm run build` once beforehand, or keep
+`npm run core:dev` and `npm run renderer:dev` running alongside `npm run editor:dev` / `npm run demo:dev`.
 
 ## Framework Agnostic
 
@@ -136,4 +141,4 @@ powers your 3D world.
 - **Renderer**: Driver-based, in its own package (Default: Three.js)
 - **Editor**: Nuxt 4 + Nuxt UI
 - **Tests**: Vitest
-- **Physics**: Rapier (WASM) — declared, not yet integrated
+- **Physics**: Rapier (WASM) via `@dimforge/rapier3d-compat`

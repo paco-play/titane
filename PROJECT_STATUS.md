@@ -10,6 +10,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 - `packages/core`: the engine (ECS kernel, pipeline, components, systems, serialization, runtime). No graphics dependency.
 - `packages/renderer`: the Three.js driver. The only package importing `three`.
 - `apps/editor`: the Nuxt 4 editor UI.
+- `apps/demo`: a Nuxt 4 game that boots the engine with no editor chrome.
 
 ## Architecture Rules
 1. **Entities** are just `number` IDs.
@@ -22,17 +23,22 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ## Quality Gates
 | Command | Checks |
 | --- | --- |
-| `npm test` | 107 tests: 73 on the core, 26 on the renderer, 8 on the editor (Vitest) |
+| `npm test` | Vitest on the core, the renderer, and the editor |
 | `npm run build` | `tsc -b` on the core, then the renderer |
-| `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor |
-| `npm run lint` | ESLint on the editor |
+| `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor and the demo |
+| `npm run lint` | ESLint on the editor and the demo |
 
 ---
 
 ## Current Milestone
-**Simulation** — done. Next up: deprioritized editor polish.
+**Game demo** — Nuxt Drop loop on the public API. Simulation is done.
 
 ## Completed
+
+### Game demo
+- [x] **Renderer game mode.** `new ThreeRenderer({ mode: 'game' })` skips orbit, gizmos and the grid. `setCamera({ position, lookAt })` aims the perspective camera. Default remains `editor`, so the existing viewport is unchanged.
+- [x] **Physics-aware player.** Opt-in `createPhysicsPlayerControlSystem()` writes Rapier `linvel.x/z` from WASD and leaves `linvel.y` to gravity. The kinematic `createPlayerControlSystem()` is unchanged.
+- [x] **`apps/demo`.** A Nuxt 4 Drop loop: fixed slab, dynamic player sphere, a few crates, follow camera, fall-off lose, snapshot restart. No Hierarchy / Inspector.
 
 ### Simulation
 - [x] **Rapier in the PHYSICS phase.** `@dimforge/rapier3d-compat` (inlined WASM) drives entities with a `RigidBody` (`dynamic` or `fixed`). Collider shape comes from `Mesh.primitive` and `Transform.scale`. The demo cube keeps `Velocity` only, so it still slides and does not fall. Bodies with `Velocity` and no `RigidBody` still use the kinematic integrator.
@@ -121,6 +127,9 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-### 1. Deprioritized
+### 1. After playing the demo
+Judge the public API from `apps/demo`. Follow-up work should come from what felt awkward (camera ownership, `initPhysics`, player vs RigidBody split) rather than from a pre-built engine wishlist.
+
+### 2. Deprioritized
 1. **File System Access API**: native `CTRL+S` overwriting a file on disk without re-downloading.
 2. **Asset metadata**: structure for tracking external dependencies (textures, glTF models).
