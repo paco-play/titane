@@ -3,6 +3,7 @@ import type { IRenderer, World, Entity } from '@titane/core';
 import { defineQuery, runQuery, getComponent, Transform, Mesh } from '@titane/core';
 import { ResourceCache } from './resource-cache';
 import { LightPool } from './light-pool';
+import { ModelPool } from './model-pool';
 import { pointerToNdc, entityFromHits } from './picking';
 import { createOrbitControls } from './orbit';
 import { InstancePool } from './instance-pool';
@@ -42,6 +43,7 @@ export class ThreeRenderer implements IRenderer {
     private readonly liveEntities = new Set<Entity>();
     private readonly gizmos = new GizmoController();
     private lights: LightPool | undefined;
+    private models: ModelPool | undefined;
 
     /**
      * Fallback lights added when no `Light` component entities exist in the world.
@@ -94,6 +96,7 @@ export class ThreeRenderer implements IRenderer {
         this.scene.add(fallbackDir, fallbackAmb);
 
         this.lights = new LightPool(this.scene);
+        this.models = new ModelPool(this.scene);
         this.pool = new InstancePool(this.scene, this.resources);
 
         if (!this.usesEditorChrome) return;
@@ -151,6 +154,8 @@ export class ThreeRenderer implements IRenderer {
             for (const l of this.fallbackLights) l.visible = useFallback;
         }
 
+        this.models?.sync(world);
+
         const activeEntities = runQuery(world, renderableQuery);
         if (!this.pool) return;
 
@@ -177,10 +182,11 @@ export class ThreeRenderer implements IRenderer {
                 matrix,
                 meshData.albedo ?? ''
             );
+        }
 
-            if (entityId === this.gizmos.entity && !this.gizmos.dragging) {
-                this.gizmos.syncProxy(transform.worldMatrix);
-            }
+        if (this.gizmos.entity !== null && !this.gizmos.dragging) {
+            const selected = getComponent(world, this.gizmos.entity, Transform);
+            if (selected) this.gizmos.syncProxy(selected.worldMatrix);
         }
 
         this.gizmos.apply();
@@ -197,8 +203,13 @@ export class ThreeRenderer implements IRenderer {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), this.camera);
 
-        return entityFromHits(raycaster.intersectObjects(this.pool.pickables(), false), (object, instanceId) =>
-            this.pool?.entityOf(object, instanceId)
+        const targets = [
+            ...this.pool.pickables(),
+            ...(this.models?.pickables() ?? [])
+        ];
+
+        return entityFromHits(raycaster.intersectObjects(targets, true), (object, instanceId) =>
+            this.pool?.entityOf(object, instanceId) ?? this.models?.entityOf(object)
         );
     }
 
@@ -226,6 +237,7 @@ export class ThreeRenderer implements IRenderer {
         this.gizmos.dispose();
         this.orbit?.dispose();
         this.lights?.dispose();
+        this.models?.dispose();
         this.pool?.dispose();
         this.liveEntities.clear();
         this.resources.dispose();

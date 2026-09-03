@@ -18,6 +18,24 @@
         @update-albedo="setAlbedo"
         @commit="saveToStorage"
       />
+      <InspectorGltf
+        v-if="gltf"
+        :gltf="gltf"
+        :inspect-tick="inspectTick"
+        @update-url="setGltfUrl"
+        @remove="removeGltf"
+        @commit="saveToStorage"
+      />
+      <UButton
+        v-else
+        label="Add glTF"
+        color="neutral"
+        variant="outline"
+        size="xs"
+        icon="i-lucide-box"
+        block
+        @click="addGltf"
+      />
       <InspectorLight
         v-if="light"
         :light="light"
@@ -76,6 +94,7 @@ import {
 
 const { engine, selectedEntityId, inspectTick, notifyInspect, markDirty } = useTitane();
 const { saveToStorage } = usePersistence();
+const { gltf, addGltf, removeGltf, setGltfUrl } = useInspectorGltf();
 
 /** Transform data of the selected entity, if any. */
 const transform = computed<Transform | undefined>(() => {

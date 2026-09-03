@@ -1,10 +1,12 @@
 import {
   addComponent,
   createEntity,
+  createGltf,
   createLight,
   createName,
   createPrimitive,
   createTransform,
+  Gltf,
   Light,
   Name,
   setParent,
@@ -62,5 +64,27 @@ export const useHierarchyActions = () => {
     syncWorld();
   };
 
-  return { addPrimitive, addLight };
+  /**
+   * Spawns a named glTF entity with a `Transform` and an empty `Gltf` URL.
+   * The author pastes the model path in the Inspector.
+   */
+  const addGltf = (): void => {
+    if (!engine.value) return;
+
+    const world = engine.value.world;
+    const parentId = selectedEntityId.value;
+    const entity = createEntity(world);
+    addComponent(world, entity, Name, createName('Model'));
+    addComponent(world, entity, Transform, createTransform(nextSpawnPosition(world, parentId)));
+    addComponent(world, entity, Gltf, createGltf());
+
+    if (parentId !== null) {
+      setParent(world, entity, parentId);
+    }
+
+    selectedEntityId.value = entity;
+    syncWorld();
+  };
+
+  return { addPrimitive, addLight, addGltf };
 };

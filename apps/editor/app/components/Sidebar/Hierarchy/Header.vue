@@ -31,7 +31,7 @@ import { LIGHT_KIND_OPTIONS } from '~/types/light';
 
 const { selectedEntityId } = useTitane();
 const { count } = useHierarchy();
-const { addPrimitive, addLight } = useHierarchyActions();
+const { addPrimitive, addLight, addGltf } = useHierarchyActions();
 
 const createItems: DropdownMenuItem[][] = [
   PRIMITIVE_OPTIONS.map(option => ({
@@ -44,5 +44,10 @@ const createItems: DropdownMenuItem[][] = [
     icon: option.icon,
     onSelect: () => addLight(option.value)
   })),
+  [{
+    label: 'glTF Model',
+    icon: 'i-lucide-box',
+    onSelect: () => addGltf()
+  }],
 ];
 </script>
