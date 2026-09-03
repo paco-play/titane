@@ -2,6 +2,7 @@ import type { Entity } from '@titane/core';
 import type { ShallowRef } from 'vue';
 import { TitaneEngine, Phase, createPlayerControlSystem } from '@titane/core';
 import { ThreeRenderer } from '@titane/renderer';
+import { markPersistenceDirty } from '~/utils/persistence-dirty';
 
 const engineInstance = shallowRef<TitaneEngine | null>(null);
 
@@ -69,6 +70,14 @@ export const useTitane = () => {
     inspectTick.value += 1;
   };
 
+  /**
+   * Flags in-place component edits for the deferred auto-save timer.
+   * Structural changes already persist through `syncWorld` + the entity watcher.
+   */
+  const markDirty = (): void => {
+    markPersistenceDirty();
+  };
+
   return {
     engine: engineInstance,
     renderer: rendererInstance,
@@ -79,6 +88,7 @@ export const useTitane = () => {
     inspectTick,
     initEngine,
     syncWorld,
-    notifyInspect
+    notifyInspect,
+    markDirty
   };
 };

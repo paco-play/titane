@@ -1,5 +1,6 @@
 import { serializeWorld, deserializeWorld, createWorld, type SerializedWorld } from '@titane/core';
 import { useTitane } from './useTitane';
+import { clearPersistenceDirty, isPersistenceDirty } from '~/utils/persistence-dirty';
 
 /** Key of the recovery buffer kept in local storage. */
 const AUTOSAVE_KEY = 'titane_autosave_buffer';
@@ -39,6 +40,7 @@ export const usePersistence = () => {
     // the renderer and this UI stay bound to live data.
     engine.value.loadWorld(deserializeWorld(data));
     selectedEntityId.value = null;
+    clearPersistenceDirty();
     syncWorld();
     captureBaseline();
   };
@@ -52,9 +54,19 @@ export const usePersistence = () => {
     try {
       const data = serializeWorld(engine.value.world);
       localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
+      clearPersistenceDirty();
     } catch (error) {
       console.error('[Titane] Failed to auto-save to local storage.', error);
     }
+  };
+
+  /**
+   * Serializes only when component edits are pending.
+   * Structural changes already persist immediately via the entity watcher.
+   */
+  const saveIfDirty = (): void => {
+    if (!isPersistenceDirty()) return;
+    saveToStorage();
   };
 
   /**
@@ -78,6 +90,7 @@ export const usePersistence = () => {
       const data = JSON.parse(stored) as SerializedWorld;
       engine.value.loadWorld(deserializeWorld(data));
       selectedEntityId.value = null;
+      clearPersistenceDirty();
       syncWorld();
       return true;
     } catch (error) {
@@ -85,6 +98,7 @@ export const usePersistence = () => {
       clearStorage();
       engine.value.loadWorld(createWorld());
       selectedEntityId.value = null;
+      clearPersistenceDirty();
       syncWorld();
       return false;
     }
@@ -94,6 +108,7 @@ export const usePersistence = () => {
     saveToDisk,
     loadFromDisk,
     saveToStorage,
+    saveIfDirty,
     loadFromStorage,
     clearStorage
   };

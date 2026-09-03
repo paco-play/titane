@@ -16,7 +16,7 @@
     "core:build": "npm run build -w @titane/core",
     "renderer:build": "npm run build -w @titane/renderer",
     "build": "npm run core:build && npm run renderer:build",
-    "test": "npm run test:run -w @titane/core && npm run test:run -w @titane/renderer",
+    "test": "npm run test:run -w @titane/core && npm run test:run -w @titane/renderer && npm run test:run -w @titane/editor",
     "lint": "npm run lint -w @titane/editor",
     "typecheck": "npm run typecheck -w @titane/core && npm run typecheck -w @titane/renderer && npm run typecheck -w @titane/editor",
     "bump:patch": "npm version patch --workspaces --include-workspace-root --no-git-tag-version",

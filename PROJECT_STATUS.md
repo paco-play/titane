@@ -22,7 +22,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ## Quality Gates
 | Command | Checks |
 | --- | --- |
-| `npm test` | 74 tests: 53 on the core, 21 on the renderer (Vitest) |
+| `npm test` | 82 tests: 53 on the core, 21 on the renderer, 8 on the editor (Vitest) |
 | `npm run build` | `tsc -b` on the core, then the renderer |
 | `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor |
 | `npm run lint` | ESLint on the editor |
@@ -30,9 +30,13 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Reach the New Rendering Features** — done. Next up: editor performance.
+**Editor Performance** — done. Next up: storage and scale.
 
 ## Completed
+
+### Editor Performance
+- [x] **O(n) hierarchy rebuild.** `useHierarchy` used to re-filter the full entity list at every depth (`buildHierarchyLevels`). A parent-to-children index is now built once per recomputation (`indexByParent` / `buildIndexedForest`), so a deep chain is linear. Orphans (dead parent) still lift to the root so the tree, the count badge and the viewport stay in agreement.
+- [x] **Dirty-flag auto-save.** The entity `Set` watcher still persists structural changes immediately. In-place component edits (Inspector axes, primitive, color, gizmo drags) set a dirty flag; the 60s timer serializes only when that flag is set, so an idle editor no longer rewrites local storage every minute. Blur / popover-close / gizmo-click still commit immediately.
 
 ### Reach the New Rendering Features
 - [x] **Primitive choice on create.** The Hierarchy "+" opens a dropdown (Box / Sphere / Plane) instead of hardcoding `primitive: 'box'`. The new entity is still parented under the current selection when there is one.
@@ -107,20 +111,16 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-### 1. Editor Performance (Medium Priority)
-1. **`useHierarchy` is O(n^2)**: `buildHierarchyLevels` re-filters the full entity list at every depth. Build the parent-to-children index once per recomputation.
-2. **Auto-save granularity**: the editor watches the entity `Set`, so it only reacts to structural changes and otherwise re-serializes the entire world on a timer. Component edits deserve a cheaper dirty-tracking path.
-
-### 2. Storage & Scale (Medium Priority)
+### 1. Storage & Scale (Medium Priority)
 1. **Archetype / SoA storage**: move hot components into dense `Float32Array` buffers. The `ComponentType.index` indirection is the seam that makes this swap possible without touching call sites.
 2. **Query caching**: keep query results across frames and invalidate them on structural change, instead of rescanning the smallest store.
 3. **Instanced rendering**: entities sharing a geometry and material already share the exact objects a draw call would batch, so `InstancedMesh` is the natural next step.
 
-### 3. Simulation (Medium Priority)
+### 2. Simulation (Medium Priority)
 1. **Rapier (WASM) integration** in the `PHYSICS` phase. The dependency is already declared but unused.
 2. **Fixed timestep** for physics, decoupled from the render frame rate.
 3. **Proper single-step**: `useRuntime.stepFrame` currently unpauses and re-pauses via a 16 ms `setTimeout`; it should drive `engine.tick()` directly.
 
-### 4. Deprioritized
+### 3. Deprioritized
 1. **File System Access API**: native `CTRL+S` overwriting a file on disk without re-downloading.
 2. **Asset metadata**: structure for tracking external dependencies (textures, glTF models).

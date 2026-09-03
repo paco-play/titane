@@ -10,6 +10,8 @@
     "preview": "nuxt preview",
     "lint": "eslint .",
     "typecheck": "nuxt prepare && vue-tsc --noEmit -p .nuxt/tsconfig.app.json",
+    "test": "vitest",
+    "test:run": "vitest run",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vue-tsc": "^3.3.11"
+    "vue-tsc": "^3.3.11",
+    "vitest": "^4.1.2"
   }
 }
