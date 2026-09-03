@@ -73,6 +73,7 @@ for the wrong component is a compile error rather than a silent `undefined` at r
 | **7. Scale** | Storage | Archetype / SoA buffers, cached queries, instancing. | Done |
 | **8. Game demo** | Public API | Nuxt Drop loop: game-mode renderer, Rapier player, snapshot restart. | Done |
 | **9. Author → Play** | Pipeline | Scale on spawn, engine physics ready, RigidBody in the Inspector, demo loads a `.titane`. | Done |
+| **10. Character feel** | Gameplay | Locked rotations, grounded raycast, Space jump. | Done |
 
 See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the detailed task breakdown.
 

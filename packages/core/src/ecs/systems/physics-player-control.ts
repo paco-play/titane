@@ -7,21 +7,29 @@ import { PlayerControlled } from '../components/player-controlled';
 import { RigidBody } from '../components/rigid-body';
 import { Transform } from '../components/transform';
 import { getPhysicsSession } from '../../physics/session';
-import { moveAxesFromInput, PLAYER_MOVE_SPEED } from './move-axes';
+import { isBodyGrounded } from '../../physics/ground';
+import { moveAxesFromInput, PLAYER_JUMP_SPEED, PLAYER_MOVE_SPEED } from './move-axes';
 
 const inputQuery = defineQuery([Input]);
 const playerQuery = defineQuery([PlayerControlled, RigidBody, Transform]);
 
+const IDENTITY_ROTATION = { x: 0, y: 0, z: 0, w: 1 };
+const ZERO_ANGVEL = { x: 0, y: 0, z: 0 };
+
 /**
- * Drives a Rapier dynamic body from WASD / arrows.
+ * Drives a Rapier dynamic body from WASD / arrows and Space.
  *
- * Horizontal linear velocity is overwritten each frame; `linvel.y` is left
- * alone so gravity and jumps (when a game adds them) keep working.
+ * Horizontal linear velocity is overwritten each frame. Jump only fires when
+ * a downward ray hits the ground. Rotations are locked so a sphere does not roll.
  * Sample gameplay: never registered by the default pipeline.
  *
  * @param speed - Horizontal speed in world units per second.
+ * @param jumpSpeed - Upward linvel applied on Space while grounded.
  */
-export const createPhysicsPlayerControlSystem = (speed = PLAYER_MOVE_SPEED): System =>
+export const createPhysicsPlayerControlSystem = (
+    speed = PLAYER_MOVE_SPEED,
+    jumpSpeed = PLAYER_JUMP_SPEED
+): System =>
     (world: World): void => {
         const session = getPhysicsSession(world);
         if (!session) return;
@@ -35,15 +43,25 @@ export const createPhysicsPlayerControlSystem = (speed = PLAYER_MOVE_SPEED): Sys
         const axes = moveAxesFromInput(input);
         const velocityX = axes.x * speed;
         const velocityZ = axes.z * speed;
+        const wantsJump = input.justPressed['Space'] === true;
 
         for (const entityId of runQuery(world, playerQuery)) {
             const rigid = getComponent(world, entityId, RigidBody);
-            if (!rigid || rigid.kind !== 'dynamic') continue;
+            const transform = getComponent(world, entityId, Transform);
+            if (!rigid || rigid.kind !== 'dynamic' || !transform) continue;
 
             const binding = session.bodies.get(entityId);
             if (!binding) continue;
 
+            binding.body.lockRotations(true, true);
+            binding.body.setAngvel(ZERO_ANGVEL, true);
+            binding.body.setRotation(IDENTITY_ROTATION, true);
+
             const current = binding.body.linvel();
-            binding.body.setLinvel({ x: velocityX, y: current.y, z: velocityZ }, true);
+            const velocityY = wantsJump && isBodyGrounded(session, binding, transform)
+                ? jumpSpeed
+                : current.y;
+
+            binding.body.setLinvel({ x: velocityX, y: velocityY, z: velocityZ }, true);
         }
     };

@@ -9,6 +9,8 @@ import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
 import { PlayerControlled, createPlayerControlled } from '../../ecs/components/player-controlled';
 import { createPhysicsPlayerControlSystem } from '../../ecs/systems/physics-player-control';
 import { Phase } from '../../ecs/pipeline/system';
+import { getPhysicsSession } from '../../physics/session';
+import { isBodyGrounded } from '../../physics/ground';
 
 const createMockRenderer = (): IRenderer => ({
     init: vi.fn(),
@@ -74,5 +76,61 @@ describe('createPhysicsPlayerControlSystem', () => {
         const transform = getComponent(engine.world, player, Transform)!;
         expect(transform.position.z).toBeLessThan(startZ - 1);
         expect(transform.position.y).toBeGreaterThan(0.2);
+    });
+
+    it('stays upright while moving on the slab', () => {
+        const player = spawnPlayer();
+        for (let i = 0; i < 45; i++) engine.step();
+
+        const input = getComponent(engine.world, engine.globalInputEntity, Input)!;
+        input.keys['KeyD'] = true;
+        for (let i = 0; i < 60; i++) engine.step();
+
+        const rotation = getComponent(engine.world, player, Transform)!.rotation;
+        expect(rotation.x).toBeCloseTo(0, 5);
+        expect(rotation.y).toBeCloseTo(0, 5);
+        expect(rotation.z).toBeCloseTo(0, 5);
+    });
+
+    it('jumps on Space while grounded', () => {
+        const player = spawnPlayer();
+        for (let i = 0; i < 180; i++) engine.step();
+
+        const restY = getComponent(engine.world, player, Transform)!.position.y;
+        expect(restY).toBeGreaterThan(0.3);
+        expect(restY).toBeLessThan(0.7);
+
+        const session = getPhysicsSession(engine.world)!;
+        const binding = session.bodies.get(player)!;
+        expect(isBodyGrounded(session, binding, getComponent(engine.world, player, Transform)!)).toBe(true);
+
+        const input = getComponent(engine.world, engine.globalInputEntity, Input)!;
+        input.justPressed['Space'] = true;
+        engine.step();
+        input.justPressed['Space'] = false;
+
+        for (let i = 0; i < 15; i++) engine.step();
+
+        expect(getComponent(engine.world, player, Transform)!.position.y).toBeGreaterThan(restY + 0.5);
+    });
+
+    it('does not jump in the air', () => {
+        const player = createPrimitive(engine.world, {
+            name: 'Airborne',
+            primitive: 'sphere',
+            position: { x: 0, y: 5, z: 0 }
+        });
+        addComponent(engine.world, player, RigidBody, createRigidBody('dynamic'));
+        addComponent(engine.world, player, PlayerControlled, createPlayerControlled());
+
+        engine.step();
+        const input = getComponent(engine.world, engine.globalInputEntity, Input)!;
+        input.justPressed['Space'] = true;
+        engine.step();
+        input.justPressed['Space'] = false;
+
+        for (let i = 0; i < 10; i++) engine.step();
+
+        expect(getComponent(engine.world, player, Transform)!.position.y).toBeLessThan(5);
     });
 });

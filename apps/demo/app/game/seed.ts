@@ -3,15 +3,19 @@ import {
   addComponent,
   createPrimitive,
   createRigidBody,
+  createSensor,
   createPlayerControlled,
   RigidBody,
+  Sensor,
   PlayerControlled
 } from '@titane/core';
-import { SLAB_SIZE } from './constants';
+import { SLAB_SIZE, KILL_ZONE_Y, KILL_ZONE_HALF_HEIGHT } from './constants';
 
 /** Entities the Drop demo needs after seeding. */
 export interface SeededScene {
   player: Entity;
+  /** Sensor zone: anything entering this entity has fallen off the slab. */
+  killZone: Entity;
 }
 
 const CRATE_OFFSETS: readonly { x: number; z: number }[] = [
@@ -55,5 +59,16 @@ export const seedDropScene = (world: World): SeededScene => {
     addComponent(world, crate, RigidBody, createRigidBody('dynamic'));
   });
 
-  return { player };
+  // A large fixed sensor box below the slab: entering it means the entity fell.
+  const killZone = createPrimitive(world, {
+    name: 'KillZone',
+    primitive: 'box',
+    color: '#ff0000',
+    position: { x: 0, y: KILL_ZONE_Y, z: 0 },
+    scale: { x: SLAB_SIZE * 4, y: KILL_ZONE_HALF_HEIGHT * 2, z: SLAB_SIZE * 4 }
+  });
+  addComponent(world, killZone, RigidBody, createRigidBody('fixed'));
+  addComponent(world, killZone, Sensor, createSensor('kill-zone'));
+
+  return { player, killZone };
 };

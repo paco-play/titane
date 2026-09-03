@@ -10,8 +10,9 @@ import { Transform as TransformType } from '../ecs/components/transform';
 import { RigidBody } from '../ecs/components/rigid-body';
 import { Mesh } from '../ecs/components/mesh';
 import { getPhysicsSession, type BodyBinding, type PhysicsSession } from './session';
-import { applyColliderScale, colliderDescFromPrimitive } from './collider';
+import { asSensorDesc, applyColliderScale, colliderDescFromPrimitive } from './collider';
 import { eulerXyzToQuat, quatToEulerXyz } from './rotation';
+import { Sensor } from '../ecs/components/sensor';
 
 const rigidQuery = defineQuery([TransformType, RigidBody]);
 
@@ -34,6 +35,8 @@ const primitiveOf = (world: World, entity: Entity): PrimitiveType =>
 
 const spawnBinding = (
     session: PhysicsSession,
+    world: World,
+    entity: Entity,
     transform: Transform,
     rigid: RigidBodyData,
     primitive: PrimitiveType
@@ -46,10 +49,10 @@ const spawnBinding = (
     desc.setRotation(eulerXyzToQuat(transform.rotation));
 
     const body = session.physics.createRigidBody(desc);
-    const collider = session.physics.createCollider(
-        colliderDescFromPrimitive(primitive, transform.scale),
-        body
-    );
+    const isSensor = getComponent(world, entity, Sensor) !== undefined;
+    let colliderDesc = colliderDescFromPrimitive(primitive, transform.scale);
+    if (isSensor) colliderDesc = asSensorDesc(colliderDesc);
+    const collider = session.physics.createCollider(colliderDesc, body);
 
     return {
         body,
@@ -117,7 +120,7 @@ export const stepPhysicsWorld = (world: World, dt: number): void => {
 
         if (!binding || binding.kind !== rigid.kind) {
             if (binding) session.physics.removeRigidBody(binding.body);
-            binding = spawnBinding(session, transform, rigid, primitive);
+            binding = spawnBinding(session, world, entity, transform, rigid, primitive);
             session.bodies.set(entity, binding);
         } else {
             syncCollider(session, binding, primitive, transform);
@@ -125,7 +128,34 @@ export const stepPhysicsWorld = (world: World, dt: number): void => {
         }
     }
 
-    session.physics.step();
+    const { eventQueue } = session;
+    session.physics.step(eventQueue);
+
+    // --- rebuild collider handle → entity map ------------------------------
+    session.colliderToEntity.clear();
+    for (const [entity, binding] of session.bodies) {
+        session.colliderToEntity.set(binding.collider.handle, entity);
+    }
+
+    // --- drain collision events for sensors --------------------------------
+    // Rapier fires change events: started=true on first overlap, started=false
+    // when the overlap ends. We maintain a running set rather than clearing
+    // each step so persistent overlaps are always visible.
+    eventQueue.drainCollisionEvents((handle1: number, handle2: number, started: boolean): void => {
+        const e1 = session.colliderToEntity.get(handle1);
+        const e2 = session.colliderToEntity.get(handle2);
+        if (e1 === undefined || e2 === undefined) return;
+
+        if (started) {
+            if (!session.intersections.has(e1)) session.intersections.set(e1, new Set());
+            if (!session.intersections.has(e2)) session.intersections.set(e2, new Set());
+            session.intersections.get(e1)!.add(e2);
+            session.intersections.get(e2)!.add(e1);
+        } else {
+            session.intersections.get(e1)?.delete(e2);
+            session.intersections.get(e2)?.delete(e1);
+        }
+    });
 
     for (const [entity, binding] of session.bodies) {
         if (binding.kind !== 'dynamic') continue;
