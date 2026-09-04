@@ -1,4 +1,4 @@
-import type { ProjectItem, ProjectKind } from '~/types/project';
+import { PROJECT_FOLDERS, type ProjectItem, type ProjectKind } from '../types/project';
 
 /**
  * Keeps items in the selected folder whose label or path matches `query`.
@@ -20,17 +20,5 @@ export const filterProjectItems = (
 /**
  * Label of the folder sidebar entry, used in the breadcrumb.
  */
-export const folderLabel = (folder: ProjectKind): string => {
-  switch (folder) {
-    case 'scene':
-      return 'Scenes';
-    case 'prefab':
-      return 'Prefabs';
-    case 'model':
-      return 'Models';
-    case 'texture':
-      return 'Textures';
-    case 'audio':
-      return 'Audio';
-  }
-};
+export const folderLabel = (folder: ProjectKind): string =>
+  PROJECT_FOLDERS.find((entry) => entry.id === folder)?.label ?? folder;
