@@ -80,6 +80,13 @@ export class ModelPool {
     }
 
     /**
+     * Live clone root for an entity, or `null` before the load settles.
+     */
+    public rootOf(entity: Entity): THREE.Group | null {
+        return this.tracked.get(entity)?.root ?? null;
+    }
+
+    /**
      * Maps a raycast object back to its entity when it is a managed root.
      */
     public entityOf(object: THREE.Object3D): Entity | undefined {

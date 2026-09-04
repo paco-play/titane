@@ -3,6 +3,8 @@ import type { World } from '../ecs/kernel/world';
 import type { Entity } from '../ecs/types';
 import type { RigidBodyKind } from '../ecs/components/rigid-body';
 import type { PrimitiveType } from '../ecs/components/mesh';
+import type { ColliderKind } from '../ecs/components/collider';
+import type { MeshColliderGeometryProvider } from '../runtime/renderer-interface';
 
 const GRAVITY = { x: 0, y: -9.81, z: 0 };
 
@@ -17,6 +19,13 @@ export interface BodyBinding {
     scaleX: number;
     scaleY: number;
     scaleZ: number;
+    /** Present when the entity has a `Collider` component. */
+    colliderKind: ColliderKind | null;
+    sizeY: number;
+    radius: number;
+    height: number;
+    centerY: number;
+    shapeSignature: string;
 }
 
 /**
@@ -47,6 +56,30 @@ export const getIntersections = (session: PhysicsSession, entity: Entity): Reado
     session.intersections.get(entity) ?? new Set();
 
 const sessions = new WeakMap<World, PhysicsSession>();
+const meshProviders = new WeakMap<World, MeshColliderGeometryProvider>();
+
+/**
+ * Registers a per-world source of glTF triangle meshes for `Collider.kind = mesh`.
+ * Survives {@link resetPhysicsSession}.
+ */
+export const setMeshColliderGeometryProvider = (
+    world: World,
+    provider: MeshColliderGeometryProvider | null
+): void => {
+    if (provider) meshProviders.set(world, provider);
+    else meshProviders.delete(world);
+};
+
+/**
+ * Runtime mesh geometry for one entity, or `null` while the model is loading.
+ */
+export const meshColliderGeometryOf = (
+    world: World,
+    entity: Entity
+): ReturnType<MeshColliderGeometryProvider> => {
+    const provider = meshProviders.get(world);
+    return provider ? provider(world, entity) : null;
+};
 
 let ready: Promise<void> | undefined;
 let initialized = false;

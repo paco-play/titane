@@ -6,6 +6,8 @@
       :class="{ 'opacity-0': !canvasReference, 'opacity-100': canvasReference }"
       tabindex="0"
       @click.left="onCanvasClick"
+      @dragover="onCanvasDragOver"
+      @drop="onCanvasDrop"
     />
   </div>
 </template>
@@ -21,7 +23,7 @@ const canvasReference = ref<HTMLCanvasElement | null>(null);
 const { initEngine, entities, syncWorld } = useTitane();
 const { saveToStorage, saveIfDirty, loadFromStorage } = usePersistence();
 const { captureBaseline } = useRuntime();
-const { onCanvasClick, onKeyDown } = useViewport();
+const { onCanvasClick, onCanvasDrop, onCanvasDragOver, onKeyDown } = useViewport();
 
 let autoSaveInterval: number | undefined;
 let stopEntityWatch: (() => void) | undefined;

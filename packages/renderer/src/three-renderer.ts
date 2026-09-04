@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { IRenderer, World, Entity } from '@titane/core';
+import type { IRenderer, World, Entity, MeshColliderGeometry } from '@titane/core';
 import { defineQuery, runQuery, getComponent, Transform, Mesh } from '@titane/core';
 import { ResourceCache } from './resource-cache';
 import { LightPool } from './light-pool';
@@ -7,6 +7,9 @@ import { ModelPool } from './model-pool';
 import { AudioPool } from './audio-pool';
 import { createBrowserAudioPool } from './audio-browser';
 import { pointerToNdc, entityFromHits } from './picking';
+import { worldPointFromRay } from './world-point';
+import { localAabbOfRoot, UNIT_LOCAL_AABB, type LocalAabb } from './model-bounds';
+import { collectModelTrimesh } from './model-trimesh';
 import { createOrbitControls } from './orbit';
 import { InstancePool } from './instance-pool';
 import { GizmoController, type GizmoTransformHandler } from './gizmo-controller';
@@ -258,6 +261,41 @@ export class ThreeRenderer implements IRenderer {
         return entityFromHits(raycaster.intersectObjects(targets, true), (object, instanceId) =>
             this.pool?.entityOf(object, instanceId) ?? this.models?.entityOf(object)
         );
+    }
+
+    /**
+     * World point under the pointer: first pickable hit, else the y = 0 plane.
+     */
+    public worldPointFromPointer(clientX: number, clientY: number): { x: number; y: number; z: number } {
+        const rect = this.renderer.domElement.getBoundingClientRect();
+        const ndc = pointerToNdc(clientX, clientY, rect);
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), this.camera);
+        const targets = [
+            ...(this.pool?.pickables() ?? []),
+            ...(this.models?.pickables() ?? [])
+        ];
+        return worldPointFromRay(raycaster, targets);
+    }
+
+    /**
+     * Local AABB of a loaded glTF, or the unit box of a primitive `Mesh`.
+     */
+    public localAabb(entity: Entity): LocalAabb | null {
+        const root = this.models?.rootOf(entity);
+        if (root) return localAabbOfRoot(root);
+        return UNIT_LOCAL_AABB;
+    }
+
+    /**
+     * Triangle soup for a mesh collider. `null` until the glTF clone exists.
+     */
+    public meshColliderGeometry(world: World, entity: Entity): MeshColliderGeometry | null {
+        const root = this.models?.rootOf(entity);
+        if (!root) return null;
+        const transform = getComponent(world, entity, Transform);
+        const scale = transform?.scale ?? { x: 1, y: 1, z: 1 };
+        return collectModelTrimesh(root, scale);
     }
 
     public consumeGizmoPick(): boolean {

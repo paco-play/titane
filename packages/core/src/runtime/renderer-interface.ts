@@ -1,4 +1,22 @@
 import { World } from '../ecs/kernel/world';
+import type { Entity } from '../ecs/types';
+
+/**
+ * Packed triangle mesh in the entity's local space, used to build a Rapier trimesh.
+ * Vertices are `x,y,z` floats. Not stored in `.titane`.
+ */
+export interface MeshColliderGeometry {
+    readonly vertices: Float32Array;
+    readonly indices: Uint32Array;
+}
+
+/**
+ * Optional host callback that supplies runtime mesh-collider geometry.
+ */
+export type MeshColliderGeometryProvider = (
+    world: World,
+    entity: Entity
+) => MeshColliderGeometry | null;
 
 /**
  * Interface defining the contract for any Renderer Driver.
@@ -31,4 +49,10 @@ export interface IRenderer {
      * Cleans up all GPU resources.
      */
     dispose(): void;
+
+    /**
+     * Triangle mesh for a `Collider` of kind `mesh`. Optional: headless
+     * drivers omit it. Return `null` while the model is still loading.
+     */
+    meshColliderGeometry?(world: World, entity: Entity): MeshColliderGeometry | null;
 }

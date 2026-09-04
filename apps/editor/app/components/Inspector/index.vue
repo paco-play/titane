@@ -109,6 +109,20 @@
         @update-restitution="setRigidRestitution"
         @commit="saveToStorage"
       />
+      <InspectorCollider
+        :collider="collider"
+        :inspect-tick="inspectTick"
+        @add="addCollider"
+        @add-mesh="addMeshCollider"
+        @remove="removeCollider"
+        @fit="fitColliderToModel"
+        @update-kind="setColliderKind"
+        @update-center="setColliderCenter"
+        @update-size="setColliderSize"
+        @update-radius="setColliderRadius"
+        @update-height="setColliderHeight"
+        @commit="saveToStorage"
+      />
       <InspectorPlayer
         :controlled="isPlayerControlled"
         @update-controlled="setPlayerControlled"
@@ -194,6 +208,18 @@ const {
   setRigidRestitution,
 } = useInspectorRigidBody();
 const { isPlayerControlled, setPlayerControlled } = useInspectorPlayer();
+const {
+  collider,
+  addCollider,
+  addMeshCollider,
+  removeCollider,
+  setColliderKind,
+  setColliderCenter,
+  setColliderSize,
+  setColliderRadius,
+  setColliderHeight,
+  fitColliderToModel
+} = useInspectorCollider();
 const {
   attached,
   orphans,

@@ -17,8 +17,9 @@ const DEFAULT_RESTITUTION = 0;
 /**
  * Marks an entity as a Rapier rigid body.
  *
- * Collider shape comes from `Mesh.primitive` and `Transform.scale`
- * (primitives are unit-boxed). Parenting is ignored: simulate roots.
+ * Collider shape comes from a `Collider` component when present, otherwise
+ * from `Mesh.primitive` and `Transform.scale` (primitives are unit-boxed).
+ * Parenting is ignored: simulate roots.
  *
  * `friction` and `restitution` are written onto the Rapier collider.
  * Combine rules stay Rapier defaults (Average).

@@ -12,5 +12,8 @@ export * from './resource-cache';
 export * from './material-spec';
 export * from './instance-pool';
 export * from './picking';
+export * from './world-point';
+export * from './model-bounds';
+export * from './model-trimesh';
 export * from './local-trs';
 export * from './gizmo';

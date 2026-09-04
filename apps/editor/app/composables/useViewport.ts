@@ -1,6 +1,7 @@
 import type { Entity } from '@titane/core';
 import { updateComponent, Transform } from '@titane/core';
 import type { GizmoMode, LocalTrs } from '@titane/renderer';
+import { readProjectItemPayload } from '~/utils/project-item-payload';
 
 const gizmoMode = ref<GizmoMode>('translate');
 
@@ -11,6 +12,7 @@ export const useViewport = () => {
   const { engine, renderer, selectedEntityId, notifyInspect, markDirty } = useTitane();
   const { isPlaying } = useRuntime();
   const { saveToStorage } = usePersistence();
+  const { openItemAt } = useProjectOpen();
 
   /**
    * Writes a gizmo edit into the ECS and refreshes the Inspector.
@@ -65,6 +67,28 @@ export const useViewport = () => {
   };
 
   /**
+   * Drops a Project tile onto the canvas at the pointer world point.
+   */
+  const onCanvasDrop = (event: DragEvent): void => {
+    event.preventDefault();
+    if (!renderer.value || isPlaying.value || !event.dataTransfer) return;
+    const item = readProjectItemPayload(event.dataTransfer);
+    if (!item) return;
+    const position = renderer.value.worldPointFromPointer(event.clientX, event.clientY);
+    const pickEntity = renderer.value.pick(event.clientX, event.clientY);
+    openItemAt(item, {
+      position,
+      pickEntity,
+      parentToSelection: false
+    });
+  };
+
+  const onCanvasDragOver = (event: DragEvent): void => {
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+  };
+
+  /**
    * W / E / R switch gizmo mode while the simulation is paused.
    */
   const onKeyDown = (event: KeyboardEvent): void => {
@@ -88,6 +112,8 @@ export const useViewport = () => {
     gizmoMode,
     setGizmoMode,
     onCanvasClick,
+    onCanvasDrop,
+    onCanvasDragOver,
     onKeyDown
   };
 };

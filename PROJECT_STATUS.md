@@ -32,7 +32,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Cleanup.** Project panel layout, schema DSL `field.*`, Drop demo removed. Numbered phases 0–5 are complete. Contract: `docs/ROADMAP.md`.
+**Project drop + Collider.** Drag tiles from Project onto the viewport. Authored colliders (box / sphere / capsule / mesh) sit beside `RigidBody`. Numbered phases 0–5 are complete. Contract: `docs/ROADMAP.md`.
 
 The Drop demo (`apps/demo`) and **Preview in Demo** live-preview are gone. A game is `npm run create`.
 
@@ -41,6 +41,12 @@ The Drop demo (`apps/demo`) and **Preview in Demo** live-preview are gone. A gam
 ### Project panel
 - [x] **Bottom browser.** Assets folders (Scenes, Prefabs, Models, Textures, Audio) plus a searchable grid. Not a Unity import pipeline — files stay in `scenes/`, `public/prefabs`, `public/assets`.
 - [x] **Open.** Double-click prefab / model / audio spawns an entity. Double-click texture writes `Mesh.albedo` when a mesh is selected. Scenes are listed, not auto-loaded.
+- [x] **Drag onto canvas.** HTML5 DnD from a Project tile. Drop point is the first mesh hit, else the `y = 0` plane. Texture drops apply albedo on the mesh under the cursor.
+
+### Collider
+- [x] **`Collider` component.** `box` / `sphere` / `capsule` / `mesh`, plus `center`. Shape is independent of `Mesh.primitive`. No component → existing primitive + scale path.
+- [x] **Fit to model.** Inspector writes AABB (or derived sphere / capsule) from the loaded glTF or the unit primitive box.
+- [x] **Mesh collider.** Trimesh from the glTF clone via `IRenderer.meshColliderGeometry`. Not serialized. Forces `RigidBody` fixed. Missing geometry is a no-op until the model loads.
 
 ### Camera
 - [x] **`Camera` component.** `fov`, `near`, `far`, `current`. Pose comes from `Transform` (parented cameras use `worldMatrix`). Defaults match the Three.js driver (`75`, `0.1`, `1000`, `current: true`). Clamp fov 1–179, near ≥ 0.001, far > near.

@@ -8,6 +8,7 @@ import { getComponent } from '../ecs/kernel/component';
 import { Transform as TransformType } from '../ecs/components/transform';
 import { RigidBody } from '../ecs/components/rigid-body';
 import { Mesh } from '../ecs/components/mesh';
+import { Collider } from '../ecs/components/collider';
 import { getPhysicsSession } from './session';
 import { spawnBinding, syncCollider } from './binding';
 import { eulerXyzToQuat, quatToEulerXyz } from './rotation';
@@ -56,15 +57,18 @@ export const stepPhysicsWorld = (world: World, dt: number): void => {
         if (!transform || !rigid) continue;
 
         const primitive = primitiveOf(world, entity);
+        const collider = getComponent(world, entity, Collider) ?? null;
+        const effectiveKind = collider?.kind === 'mesh' ? 'fixed' : rigid.kind;
         let binding = session.bodies.get(entity);
 
-        if (!binding || binding.kind !== rigid.kind) {
+        if (!binding || binding.kind !== effectiveKind) {
             if (binding) session.physics.removeRigidBody(binding.body);
-            binding = spawnBinding(session, world, entity, transform, rigid, primitive);
-            session.bodies.set(entity, binding);
+            const spawned = spawnBinding(session, world, entity, transform, rigid, primitive, collider);
+            if (spawned) session.bodies.set(entity, spawned);
+            else session.bodies.delete(entity);
         } else {
-            syncCollider(session, world, entity, binding, primitive, transform, rigid);
-            if (rigid.kind === 'fixed') writeTransformToBody(binding.body, transform);
+            syncCollider(session, world, entity, binding, primitive, transform, rigid, collider);
+            if (effectiveKind === 'fixed') writeTransformToBody(binding.body, transform);
         }
     }
 
