@@ -6,6 +6,8 @@ export * from './model-clip';
 export * from './audio-pool';
 export * from './audio-browser';
 export * from './renderer-mode';
+export * from './scene-camera';
+export * from './editor-camera';
 export * from './resource-cache';
 export * from './material-spec';
 export * from './instance-pool';

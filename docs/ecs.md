@@ -8,7 +8,7 @@ An entity is a `number`. `createEntity(world)` allocates one. `createPrimitive` 
 
 ## Component
 
-A component is a typed blob interned with `defineComponent`. Built-ins (`Transform`, `Mesh`, `Light`, …) use a factory. User gameplay uses a **schema**:
+A component is a typed blob interned with `defineComponent`. Built-ins (`Transform`, `Mesh`, `Light`, `Camera`, …) use a factory. User gameplay uses a **schema**:
 
 ```ts
 export const PlayerController = defineComponent('PlayerController', {

@@ -1,5 +1,7 @@
 import {
   addComponent,
+  Camera,
+  createCamera,
   createEntity,
   createGltf,
   createLight,
@@ -11,6 +13,7 @@ import {
   Light,
   Name,
   Sound,
+  setCurrentCamera,
   setParent,
   Transform,
   type LightKind,
@@ -109,5 +112,23 @@ export const useHierarchyActions = () => {
     syncWorld();
   };
 
-  return { addPrimitive, addLight, addGltf, addSound };
+  /**
+   * Spawns a scene camera at (0, 2, 6), looking down -Z toward the origin.
+   * Becomes the current Play / game view.
+   */
+  const addCamera = (): void => {
+    if (!engine.value) return;
+
+    const world = engine.value.world;
+    const entity = createEntity(world);
+    addComponent(world, entity, Name, createName('Camera'));
+    addComponent(world, entity, Transform, createTransform({ x: 0, y: 2, z: 6 }));
+    addComponent(world, entity, Camera, createCamera());
+    setCurrentCamera(world, entity);
+
+    selectedEntityId.value = entity;
+    syncWorld();
+  };
+
+  return { addPrimitive, addLight, addGltf, addSound, addCamera };
 };

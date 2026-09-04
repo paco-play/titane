@@ -31,7 +31,7 @@ import { LIGHT_KIND_OPTIONS } from '~/types/light';
 
 const { selectedEntityId } = useTitane();
 const { count } = useHierarchy();
-const { addPrimitive, addLight, addGltf, addSound } = useHierarchyActions();
+const { addPrimitive, addLight, addGltf, addSound, addCamera } = useHierarchyActions();
 const { prefabs, spawnPrefab } = usePrefabs();
 
 const createItems = computed<DropdownMenuItem[][]>(() => {
@@ -55,6 +55,11 @@ const createItems = computed<DropdownMenuItem[][]>(() => {
       label: 'Sound',
       icon: 'i-lucide-volume-2',
       onSelect: () => addSound()
+    }],
+    [{
+      label: 'Camera',
+      icon: 'i-lucide-video',
+      onSelect: () => addCamera()
     }]
   ];
 

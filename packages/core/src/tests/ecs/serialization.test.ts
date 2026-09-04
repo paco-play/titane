@@ -6,6 +6,7 @@ import { Transform, createTransform } from '../../ecs/components/transform';
 import { Name, createName } from '../../ecs/components/name';
 import { Mesh, createMesh } from '../../ecs/components/mesh';
 import { Light } from '../../ecs/components/light';
+import { Camera, createCamera } from '../../ecs/components/camera';
 import { Gltf, createGltf } from '../../ecs/components/gltf';
 import { Sound, createSound } from '../../ecs/components/sound';
 import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
@@ -250,6 +251,41 @@ describe('ECS: Scene Serialization', () => {
             loop: true,
             positional: false,
             playing: true
+        });
+    });
+
+    it('should round-trip a camera', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Camera, createCamera(60, 0.2, 200, false));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Camera)).toEqual({
+            fov: 60,
+            near: 0.2,
+            far: 200,
+            current: false
+        });
+    });
+
+    it('should fill Camera fields when an older scene omitted them', () => {
+        const restored = deserializeWorld({
+            version: SCENE_FORMAT_VERSION,
+            nextId: 1,
+            entities: [0],
+            components: {
+                camera: { 0: {} }
+            }
+        });
+
+        expect(getComponent(restored, 0, Camera)).toEqual({
+            fov: 75,
+            near: 0.1,
+            far: 1000,
+            current: true
         });
     });
 
