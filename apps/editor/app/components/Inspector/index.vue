@@ -88,6 +88,17 @@
         block
         @click="addLight"
       />
+      <InspectorCamera
+        :camera="camera"
+        :inspect-tick="inspectTick"
+        @add="addCamera"
+        @remove="removeCamera"
+        @update-fov="setCameraFov"
+        @update-near="setCameraNear"
+        @update-far="setCameraFar"
+        @update-current="setCameraCurrent"
+        @commit="saveToStorage"
+      />
       <InspectorRigidBody
         :rigid="rigid"
         :inspect-tick="inspectTick"
@@ -165,6 +176,15 @@ const {
   setLightDistance,
   setLightCastShadow,
 } = useInspectorLight();
+const {
+  camera,
+  addCamera,
+  removeCamera,
+  setCameraFov,
+  setCameraNear,
+  setCameraFar,
+  setCameraCurrent,
+} = useInspectorCamera();
 const {
   rigid,
   addRigidBody,

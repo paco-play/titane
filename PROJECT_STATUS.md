@@ -33,9 +33,16 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 4 — Unfreeze, complete.** glTF animation, physics material, `f.asset()`, Ctrl+S, and prefabs are on `release`. Contract: `docs/ROADMAP.md`.
+**Phase 5 — Scene camera.** ECS `Camera` drives Play / game view. Contract: `docs/ROADMAP.md`.
 
 ## Completed
+
+### Camera
+- [x] **`Camera` component.** `fov`, `near`, `far`, `current`. Pose comes from `Transform` (parented cameras use `worldMatrix`). Defaults match the Three.js driver (`75`, `0.1`, `1000`, `current: true`). Clamp fov 1–179, near ≥ 0.001, far > near.
+- [x] **`pickCurrentCamera` / `setCurrentCamera`.** Public helpers. Checking Current in the Inspector clears the flag on every other camera.
+- [x] **Play / game view.** `applySceneCamera` runs while editor chrome is off. No current camera leaves `setCamera` / orbit alone (demo follow-camera unchanged).
+- [x] **Editor restore.** Enter Play snapshots the orbit pose; Stop writes it back.
+- [x] **Inspector + Hierarchy.** Dumb fov / near / far / Current / Remove. Hierarchy `+` spawns a Camera at `(0, 2, 6)` looking down -Z.
 
 ### Live editor → demo session
 - [x] **Preview envelope.** `createLivePreviewEnvelope` / `parseLivePreviewEnvelope` in core. Typed `postMessage` payload with a revision so stale frames are ignored.
@@ -265,4 +272,4 @@ glTF animation, physics material, `f.asset()`, Ctrl+S, and prefabs are in.
 
 ### Still parked
 
-No Camera component in core yet. Demo stays a sandbox. Do not grow it.
+Demo stays a sandbox. Do not grow it.

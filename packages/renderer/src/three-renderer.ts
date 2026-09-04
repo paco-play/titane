@@ -20,6 +20,12 @@ import {
     type RendererMode,
     type ThreeRendererOptions
 } from './renderer-mode';
+import { applySceneCamera } from './scene-camera';
+import {
+    captureEditorCamera,
+    restoreEditorCamera,
+    type EditorCameraPose
+} from './editor-camera';
 
 export type { GizmoTransformHandler, CameraPose, RendererMode, ThreeRendererOptions };
 
@@ -50,6 +56,7 @@ export class ThreeRenderer implements IRenderer {
     private audio: AudioPool | undefined;
     private resumeAudio: (() => void) | undefined;
     private disposeAudioListener: (() => void) | undefined;
+    private editorPose: EditorCameraPose | null = null;
 
     /**
      * Fallback lights added when no `Light` component entities exist in the world.
@@ -86,6 +93,15 @@ export class ThreeRenderer implements IRenderer {
      */
     public setEditorChromeEnabled(enabled: boolean): void {
         if (!usesEditorChrome(this.mode)) return;
+        if (this.camera && this.orbit) {
+            if (!enabled && this.chromeEnabled) {
+                this.editorPose = captureEditorCamera(this.camera, this.orbit.target);
+            }
+            if (enabled && !this.chromeEnabled && this.editorPose) {
+                restoreEditorCamera(this.camera, this.orbit.target, this.editorPose);
+                this.orbit.update();
+            }
+        }
         this.chromeEnabled = enabled;
         if (this.orbit) this.orbit.enabled = enabled;
         if (!enabled && this.gridHelper) this.gridHelper.visible = false;
@@ -220,6 +236,7 @@ export class ThreeRenderer implements IRenderer {
         }
 
         this.gizmos.apply();
+        if (!this.chromeEnabled) applySceneCamera(world, this.camera);
         this.renderer.render(this.scene, this.camera);
     }
 

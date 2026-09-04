@@ -55,7 +55,7 @@ Each phase is done when its **user scenario** passes, not when its task list is 
 
 **No rendering or physics features between Phase 0 and Phase 4.** Easy visual PRs are out of scope even when they look cheap. Frozen until Phase 4: glTF animation, physics material, asset manager, extra demo work.
 
-No Camera component in core until play-in-place makes `ThreeRenderer.setCamera` feel wrong.
+Play / game mode uses an ECS `Camera` when one is flagged `current`. `ThreeRenderer.setCamera` remains the host override when none is.
 
 ---
 
@@ -147,11 +147,19 @@ Only after the product loop exists.
 
 ---
 
+## Phase 5 — Scene camera
+
+Play-in-place made `setCamera` feel wrong: Play still looked through the orbit camera.
+
+1. `Camera` component (`fov`, `near`, `far`, `current`) — **Done.** Play and game mode look through the current camera. Edit mode keeps orbit. Exit Play restores the editor pose. Hierarchy `+` spawns one at `(0, 2, 6)`.
+
+---
+
 ## Already on the floor (do not rebuild)
 
 - ECS kernel, phases, SoA stores, queries, public `addSystem` / `removeSystem`
 - Editor: hierarchy, inspector, gizmos, pick, orbit, play/pause/step, dirty-flag save
-- Renderer: instancing, lights, albedo, PBR material, shadows, glTF, audio
+- Renderer: instancing, lights, albedo, PBR material, shadows, glTF, audio, scene camera
 - Rapier + sensors/triggers
 - Play snapshot restore (always discards Play edits today)
 - Demo as a sandbox only — do not grow it
