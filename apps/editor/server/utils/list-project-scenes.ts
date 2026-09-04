@@ -9,35 +9,39 @@ const labelOf = (relativePath: string): string =>
  * Recursively lists `.titane` files under `scenes/`.
  * Missing directories yield an empty list.
  */
-export const listProjectScenes = async (scenesDir: string): Promise<ProjectItem[]> => {
-  const out: ProjectItem[] = [];
-  await walk(scenesDir, scenesDir, out);
-  out.sort((a, b) => a.label.localeCompare(b.label));
-  return out;
+export const listProjectScenes = async (scenesDirectory: string): Promise<ProjectItem[]> => {
+  const listedScenes: ProjectItem[] = [];
+  await walkDirectory(scenesDirectory, scenesDirectory, listedScenes);
+  listedScenes.sort((left, right) => left.label.localeCompare(right.label));
+  return listedScenes;
 };
 
-const walk = async (dir: string, root: string, out: ProjectItem[]): Promise<void> => {
+const walkDirectory = async (
+  directory: string,
+  rootDirectory: string,
+  listedScenes: ProjectItem[]
+): Promise<void> => {
   let entries;
   try {
-    entries = await readdir(dir, { withFileTypes: true });
+    entries = await readdir(directory, { withFileTypes: true });
   } catch {
     return;
   }
 
   for (const entry of entries) {
     if (entry.name.startsWith('.')) continue;
-    const full = join(dir, entry.name);
+    const fullPath = join(directory, entry.name);
     if (entry.isDirectory()) {
-      await walk(full, root, out);
+      await walkDirectory(fullPath, rootDirectory, listedScenes);
       continue;
     }
     if (extname(entry.name).toLowerCase() !== '.titane') continue;
-    const rel = relative(root, full).split('\\').join('/');
-    out.push({
+    const relativePath = relative(rootDirectory, fullPath).split('\\').join('/');
+    listedScenes.push({
       kind: 'scene',
-      name: rel,
-      url: `/scenes/${rel}`,
-      label: labelOf(rel)
+      name: relativePath,
+      url: `/scenes/${relativePath}`,
+      label: labelOf(relativePath)
     });
   }
 };

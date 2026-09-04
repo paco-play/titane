@@ -9,30 +9,34 @@ const labelOf = (relativePath: string): string =>
  * Recursively lists `.titane` files under `public/prefabs`.
  * Missing directories yield an empty list.
  */
-export const listProjectPrefabs = async (prefabsDir: string): Promise<ProjectPrefab[]> => {
-  const out: ProjectPrefab[] = [];
-  await walk(prefabsDir, prefabsDir, out);
-  out.sort((a, b) => a.name.localeCompare(b.name));
-  return out;
+export const listProjectPrefabs = async (prefabsDirectory: string): Promise<ProjectPrefab[]> => {
+  const listedPrefabs: ProjectPrefab[] = [];
+  await walkDirectory(prefabsDirectory, prefabsDirectory, listedPrefabs);
+  listedPrefabs.sort((left, right) => left.name.localeCompare(right.name));
+  return listedPrefabs;
 };
 
-const walk = async (dir: string, root: string, out: ProjectPrefab[]): Promise<void> => {
+const walkDirectory = async (
+  directory: string,
+  rootDirectory: string,
+  listedPrefabs: ProjectPrefab[]
+): Promise<void> => {
   let entries;
   try {
-    entries = await readdir(dir, { withFileTypes: true });
+    entries = await readdir(directory, { withFileTypes: true });
   } catch {
     return;
   }
 
   for (const entry of entries) {
     if (entry.name.startsWith('.')) continue;
-    const full = join(dir, entry.name);
+    const fullPath = join(directory, entry.name);
     if (entry.isDirectory()) {
-      await walk(full, root, out);
+      await walkDirectory(fullPath, rootDirectory, listedPrefabs);
       continue;
     }
     if (extname(entry.name).toLowerCase() !== '.titane') continue;
-    const rel = relative(root, full).split('\\').join('/');
-    out.push({ url: `/prefabs/${rel}`, name: labelOf(rel) });
+    const relativePath = relative(rootDirectory, fullPath).split('\\').join('/');
+    listedPrefabs.push({ url: `/prefabs/${relativePath}`, name: labelOf(relativePath) });
   }
 };

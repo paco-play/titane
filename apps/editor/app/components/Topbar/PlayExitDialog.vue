@@ -3,7 +3,7 @@
     :open="open"
     title="Exit Play"
     :dismissible="false"
-    @update:open="onOpen"
+    @update:open="onOpenChange"
   >
     <template #body>
       <p class="text-sm text-muted">
@@ -17,13 +17,13 @@
           color="neutral"
           variant="outline"
           size="sm"
-          @click="emit('discard')"
+          @click="chooseDiscard"
         />
         <UButton
           label="Keep"
           color="primary"
           size="sm"
-          @click="emit('keep')"
+          @click="chooseKeep"
         />
       </div>
     </template>
@@ -31,17 +31,37 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  open: boolean;
+const props = defineProps<{
+  open: boolean
 }>();
 
 const emit = defineEmits<{
-  keep: [];
-  discard: [];
-  dismiss: [];
+  keep: []
+  discard: []
+  dismiss: []
 }>();
 
-const onOpen = (next: boolean): void => {
-  if (!next) emit('dismiss');
+/** True after Keep or Discard so closing the modal does not fire dismiss too. */
+const choiceAlreadyMade = ref(false);
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (isOpen) choiceAlreadyMade.value = false;
+  }
+);
+
+const chooseKeep = (): void => {
+  choiceAlreadyMade.value = true;
+  emit('keep');
+};
+
+const chooseDiscard = (): void => {
+  choiceAlreadyMade.value = true;
+  emit('discard');
+};
+
+const onOpenChange = (nextOpen: boolean): void => {
+  if (!nextOpen && !choiceAlreadyMade.value) emit('dismiss');
 };
 </script>

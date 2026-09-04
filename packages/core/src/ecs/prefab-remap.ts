@@ -24,7 +24,7 @@ export const remapEntityId = (
 };
 
 /**
- * Rewrites `Transform.parent` and `f.entity()` fields using `ids`.
+ * Rewrites `Transform.parent` and `field.entity()` fields using `ids`.
  */
 export const remapPrefabData = (
     type: AnyComponentType,

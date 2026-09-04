@@ -43,7 +43,7 @@ A user component declares a schema. That schema must simultaneously:
 
 If the developer has to write a type **and** a schema, the design has failed.
 
-Recommended shape: a small house DSL (`f.number`, `f.color`, `f.entity`, …) with editor metadata (`min`, `max`, `step`). Not Zod (weak editor metadata). Not decorators (bundler friction).
+Recommended shape: a small house DSL (`field.number`, `field.color`, `field.entity`, …) with editor metadata (`min`, `max`, `step`). Not Zod (weak editor metadata). Not decorators (bundler friction).
 
 ### Execution stays data-oriented
 
@@ -53,7 +53,7 @@ Recommended shape: a small house DSL (`f.number`, `f.color`, `f.entity`, …) wi
 
 Each phase is done when its **user scenario** passes, not when its task list is checked.
 
-**No rendering or physics features between Phase 0 and Phase 4.** Easy visual PRs are out of scope even when they look cheap. Frozen until Phase 4: glTF animation, physics material, asset manager, extra demo work.
+**No rendering or physics features between Phase 0 and Phase 4.** Easy visual PRs are out of scope even when they look cheap. Frozen until Phase 4: glTF animation, physics material, asset manager.
 
 Play / game mode uses an ECS `Camera` when one is flagged `current`. `ThreeRenderer.setCamera` remains the host override when none is.
 
@@ -80,7 +80,7 @@ This is the phase that changes the nature of the product.
 | --- | --- | --- |
 | 1.1 | Data-only `.titane` | **Done.** Unknown ids stay as orphan payloads; Inspector shows a missing-script row. |
 | 1.2 | `engine.use(plugin)` | **Done.** `{ name, register(engine) }`. Duplicate names throw. Systems and components register through the public API. |
-| 1.3 | Schema DSL `f.*` | **Done.** `number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`. TS inference. Defaults. Deserialize validation. |
+| 1.3 | Schema DSL `field.*` | **Done.** `number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`. TS inference. Defaults. Deserialize validation. |
 | 1.4 | User `defineComponent` + lifecycle | **Done.** `onStart` / `onUpdate` / `onDestroy`. Batched system per type. |
 | 1.5 | Auto Inspector | **Done.** Schema → widget. Writes use the existing dirty flag + commit (no separate undo stack in the editor yet). |
 | 1.6 | Add / remove component | **Done.** Inspector lists `engine.getUserComponents()` (Unity-style Add Component). |
@@ -89,14 +89,14 @@ Widget map:
 
 | Schema | Widget |
 | --- | --- |
-| `f.number({ min, max, step })` | Slider + numeric input |
-| `f.number()` | Drag-input (Shift = fine, Ctrl = coarse) |
-| `f.boolean()` | Toggle |
-| `f.color()` | Color picker |
-| `f.vec3()` | Three drag-inputs |
-| `f.entity()` | Entity reference + hierarchy pick |
-| `f.enum([...])` | Select |
-| `f.asset(...)` | URL + picker from `public/assets` |
+| `field.number({ min, max, step })` | Slider + numeric input |
+| `field.number()` | Drag-input (Shift = fine, Ctrl = coarse) |
+| `field.boolean()` | Toggle |
+| `field.color()` | Color picker |
+| `field.vec3()` | Three drag-inputs |
+| `field.entity()` | Entity reference + hierarchy pick |
+| `field.enum([...])` | Select |
+| `field.asset(...)` | URL + picker from `public/assets` |
 
 Play-mode edits: Titane must offer an explicit **keep / discard** on exiting Play. Unity loses Play edits by default; do not copy that.
 
@@ -141,7 +141,7 @@ Only after the product loop exists.
 
 1. glTF animation (`clip`, `playing`, `loop`) — **Done.**
 2. Physics material (friction, restitution) — **Done.**
-3. Asset manager (`f.asset()` in the Inspector) — **Done.**
+3. Asset manager (`field.asset()` in the Inspector) — **Done.**
 4. Ctrl+S writes `scenes/main.titane` — **Done.** Dev Nitro `PUT /api/titane/scene`. Not the browser File System Access API.
 5. Prefabs (entity + children + components, reusable) — **Done.**
 
@@ -157,7 +157,7 @@ Play-in-place made `setCamera` feel wrong: Play still looked through the orbit c
 
 ## Project panel
 
-The Inspector `f.asset()` picker is not a Project window. The editor now has a bottom **Project** panel: Scenes, Prefabs, Models, Textures, Audio. Files come from `scenes/`, `public/prefabs`, and `public/assets`. Double-click a prefab / model / sound to spawn it; a texture writes `Mesh.albedo` on the selection.
+The Inspector `field.asset()` picker is not a Project window. The editor now has a bottom **Project** panel: Scenes, Prefabs, Models, Textures, Audio. Files come from `scenes/`, `public/prefabs`, and `public/assets`. Double-click a prefab / model / sound to spawn it; a texture writes `Mesh.albedo` on the selection.
 
 ---
 
@@ -168,4 +168,3 @@ The Inspector `f.asset()` picker is not a Project window. The editor now has a b
 - Renderer: instancing, lights, albedo, PBR material, shadows, glTF, audio, scene camera
 - Rapier + sensors/triggers
 - Play snapshot with explicit Keep / Discard
-- Demo as a sandbox only — do not grow it

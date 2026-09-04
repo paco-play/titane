@@ -11,7 +11,7 @@ export type TransformField = 'position' | 'rotation' | 'scale';
 export type Axis = keyof Vec3;
 
 /**
- * Named entity entry for `f.entity()` pickers.
+ * Named entity entry for `field.entity()` pickers.
  */
 export interface EntityOption {
   readonly id: Entity;

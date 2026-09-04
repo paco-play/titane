@@ -4,7 +4,7 @@ import type { IRenderer } from '../../runtime/renderer-interface';
 import { defineComponent } from '../../ecs/kernel/registry';
 import { addComponent, getComponent, removeComponent } from '../../ecs/kernel/component';
 import { createEntity } from '../../ecs/kernel/entity';
-import { f } from '../../ecs/schema/fields';
+import { field } from '../../ecs/schema/fields';
 import { serializeWorld, deserializeWorld } from '../../ecs/serialization';
 import { FIXED_DT } from '../../utils/fixed-step';
 
@@ -28,7 +28,7 @@ const createEngine = (): TitaneEngine => {
 
 const Motor = defineComponent('UserMotor', {
     schema: {
-        speed: f.number({ min: 0, max: 20, step: 0.1, default: 5 })
+        speed: field.number({ min: 0, max: 20, step: 0.1, default: 5 })
     }
 });
 
@@ -64,7 +64,7 @@ describe('engine.registerComponent lifecycle', () => {
 
     const Walker = defineComponent('UserWalker', {
         schema: {
-            speed: f.number({ default: 2 })
+            speed: field.number({ default: 2 })
         },
         onStart: vi.fn(),
         onUpdate: vi.fn(),
@@ -153,7 +153,7 @@ describe('engine.registerComponent lifecycle', () => {
 describe('script isolation and hot reload', () => {
     const Boom = defineComponent('UserBoom', {
         schema: {
-            armed: f.boolean({ default: true })
+            armed: field.boolean({ default: true })
         },
         onUpdate({ data }) {
             if (data.armed) throw new Error('boom');
@@ -162,7 +162,7 @@ describe('script isolation and hot reload', () => {
 
     const Hot = defineComponent('UserHot', {
         schema: {
-            speed: f.number({ default: 1 })
+            speed: field.number({ default: 1 })
         }
     });
 
@@ -207,8 +207,8 @@ describe('script isolation and hot reload', () => {
         const onUpdate = vi.fn();
         const patched = defineComponent('UserHot', {
             schema: {
-                speed: f.number({ default: 1 }),
-                jump: f.number({ default: 3 })
+                speed: field.number({ default: 1 }),
+                jump: field.number({ default: 3 })
             },
             onUpdate
         });

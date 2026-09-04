@@ -57,7 +57,7 @@ export const isSerializedPrefab = (raw: unknown): raw is SerializedPrefab => {
 
 /**
  * Packs an entity and its descendants into a portable prefab.
- * Parent links and `f.entity()` fields that leave the subtree become `null`.
+ * Parent links and `field.entity()` fields that leave the subtree become `null`.
  */
 export const serializePrefab = (world: World, rootId: Entity): SerializedPrefab => {
     const subtree = collectSubtree(world, rootId);
