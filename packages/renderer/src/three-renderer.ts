@@ -92,6 +92,8 @@ export class ThreeRenderer implements IRenderer {
         this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         // Fallback lights are shown only when no Light entities exist in the world.
         const fallbackDir = new THREE.DirectionalLight(0xffffff, 1);
@@ -187,13 +189,7 @@ export class ThreeRenderer implements IRenderer {
                 ? this.gizmos.draggedMatrix()
                 : transform.worldMatrix;
 
-            this.pool.sync(
-                entityId,
-                meshData.primitive,
-                meshData.color,
-                matrix,
-                meshData.albedo ?? ''
-            );
+            this.pool.sync(entityId, meshData, matrix);
         }
 
         if (this.gizmos.entity !== null && !this.gizmos.dragging) {

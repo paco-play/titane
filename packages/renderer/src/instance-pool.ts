@@ -1,22 +1,35 @@
 import * as THREE from 'three';
-import type { Entity, PrimitiveType } from '@titane/core';
+import type { Entity, MeshData, PrimitiveType } from '@titane/core';
 import type { ResourceCache } from './resource-cache';
 import { InstanceBatch } from './instance-batch';
+import {
+    materialKey,
+    normalizeMaterialSpec,
+    type NormalizedMaterialSpec
+} from './material-spec';
 
 const INITIAL_CAPACITY = 8;
 
-/** Identity of one instanced batch: shared geometry and material. */
+/** Identity of one instanced batch: shared geometry, material and shadow flags. */
 interface BatchSpec {
     primitive: PrimitiveType;
-    color: string;
-    albedo: string;
+    material: NormalizedMaterialSpec;
+    castShadow: boolean;
+    receiveShadow: boolean;
 }
 
+const toBatchSpec = (mesh: MeshData): BatchSpec => ({
+    primitive: mesh.primitive,
+    material: normalizeMaterialSpec(mesh),
+    castShadow: mesh.castShadow,
+    receiveShadow: mesh.receiveShadow
+});
+
 const batchKey = (spec: BatchSpec): string =>
-    `${spec.primitive}\0${spec.color.toLowerCase()}\0${spec.albedo}`;
+    `${spec.primitive}\0${materialKey(spec.material)}\0${spec.castShadow ? 1 : 0}\0${spec.receiveShadow ? 1 : 0}`;
 
 /**
- * Groups renderable entities into one InstancedMesh per (primitive, color, albedo).
+ * Groups renderable entities into one InstancedMesh per (primitive, material, shadow flags).
  */
 export class InstancePool {
     private readonly batches = new Map<string, InstanceBatch>();
@@ -42,12 +55,10 @@ export class InstancePool {
      */
     public sync(
         entityId: Entity,
-        primitive: PrimitiveType,
-        color: string,
-        worldMatrix: ArrayLike<number>,
-        albedo = ''
+        mesh: MeshData,
+        worldMatrix: ArrayLike<number>
     ): void {
-        const spec: BatchSpec = { primitive, color, albedo };
+        const spec = toBatchSpec(mesh);
         const key = batchKey(spec);
         const previous = this.entityKey.get(entityId);
         if (previous !== undefined && previous !== key) this.remove(entityId);
@@ -100,8 +111,10 @@ export class InstancePool {
 
     private spawnBatch(key: string, spec: BatchSpec): InstanceBatch {
         const geometry = this.resources.geometry(spec.primitive);
-        const material = this.resources.material(spec.color, spec.albedo);
+        const material = this.resources.material(spec.material);
         const batch = new InstanceBatch(geometry, material, INITIAL_CAPACITY);
+        batch.mesh.castShadow = spec.castShadow;
+        batch.mesh.receiveShadow = spec.receiveShadow;
         this.scene.add(batch.mesh);
         this.batches.set(key, batch);
         this.specs.set(key, spec);
@@ -112,7 +125,7 @@ export class InstancePool {
         this.scene.remove(batch.mesh);
         batch.mesh.dispose();
         const spec = this.specs.get(key);
-        if (spec) this.resources.releaseMaterial(spec.color, spec.albedo);
+        if (spec) this.resources.releaseMaterial(spec.material);
         this.batches.delete(key);
         this.specs.delete(key);
     }

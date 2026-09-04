@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Entity, World } from '@titane/core';
 import { defineQuery, runQuery, getComponent, Light, Transform } from '@titane/core';
 import type { LightData, LightKind } from '@titane/core';
+import { applyShadowCasting } from './light-shadow';
 
 const lightQuery = defineQuery([Light]);
 
@@ -142,6 +143,7 @@ function applyLightData(
 
     light.color.set(data.color);
     light.intensity = data.intensity;
+    applyShadowCasting(light, data);
 
     const transform = getComponent(world, entity, Transform);
     if (!transform) return;

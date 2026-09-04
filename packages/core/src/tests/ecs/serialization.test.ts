@@ -5,6 +5,7 @@ import { addComponent, getComponent } from '../../ecs/kernel/component';
 import { Transform, createTransform } from '../../ecs/components/transform';
 import { Name, createName } from '../../ecs/components/name';
 import { Mesh, createMesh } from '../../ecs/components/mesh';
+import { Light } from '../../ecs/components/light';
 import { Gltf, createGltf } from '../../ecs/components/gltf';
 import { Sound, createSound } from '../../ecs/components/sound';
 import {
@@ -95,7 +96,12 @@ describe('ECS: Scene Serialization', () => {
         expect(getComponent(restored, 0, Mesh)).toEqual({
             primitive: 'box',
             color: '#00ff00',
-            albedo: ''
+            albedo: '',
+            roughness: 1,
+            metalness: 0,
+            emissive: '#000000',
+            castShadow: true,
+            receiveShadow: true
         });
     });
 
@@ -109,6 +115,37 @@ describe('ECS: Scene Serialization', () => {
         );
 
         expect(getComponent(restored, entity, Mesh)?.albedo).toBe('wall.png');
+    });
+
+    it('should round-trip mesh material fields', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Mesh, createMesh('box', '#ffffff', '', 0.25, 0.9, '#112233'));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Mesh)).toMatchObject({
+            roughness: 0.25,
+            metalness: 0.9,
+            emissive: '#112233',
+            castShadow: true,
+            receiveShadow: true
+        });
+    });
+
+    it('should fill Light.castShadow when an older scene omitted it', () => {
+        const restored = deserializeWorld({
+            version: SCENE_FORMAT_VERSION,
+            nextId: 1,
+            entities: [0],
+            components: {
+                light: { 0: { kind: 'directional', color: '#ffffff', intensity: 1, distance: 0 } }
+            }
+        });
+
+        expect(getComponent(restored, 0, Light)?.castShadow).toBe(false);
     });
 
     it('should round-trip a glTF URL', () => {

@@ -16,6 +16,11 @@
         @update-primitive="setPrimitive"
         @update-color="setColor"
         @update-albedo="setAlbedo"
+        @update-roughness="setRoughness"
+        @update-metalness="setMetalness"
+        @update-emissive="setEmissive"
+        @update-cast-shadow="setCastShadow"
+        @update-receive-shadow="setReceiveShadow"
         @commit="saveToStorage"
       />
       <InspectorGltf
@@ -66,6 +71,7 @@
         @update-color="setLightColor"
         @update-intensity="setLightIntensity"
         @update-distance="setLightDistance"
+        @update-cast-shadow="setLightCastShadow"
         @remove="removeLight"
         @commit="saveToStorage"
       />
@@ -97,16 +103,13 @@
 
 <script setup lang="ts">
 import type { Axis, TransformField } from '~/types/inspector';
-import type { MeshData, PrimitiveType, RigidBodyKind, LightData, LightKind } from '@titane/core';
+import type { RigidBodyKind } from '@titane/core';
 import {
   addComponent,
-  createLight,
   createPlayerControlled,
   createRigidBody,
   getComponent,
   hasComponent,
-  Light,
-  Mesh,
   PlayerControlled,
   removeComponent,
   RigidBody,
@@ -116,6 +119,17 @@ import {
 
 const { engine, selectedEntityId, inspectTick, notifyInspect, markDirty } = useTitane();
 const { saveToStorage } = usePersistence();
+const {
+  mesh,
+  setPrimitive,
+  setColor,
+  setAlbedo,
+  setRoughness,
+  setMetalness,
+  setEmissive,
+  setCastShadow,
+  setReceiveShadow,
+} = useInspectorMesh();
 const { gltf, addGltf, removeGltf, setGltfUrl } = useInspectorGltf();
 const {
   sound,
@@ -127,26 +141,22 @@ const {
   setSoundPositional,
   setSoundPlaying
 } = useInspectorSound();
+const {
+  light,
+  addLight,
+  removeLight,
+  setLightKind,
+  setLightColor,
+  setLightIntensity,
+  setLightDistance,
+  setLightCastShadow,
+} = useInspectorLight();
 
 /** Transform data of the selected entity, if any. */
 const transform = computed<Transform | undefined>(() => {
   void inspectTick.value;
   if (selectedEntityId.value === null || !engine.value) return undefined;
   return getComponent(engine.value.world, selectedEntityId.value, Transform);
-});
-
-/** Mesh data of the selected entity, if any. */
-const mesh = computed<MeshData | undefined>(() => {
-  void inspectTick.value;
-  if (selectedEntityId.value === null || !engine.value) return undefined;
-  return getComponent(engine.value.world, selectedEntityId.value, Mesh);
-});
-
-/** Light data of the selected entity, or undefined when absent. */
-const light = computed<LightData | undefined>(() => {
-  void inspectTick.value;
-  if (selectedEntityId.value === null || !engine.value) return undefined;
-  return getComponent(engine.value.world, selectedEntityId.value, Light);
 });
 
 /** RigidBody kind of the selection, or null when the component is absent. */
@@ -176,45 +186,6 @@ const setAxis = (field: TransformField, axis: Axis, value: number): void => {
   markDirty();
 };
 
-/**
- * Writes a new primitive type into the selected entity's Mesh.
- */
-const setPrimitive = (primitive: PrimitiveType): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-
-  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
-    data.primitive = primitive;
-  });
-  notifyInspect();
-  markDirty();
-};
-
-/**
- * Writes a new color into the selected entity's Mesh.
- */
-const setColor = (color: string): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-
-  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
-    data.color = color;
-  });
-  notifyInspect();
-  markDirty();
-};
-
-/**
- * Writes a new albedo URL into the selected entity's Mesh.
- */
-const setAlbedo = (albedo: string): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-
-  updateComponent(engine.value.world, selectedEntityId.value, Mesh, (data) => {
-    data.albedo = albedo;
-  });
-  notifyInspect();
-  markDirty();
-};
-
 const addRigidBody = (): void => {
   if (selectedEntityId.value === null || !engine.value) return;
   addComponent(engine.value.world, selectedEntityId.value, RigidBody, createRigidBody('dynamic'));
@@ -239,56 +210,6 @@ const setRigidKind = (kind: RigidBodyKind): void => {
   notifyInspect();
   markDirty();
   saveToStorage();
-};
-
-const addLight = (): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  addComponent(engine.value.world, selectedEntityId.value, Light, createLight());
-  notifyInspect();
-  markDirty();
-  saveToStorage();
-};
-
-const removeLight = (): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  removeComponent(engine.value.world, selectedEntityId.value, Light);
-  notifyInspect();
-  markDirty();
-  saveToStorage();
-};
-
-const setLightKind = (kind: LightKind): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
-    data.kind = kind;
-  });
-  notifyInspect();
-  markDirty();
-};
-
-const setLightColor = (color: string): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
-    data.color = color;
-  });
-  notifyInspect();
-  markDirty();
-};
-
-const setLightIntensity = (intensity: number): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
-    data.intensity = intensity;
-  });
-  markDirty();
-};
-
-const setLightDistance = (distance: number): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
-    data.distance = distance;
-  });
-  markDirty();
 };
 
 const setPlayerControlled = (controlled: boolean): void => {

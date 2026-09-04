@@ -80,6 +80,8 @@ export class InstanceBatch {
         const grown = new THREE.InstancedMesh(this.mesh.geometry, this.mesh.material, next);
         grown.frustumCulled = false;
         grown.matrixAutoUpdate = false;
+        grown.castShadow = this.mesh.castShadow;
+        grown.receiveShadow = this.mesh.receiveShadow;
         const scratch = new THREE.Matrix4();
         for (let i = 0; i < this.entities.length; i++) {
             this.mesh.getMatrixAt(i, scratch);
