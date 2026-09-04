@@ -6,6 +6,21 @@ import type { SerializedWorld } from '@titane/core';
 export const PROJECT_SCENE_FILENAME = 'main.titane';
 
 /**
+ * True when `raw` looks like a scene payload. Kept here so Nitro never
+ * loads `@titane/core` at runtime (directory ESM imports fail in Node).
+ */
+export const looksLikeSerializedWorld = (raw: unknown): raw is SerializedWorld => {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return false;
+  const data = raw as Partial<SerializedWorld>;
+  return typeof data.version === 'number'
+    && typeof data.nextId === 'number'
+    && Array.isArray(data.entities)
+    && typeof data.components === 'object'
+    && data.components !== null
+    && !Array.isArray(data.components);
+};
+
+/**
  * Writes `scenes/main.titane`. Pretty JSON so the file diffs in git.
  */
 export const writeProjectScene = async (

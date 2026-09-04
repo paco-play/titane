@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { SerializedWorld } from '@titane/core';
-import { PROJECT_SCENE_FILENAME, writeProjectScene } from '../server/utils/write-project-scene';
+import { PROJECT_SCENE_FILENAME, looksLikeSerializedWorld, writeProjectScene } from '../server/utils/write-project-scene';
 import { isSaveShortcut, type SaveKeyEvent } from '../app/utils/save-shortcut';
 
 const scene = (): SerializedWorld => ({
@@ -21,6 +21,11 @@ describe('writeProjectScene', () => {
     expect(target).toBe(join(dir, PROJECT_SCENE_FILENAME));
     expect(JSON.parse(readFileSync(target, 'utf8'))).toMatchObject({ nextId: 2, entities: [1] });
     expect(readdirSync(dir)).toEqual([PROJECT_SCENE_FILENAME]);
+  });
+
+  it('rejects a prefab-shaped payload', () => {
+    expect(looksLikeSerializedWorld(scene())).toBe(true);
+    expect(looksLikeSerializedWorld({ version: 1, root: 0, entities: [0], components: {} })).toBe(false);
   });
 });
 
