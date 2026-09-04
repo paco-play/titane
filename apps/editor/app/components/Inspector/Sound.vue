@@ -40,17 +40,17 @@
         <UCheckbox
           :model-value="sound.loop"
           label="Loop"
-          @update:model-value="onFlag('updateLoop', $event)"
+          @update:model-value="onLoop"
         />
         <UCheckbox
           :model-value="sound.positional"
           label="Positional"
-          @update:model-value="onFlag('updatePositional', $event)"
+          @update:model-value="onPositional"
         />
         <UCheckbox
           :model-value="sound.playing"
           label="Playing"
-          @update:model-value="onFlag('updatePlaying', $event)"
+          @update:model-value="onPlaying"
         />
 
         <UButton
@@ -94,12 +94,21 @@ const onVolume = (raw: string | number): void => {
   emit('updateVolume', Math.min(1, Math.max(0, value)));
 };
 
-const onFlag = (
-  event: 'updateLoop' | 'updatePositional' | 'updatePlaying',
-  value: boolean | 'indeterminate'
-): void => {
+const onLoop = (value: boolean | 'indeterminate'): void => {
   if (value === 'indeterminate') return;
-  emit(event, value);
+  emit('updateLoop', value);
+  emit('commit');
+};
+
+const onPositional = (value: boolean | 'indeterminate'): void => {
+  if (value === 'indeterminate') return;
+  emit('updatePositional', value);
+  emit('commit');
+};
+
+const onPlaying = (value: boolean | 'indeterminate'): void => {
+  if (value === 'indeterminate') return;
+  emit('updatePlaying', value);
   emit('commit');
 };
 </script>

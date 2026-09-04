@@ -2,38 +2,31 @@ import * as THREE from 'three';
 import type { Entity, MeshData, PrimitiveType } from '@titane/core';
 import type { ResourceCache } from './resource-cache';
 import { InstanceBatch } from './instance-batch';
-import { materialKey, normalizeMaterialSpec } from './material-spec';
+import {
+    materialKey,
+    normalizeMaterialSpec,
+    type NormalizedMaterialSpec
+} from './material-spec';
 
 const INITIAL_CAPACITY = 8;
 
-/** Identity of one instanced batch: shared geometry and material. */
+/** Identity of one instanced batch: shared geometry, material and shadow flags. */
 interface BatchSpec {
     primitive: PrimitiveType;
-    color: string;
-    albedo: string;
-    roughness: number;
-    metalness: number;
-    emissive: string;
+    material: NormalizedMaterialSpec;
     castShadow: boolean;
     receiveShadow: boolean;
 }
 
-const toBatchSpec = (mesh: MeshData): BatchSpec => {
-    const material = normalizeMaterialSpec(mesh);
-    return {
-        primitive: mesh.primitive,
-        color: material.color,
-        albedo: material.albedo,
-        roughness: material.roughness,
-        metalness: material.metalness,
-        emissive: material.emissive,
-        castShadow: mesh.castShadow,
-        receiveShadow: mesh.receiveShadow
-    };
-};
+const toBatchSpec = (mesh: MeshData): BatchSpec => ({
+    primitive: mesh.primitive,
+    material: normalizeMaterialSpec(mesh),
+    castShadow: mesh.castShadow,
+    receiveShadow: mesh.receiveShadow
+});
 
 const batchKey = (spec: BatchSpec): string =>
-    `${spec.primitive}\0${materialKey(spec)}\0${spec.castShadow ? 1 : 0}\0${spec.receiveShadow ? 1 : 0}`;
+    `${spec.primitive}\0${materialKey(spec.material)}\0${spec.castShadow ? 1 : 0}\0${spec.receiveShadow ? 1 : 0}`;
 
 /**
  * Groups renderable entities into one InstancedMesh per (primitive, material, shadow flags).
@@ -118,7 +111,7 @@ export class InstancePool {
 
     private spawnBatch(key: string, spec: BatchSpec): InstanceBatch {
         const geometry = this.resources.geometry(spec.primitive);
-        const material = this.resources.material(spec);
+        const material = this.resources.material(spec.material);
         const batch = new InstanceBatch(geometry, material, INITIAL_CAPACITY);
         batch.mesh.castShadow = spec.castShadow;
         batch.mesh.receiveShadow = spec.receiveShadow;
@@ -132,7 +125,7 @@ export class InstancePool {
         this.scene.remove(batch.mesh);
         batch.mesh.dispose();
         const spec = this.specs.get(key);
-        if (spec) this.resources.releaseMaterial(spec);
+        if (spec) this.resources.releaseMaterial(spec.material);
         this.batches.delete(key);
         this.specs.delete(key);
     }

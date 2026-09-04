@@ -4,7 +4,7 @@ import { defineComponent } from '../kernel/registry';
  * The kind of light emitted by this entity.
  *
  * - `directional` — parallel rays from an infinite distance; uses `Transform.rotation` as direction.
- * - `point` — emits in all directions from `Transform.position`; respects `distance` and `decay`.
+ * - `point` — emits in all directions from `Transform.position`; respects `distance`.
  * - `ambient` — flat, directionless fill light that affects all surfaces equally.
  */
 export type LightKind = 'directional' | 'point' | 'ambient';

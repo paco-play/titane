@@ -32,35 +32,12 @@
         </div>
 
         <!-- Color picker -->
-        <div class="space-y-2">
-          <UiFormLabel label="Color" />
-          <UPopover @update:open="onPickerOpen">
-            <UButton
-              :label="light.color"
-              color="neutral"
-              variant="outline"
-              size="xs"
-              block
-            >
-              <template #leading>
-                <span
-                  class="size-3 rounded-full ring ring-inset ring-accented"
-                  :style="{ backgroundColor: light.color }"
-                />
-              </template>
-            </UButton>
-
-            <template #content>
-              <UColorPicker
-                :model-value="light.color"
-                format="hex"
-                size="sm"
-                class="p-2"
-                @update:model-value="onColor"
-              />
-            </template>
-          </UPopover>
-        </div>
+        <InspectorColorField
+          label="Color"
+          :value="light.color"
+          @update="emit('updateColor', $event)"
+          @commit="emit('commit')"
+        />
 
         <!-- Intensity -->
         <div class="space-y-2">
@@ -133,15 +110,6 @@ const emit = defineEmits<{
 const onKind = (kind: LightKind): void => {
   emit('updateKind', kind);
   emit('commit');
-};
-
-const onColor = (value: string | undefined): void => {
-  if (!value) return;
-  emit('updateColor', value.toLowerCase());
-};
-
-const onPickerOpen = (open: boolean): void => {
-  if (!open) emit('commit');
 };
 
 const onIntensity = (raw: string | number): void => {

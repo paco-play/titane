@@ -5,6 +5,7 @@ type ShadowLight = THREE.DirectionalLight | THREE.PointLight | THREE.AmbientLigh
 
 const DIRECTIONAL_SHADOW_EXTENT = 25;
 const DIRECTIONAL_SHADOW_FAR = 80;
+const DEFAULT_POINT_SHADOW_FAR = 50;
 
 /**
  * Enables or disables shadow maps on a light. Ambient lights never cast.
@@ -16,11 +17,8 @@ export const applyShadowCasting = (light: ShadowLight, data: LightData): void =>
         return;
     }
 
-    const enabled = data.castShadow;
-    if (light.castShadow === enabled) return;
-
-    light.castShadow = enabled;
-    if (!enabled) return;
+    light.castShadow = data.castShadow;
+    if (!data.castShadow) return;
 
     if (light instanceof THREE.DirectionalLight) {
         light.shadow.mapSize.set(1024, 1024);
@@ -39,6 +37,6 @@ export const applyShadowCasting = (light: ShadowLight, data: LightData): void =>
     light.shadow.mapSize.set(512, 512);
     light.shadow.bias = -0.001;
     light.shadow.camera.near = 0.1;
-    light.shadow.camera.far = data.distance > 0 ? data.distance : 50;
+    light.shadow.camera.far = data.distance > 0 ? data.distance : DEFAULT_POINT_SHADOW_FAR;
     light.shadow.camera.updateProjectionMatrix();
 };

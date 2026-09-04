@@ -26,4 +26,13 @@ describe('applyShadowCasting', () => {
 
         expect(light.castShadow).toBe(false);
     });
+
+    it('keeps the point shadow far in sync with distance', () => {
+        const light = new THREE.PointLight();
+        applyShadowCasting(light, createLight('point', '#ffffff', 1, 10, true));
+        expect(light.shadow.camera.far).toBe(10);
+
+        applyShadowCasting(light, createLight('point', '#ffffff', 1, 40, true));
+        expect(light.shadow.camera.far).toBe(40);
+    });
 });

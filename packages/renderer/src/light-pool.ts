@@ -157,10 +157,6 @@ function applyLightData(
     if (light instanceof THREE.PointLight) {
         light.distance = data.distance;
         light.position.set(px, py, pz);
-        if (light.castShadow) {
-            light.shadow.camera.far = data.distance > 0 ? data.distance : 50;
-            light.shadow.camera.updateProjectionMatrix();
-        }
         return;
     }
 

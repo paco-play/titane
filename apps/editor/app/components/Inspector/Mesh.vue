@@ -72,65 +72,18 @@
           />
         </div>
 
-        <div class="space-y-2">
-          <UiFormLabel label="Emissive" />
-          <UPopover @update:open="onPickerOpen">
-            <UButton
-              :label="mesh.emissive"
-              color="neutral"
-              variant="outline"
-              size="xs"
-              block
-            >
-              <template #leading>
-                <span
-                  class="size-3 rounded-full ring ring-inset ring-accented"
-                  :style="{ backgroundColor: mesh.emissive }"
-                />
-              </template>
-            </UButton>
-
-            <template #content>
-              <UColorPicker
-                :model-value="mesh.emissive"
-                format="hex"
-                size="sm"
-                class="p-2"
-                @update:model-value="onEmissive"
-              />
-            </template>
-          </UPopover>
-        </div>
-
-        <div class="space-y-2">
-          <UiFormLabel label="Color" />
-          <UPopover @update:open="onPickerOpen">
-            <UButton
-              :label="mesh.color"
-              color="neutral"
-              variant="outline"
-              size="xs"
-              block
-            >
-              <template #leading>
-                <span
-                  class="size-3 rounded-full ring ring-inset ring-accented"
-                  :style="{ backgroundColor: mesh.color }"
-                />
-              </template>
-            </UButton>
-
-            <template #content>
-              <UColorPicker
-                :model-value="mesh.color"
-                format="hex"
-                size="sm"
-                class="p-2"
-                @update:model-value="onColor"
-              />
-            </template>
-          </UPopover>
-        </div>
+        <InspectorColorField
+          label="Emissive"
+          :value="mesh.emissive"
+          @update="emit('updateEmissive', $event)"
+          @commit="emit('commit')"
+        />
+        <InspectorColorField
+          label="Color"
+          :value="mesh.color"
+          @update="emit('updateColor', $event)"
+          @commit="emit('commit')"
+        />
 
         <UCheckbox
           :model-value="mesh.castShadow"
@@ -169,26 +122,11 @@ const emit = defineEmits<{
   commit: [];
 }>();
 
-/**
- * Forwards a primitive choice. The click already carries a typed value.
- */
 const onPrimitive = (primitive: PrimitiveType): void => {
   emit('updatePrimitive', primitive);
   emit('commit');
 };
 
-/**
- * Writes a hex color back. Empty updates from the picker are ignored.
- */
-const onColor = (value: string | undefined): void => {
-  if (!value) return;
-
-  emit('updateColor', value.toLowerCase());
-};
-
-/**
- * Writes a texture URL back. Whitespace-only values clear the map.
- */
 const onAlbedo = (value: string | number | undefined): void => {
   const url = typeof value === 'string' ? value.trim() : '';
   emit('updateAlbedo', url);
@@ -213,11 +151,6 @@ const onMetalness = (raw: string | number | undefined): void => {
   emit('updateMetalness', value);
 };
 
-const onEmissive = (value: string | undefined): void => {
-  if (!value) return;
-  emit('updateEmissive', value.toLowerCase());
-};
-
 const onCastShadow = (value: boolean | 'indeterminate'): void => {
   if (value === 'indeterminate') return;
   emit('updateCastShadow', value);
@@ -228,12 +161,5 @@ const onReceiveShadow = (value: boolean | 'indeterminate'): void => {
   if (value === 'indeterminate') return;
   emit('updateReceiveShadow', value);
   emit('commit');
-};
-
-/**
- * Persists when the color popover closes, not on every drag tick.
- */
-const onPickerOpen = (open: boolean): void => {
-  if (!open) emit('commit');
 };
 </script>
