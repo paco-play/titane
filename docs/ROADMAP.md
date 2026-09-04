@@ -53,7 +53,7 @@ Recommended shape: a small house DSL (`f.number`, `f.color`, `f.entity`, …) wi
 
 Each phase is done when its **user scenario** passes, not when its task list is checked.
 
-**No rendering or physics features between Phase 0 and Phase 4.** Easy visual PRs are out of scope even when they look cheap. Frozen until Phase 4: glTF animation, physics material, asset manager, File System Access, extra demo work.
+**No rendering or physics features between Phase 0 and Phase 4.** Easy visual PRs are out of scope even when they look cheap. Frozen until Phase 4: glTF animation, physics material, asset manager, extra demo work.
 
 No Camera component in core until play-in-place makes `ThreeRenderer.setCamera` feel wrong.
 
@@ -142,7 +142,7 @@ Only after the product loop exists.
 1. glTF animation (`clip`, `playing`, `loop`) — **Done.**
 2. Physics material (friction, restitution) — **Done.**
 3. Asset manager (`f.asset()` in the Inspector) — **Done.**
-4. File System Access (Ctrl+S to disk)
+4. File System Access (Ctrl+S to disk) — **Dropped.** Save stays dirty-flag + download / LocalStorage.
 5. Prefabs (entity + children + components, reusable)
 
 ---

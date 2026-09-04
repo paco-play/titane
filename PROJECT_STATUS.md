@@ -33,7 +33,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 4 — Unfreeze.** glTF animation, physics material, and `f.asset()` are in. Next: File System Access, prefabs. Contract: `docs/ROADMAP.md`.
+**Phase 4 — Unfreeze.** glTF animation, physics material, and `f.asset()` are on `release`. Ctrl+S to disk is out of scope. Remaining: prefabs. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -255,7 +255,7 @@ Project convention, `npm run create`, editor on `/titane` in dev, prod build omi
 
 ### Phase 4 — Unfreeze
 
-glTF animation, physics material, and `f.asset()` are in. Remaining: File System Access, prefabs.
+glTF animation, physics material, and `f.asset()` are in. File System Access (Ctrl+S) is dropped. Remaining: prefabs.
 
 ### Still parked
 
