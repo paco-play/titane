@@ -166,6 +166,7 @@ matrices, and **rendering still runs**, so the viewport stays responsive.
 | Create an entity | `createEntity(world)` |
 | Destroy an entity and its subtree | `destroyEntity(world, entity)` |
 | Duplicate an entity and its subtree | `cloneEntity(world, entity)` |
+| Save / stamp a prefab | `serializePrefab(world, root)` / `instantiatePrefab(world, prefab)` |
 | Spawn a renderable | `createPrimitive(world, { name, primitive, color, position, rotation, scale })` |
 | Physics body | `addComponent(world, entity, RigidBody, createRigidBody('dynamic' or 'fixed', friction?, restitution?))` |
 | Await Rapier WASM | `await engine.ready` (or `await engine.start()`, which waits on it) |

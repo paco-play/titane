@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "root": 0,
+  "entities": [0],
+  "components": {
+    "name": {
+      "0": { "value": "Crate" }
+    },
+    "transform": {
+      "0": {
+        "position": { "x": 0, "y": 0.5, "z": 0 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "parent": null
+      }
+    },
+    "mesh": {
+      "0": {
+        "primitive": "box",
+        "color": "#f59e0b"
+      }
+    }
+  }
+}

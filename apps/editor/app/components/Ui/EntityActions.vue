@@ -13,6 +13,7 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 
 const { deleteSelectedEntity, duplicateSelectedEntity } = useInspectorActions();
+const { saveSelectedPrefab } = usePrefabs();
 
 const dropdownitems = computed<DropdownMenuItem[][]>(() => [
   [
@@ -21,6 +22,12 @@ const dropdownitems = computed<DropdownMenuItem[][]>(() => [
       icon: 'i-lucide-copy',
       color: 'neutral',
       onSelect: duplicateSelectedEntity
+    },
+    {
+      label: 'Save as Prefab',
+      icon: 'i-lucide-layout-template',
+      color: 'neutral',
+      onSelect: saveSelectedPrefab
     },
     {
       label: 'Delete',

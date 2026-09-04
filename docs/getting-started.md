@@ -39,6 +39,7 @@ my-game/
   scenes/main.titane    data only (no scripts)
   src/components/       your `defineComponent` files
   public/assets/        runtime files (textures, audio, glTF)
+  public/prefabs/       reusable entity subtrees (`.titane`)
 ```
 
 The Nuxt template also has `app/pages/index.vue` (the game) and inherits the editor layer in development.

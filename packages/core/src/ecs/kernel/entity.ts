@@ -31,7 +31,7 @@ export const createEntity = (world: World): Entity => {
  * @param rootId The entity at the top of the subtree.
  * @returns A new array holding the root followed by every descendant.
  */
-const collectSubtree = (world: World, rootId: Entity): Entity[] => {
+export const collectSubtree = (world: World, rootId: Entity): Entity[] => {
     const subtree: Entity[] = [rootId];
 
     const transforms = world._stores[Transform.index];

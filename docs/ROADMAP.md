@@ -143,7 +143,7 @@ Only after the product loop exists.
 2. Physics material (friction, restitution) — **Done.**
 3. Asset manager (`f.asset()` in the Inspector) — **Done.**
 4. File System Access (Ctrl+S to disk) — **Dropped.** Save stays dirty-flag + download / LocalStorage.
-5. Prefabs (entity + children + components, reusable)
+5. Prefabs (entity + children + components, reusable) — **Done.**
 
 ---
 

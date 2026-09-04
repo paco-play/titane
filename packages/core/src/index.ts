@@ -47,6 +47,7 @@ export * from './ecs/systems/user-lifecycle';
 
 // Scene Persistence
 export * from './ecs/serialization';
+export * from './ecs/prefab';
 
 // Runtime Orchestrator
 export * from './runtime/engine';

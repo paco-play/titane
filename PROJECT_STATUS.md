@@ -33,7 +33,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 4 — Unfreeze.** glTF animation, physics material, and `f.asset()` are on `release`. Ctrl+S to disk is out of scope. Remaining: prefabs. Contract: `docs/ROADMAP.md`.
+**Phase 4 — Unfreeze.** glTF animation, physics material, `f.asset()`, and prefabs are on `release`. Ctrl+S to disk is out of scope. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -79,6 +79,11 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Embedded editor.** Standalone editor and generated Nuxt apps serve the chrome at `/titane`. The default layout is a passthrough so a game page at `/` is not wrapped in Hierarchy / Inspector.
 - [x] **Prod strip.** Generated `nuxt.config` extends `@titane/editor` only when `NODE_ENV !== 'production'`.
 - [x] **Docs.** Getting started, ECS, writing a component, light API reference.
+
+### Prefabs
+- [x] **`serializePrefab` / `instantiatePrefab`.** Packs a subtree with compact ids. `Transform.parent` and `f.entity()` fields that leave the subtree become `null`. Missing-script orphans round-trip.
+- [x] **Catalog.** `public/prefabs/*.titane` listed by `GET /api/titane/prefabs`. Hierarchy `+` stamps an instance; pose uses `nextSpawnPosition`.
+- [x] **Save as Prefab.** Downloads a `.titane` subtree (no File System Access). Drop the file in `public/prefabs` to spawn it again.
 
 ### Asset manager
 - [x] **`f.asset({ accept })`.** Schema field, data is a URL string. `accept` is `texture` | `model` | `audio`. Older payloads and omitted keys revive as `''`.
@@ -255,7 +260,7 @@ Project convention, `npm run create`, editor on `/titane` in dev, prod build omi
 
 ### Phase 4 — Unfreeze
 
-glTF animation, physics material, and `f.asset()` are in. File System Access (Ctrl+S) is dropped. Remaining: prefabs.
+glTF animation, physics material, `f.asset()`, and prefabs are in. File System Access (Ctrl+S) is dropped.
 
 ### Still parked
 

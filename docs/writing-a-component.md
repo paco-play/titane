@@ -36,6 +36,8 @@ Restart `npm run dev` (or let Vite reload). In the editor, select an entity → 
 
 `f.asset({ accept: 'texture' })` stores a URL string. The Inspector shows a text field plus a list of matching files under `public/assets`.
 
+A prefab is a subtree saved as `.titane` under `public/prefabs`. Inspector **Save as Prefab** downloads the selection; Hierarchy **+** stamps a copy into the scene. Entity refs that pointed outside the subtree become `null`.
+
 ## Field kinds
 
 | Schema | Inspector |
