@@ -5,6 +5,7 @@ import { createFromSchema, reviveFromSchema } from '../schema/values';
 import type { AnyComponentType, ComponentType } from './component-type';
 import type { ComponentStore } from './store';
 import type { ComponentLifecycleContext, ComponentUpdateContext } from './lifecycle';
+import { patchUserComponent } from './patch-component';
 
 /**
  * Dense list of every registered component type, indexed by `ComponentType.index`.
@@ -44,6 +45,7 @@ const intern = <T>(type: ComponentType<T>): ComponentType<T> => {
 /**
  * Registers a schema-driven user component.
  * Data type, Inspector widgets, defaults and revive all come from `schema`.
+ * A second call with the same id patches the interned handle in place (HMR).
  */
 export function defineComponent<S extends Schema>(
     id: ComponentId,
@@ -78,6 +80,14 @@ export function defineComponent(
     }
 
     const config = createOrConfig;
+    const existing = typesById.get(id);
+    if (existing) {
+        if (!existing.schema) {
+            throw new Error(`[Titane] Component "${id}" is already registered.`);
+        }
+        return patchUserComponent(existing, config);
+    }
+
     return intern({
         id,
         index: typesByIndex.length,

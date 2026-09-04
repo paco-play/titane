@@ -1,8 +1,10 @@
 import { captureWorldState, restoreWorldState, type World } from '@titane/core';
 import { useTitane } from './useTitane';
+import { markPersistenceDirty } from '~/utils/persistence-dirty';
 
 const isPlaying = ref<boolean>(false);
 const isGridVisible = ref<boolean>(true);
+const pendingExitPlay = ref<boolean>(false);
 
 /** Scene as it was after the last load or first seed. Independent of play snapshots. */
 const editBaseline = shallowRef<World | null>(null);
@@ -12,43 +14,86 @@ const editBaseline = shallowRef<World | null>(null);
  */
 export const useRuntime = () => {
   const { engine, renderer, syncWorld, selectedEntityId, notifyInspect } = useTitane();
+  const { saveToStorage } = usePersistence();
 
-  /**
-     * Toggles between Simulation mode (Play) and Edit mode (Pause).
-     */
-  const togglePlay = () => {
+  const applyPlayChrome = (playing: boolean): void => {
+    if (!renderer.value) return;
+    renderer.value.setEditorChromeEnabled(!playing);
+    if (!playing) renderer.value.setGridVisible(isGridVisible.value);
+  };
+
+  const enterPlay = (): void => {
     if (!engine.value) return;
+    isPlaying.value = true;
+    pendingExitPlay.value = false;
+    engine.value.saveSnapshot();
+    engine.value.isPaused = false;
+    applyPlayChrome(true);
+  };
 
-    isPlaying.value = !isPlaying.value;
-
-    if (isPlaying.value) {
-      // Before launching the simulation, save the "Edit" state
-      engine.value.saveSnapshot();
-      engine.value.isPaused = false;
-    } else {
-      engine.value.isPaused = true;
-      engine.value.restoreSnapshot();
-      syncWorld();
-      notifyInspect();
-    }
+  const finishExitPlay = (): void => {
+    pendingExitPlay.value = false;
+    isPlaying.value = false;
+    if (engine.value) engine.value.isPaused = true;
+    applyPlayChrome(false);
+    syncWorld();
+    notifyInspect();
   };
 
   /**
-     * Toggles the visibility of the ground grid.
-     */
-  const toggleGrid = () => {
+   * Starts Play, or asks keep/discard when leaving Play.
+   */
+  const togglePlay = (): void => {
+    if (!engine.value) return;
+    if (pendingExitPlay.value) return;
+
+    if (!isPlaying.value) {
+      enterPlay();
+      return;
+    }
+
+    engine.value.isPaused = true;
+    pendingExitPlay.value = true;
+  };
+
+  const discardPlayChanges = (): void => {
+    if (!engine.value) return;
+    engine.value.restoreSnapshot();
+    finishExitPlay();
+  };
+
+  const keepPlayChanges = (): void => {
+    if (!engine.value) return;
+    engine.value.keepPlayChanges();
+    markPersistenceDirty();
+    saveToStorage();
+    captureBaseline();
+    finishExitPlay();
+  };
+
+  /**
+   * Closing the exit dialog without an explicit Keep is Discard.
+   */
+  const dismissPlayExit = (): void => {
+    if (!pendingExitPlay.value) return;
+    discardPlayChanges();
+  };
+
+  /**
+   * Toggles the visibility of the ground grid.
+   */
+  const toggleGrid = (): void => {
     if (!renderer.value) return;
 
     isGridVisible.value = !isGridVisible.value;
-    renderer.value.setGridVisible(isGridVisible.value);
+    if (!isPlaying.value) renderer.value.setGridVisible(isGridVisible.value);
   };
 
   /**
    * Advances the simulation by one fixed timestep without entering play mode.
    */
   const stepFrame = (): void => {
-    if (!engine.value) return;
-    isPlaying.value = false;
+    if (!engine.value || isPlaying.value) return;
     engine.value.isPaused = true;
     engine.value.step();
     syncWorld();
@@ -68,7 +113,7 @@ export const useRuntime = () => {
    * Restores the world to the last captured baseline without reloading the page.
    */
   const resetScene = (): void => {
-    if (!engine.value || !editBaseline.value) return;
+    if (!engine.value || !editBaseline.value || isPlaying.value) return;
 
     restoreWorldState(engine.value.world, editBaseline.value);
     selectedEntityId.value = null;
@@ -78,7 +123,11 @@ export const useRuntime = () => {
 
   return {
     isPlaying,
+    pendingExitPlay,
     togglePlay,
+    keepPlayChanges,
+    discardPlayChanges,
+    dismissPlayExit,
     isGridVisible,
     toggleGrid,
     stepFrame,

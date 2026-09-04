@@ -7,6 +7,13 @@
         :modes="GIZMO_MODES"
         @update:model-value="setGizmoMode"
       />
+      <UBadge
+        v-if="isPlaying"
+        label="Playing"
+        color="success"
+        variant="subtle"
+        size="xs"
+      />
       <UButton
         icon="i-lucide-rotate-ccw"
         color="neutral"

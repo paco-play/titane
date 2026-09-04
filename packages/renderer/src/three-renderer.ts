@@ -33,6 +33,7 @@ const renderableQuery = defineQuery([Transform, Mesh]);
 export class ThreeRenderer implements IRenderer {
     /** Resolved construction mode. Exposed so hosts can branch without peeking at internals. */
     public readonly mode: RendererMode;
+    private chromeEnabled: boolean;
 
     private scene!: THREE.Scene;
     private camera!: THREE.PerspectiveCamera;
@@ -61,6 +62,7 @@ export class ThreeRenderer implements IRenderer {
      */
     constructor(options: ThreeRendererOptions = {}) {
         this.mode = resolveRendererMode(options);
+        this.chromeEnabled = usesEditorChrome(this.mode);
     }
 
     /**
@@ -68,6 +70,26 @@ export class ThreeRenderer implements IRenderer {
      */
     public get usesEditorChrome(): boolean {
         return usesEditorChrome(this.mode);
+    }
+
+    /**
+     * Live editor chrome (orbit, grid, gizmos). Play-in-place turns this off
+     * without reconstructing the renderer.
+     */
+    public get isEditorChromeEnabled(): boolean {
+        return this.chromeEnabled;
+    }
+
+    /**
+     * Enables or disables orbit / grid / gizmos for play-in-place.
+     * No-op in construction `game` mode (there is no chrome to restore).
+     */
+    public setEditorChromeEnabled(enabled: boolean): void {
+        if (!usesEditorChrome(this.mode)) return;
+        this.chromeEnabled = enabled;
+        if (this.orbit) this.orbit.enabled = enabled;
+        if (!enabled && this.gridHelper) this.gridHelper.visible = false;
+        this.gizmos.setAllowed(enabled);
     }
 
     /**

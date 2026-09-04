@@ -19,6 +19,8 @@ import { stepOnce, tickPaused, tickPlaying } from './advance';
 import { seedGlobalInput } from './global-input';
 import { resolvePluginName, type TitanePlugin } from './plugin';
 import { createComponentHost } from './component-host';
+import { rebakeComponentData } from '../ecs/kernel/patch-component';
+import type { ScriptError } from './script-error';
 
 /**
  * The high-level runner for the Titane Engine.
@@ -51,9 +53,15 @@ export class TitaneEngine {
     /** True while UPDATE/PHYSICS should run (playing tick or an explicit step). */
     private simulating = false;
     private readonly pluginNames = new Set<string>();
+    private _scriptError: ScriptError | null = null;
+    /** Editor UI binds this to show an isolated script failure. */
+    public onScriptErrorChange: ((error: ScriptError | null) => void) | null = null;
+    /** Editor UI binds this to refresh Inspector widgets after HMR. */
+    public onUserComponentPatch: ((type: AnyComponentType) => void) | null = null;
     private readonly componentHost = createComponentHost(
         (system) => this.addSystem(Phase.UPDATE, system),
-        () => this.simulating
+        () => this.simulating,
+        (error) => this.reportScriptError(error)
     );
 
     /**
@@ -125,6 +133,42 @@ export class TitaneEngine {
         return this.componentHost.getUserComponents();
     }
 
+    /** Last isolated script error, or `null` when hooks are healthy. */
+    public get scriptError(): ScriptError | null {
+        return this._scriptError;
+    }
+
+    /** Drops the displayed script error. Failed entities retry after HMR or a new Play session. */
+    public clearScriptError(): void {
+        if (this._scriptError === null) return;
+        this._scriptError = null;
+        this.onScriptErrorChange?.(null);
+    }
+
+    private reportScriptError(error: ScriptError): void {
+        this._scriptError = error;
+        this.onScriptErrorChange?.(error);
+    }
+
+    /**
+     * Exits Play without restoring the pre-Play snapshot.
+     * The live world becomes the new edit state.
+     */
+    public keepPlayChanges(): void {
+        this.snapshot = null;
+    }
+
+    /**
+     * Re-binds a user component after HMR: installs lifecycle if hooks appeared,
+     * merges new schema defaults into live instances, and clears a stale script error.
+     */
+    public reloadUserComponent(type: AnyComponentType): void {
+        this.componentHost.registerComponent(type);
+        rebakeComponentData(this.world, type);
+        this.clearScriptError();
+        this.onUserComponentPatch?.(type);
+    }
+
     /**
      * Starts the engine execution loop.
      * Waits until {@link ready} so the first physics step is not a no-op.
@@ -174,6 +218,7 @@ export class TitaneEngine {
         }
         restoreWorldState(this.world, this.snapshot);
         resetPhysicsSession(this.world);
+        this.clearScriptError();
     }
 
     /**

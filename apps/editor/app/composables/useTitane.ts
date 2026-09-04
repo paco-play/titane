@@ -1,4 +1,4 @@
-import type { Entity } from '@titane/core';
+import type { Entity, ScriptError } from '@titane/core';
 import type { ShallowRef } from 'vue';
 import { TitaneEngine, Phase, createPlayerControlSystem, createPhysicsPlayerControlSystem } from '@titane/core';
 import { ThreeRenderer } from '@titane/renderer';
@@ -33,6 +33,8 @@ const selectedEntityId = ref<Entity | null>(null);
  */
 const inspectTick = ref(0);
 
+const scriptError = shallowRef<ScriptError | null>(null);
+
 export const useTitane = () => {
 
   /**
@@ -49,6 +51,14 @@ export const useTitane = () => {
     engine.addSystem(Phase.UPDATE, createPlayerControlSystem());
     engine.addSystem(Phase.UPDATE, createPhysicsPlayerControlSystem());
     engine.use(gameplayPlugin);
+
+    engine.onScriptErrorChange = (error) => {
+      scriptError.value = error;
+    };
+    engine.onUserComponentPatch = () => {
+      inspectTick.value += 1;
+    };
+    wireGameplayHotReload();
 
     rendererInstance.value = renderer;
     engineInstance.value = engine;
@@ -81,6 +91,11 @@ export const useTitane = () => {
     markPersistenceDirty();
   };
 
+  const clearScriptError = (): void => {
+    engineInstance.value?.clearScriptError();
+    scriptError.value = null;
+  };
+
   return {
     engine: engineInstance,
     renderer: rendererInstance,
@@ -89,9 +104,11 @@ export const useTitane = () => {
     entities: activeEntities as ShallowRef<Set<Entity>>,
     selectedEntityId,
     inspectTick,
+    scriptError,
     initEngine,
     syncWorld,
     notifyInspect,
-    markDirty
+    markDirty,
+    clearScriptError
   };
 };

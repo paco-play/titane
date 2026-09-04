@@ -110,10 +110,10 @@ Without this, the triangle exists but is slow to use.
 
 | # | Task | Detail |
 | --- | --- | --- |
-| 2.1 | Play-in-place | Viewport switches to game-mode renderer. Demo is no longer required to try a scene. |
-| 2.2 | Snapshot around Play | Enter Play = snapshot. Exit = restore, with **keep Play changes** as an explicit choice. Snapshot-on-play already exists; keep/discard does not. |
-| 2.3 | Hot-reload scripts in Play | Vite HMR. Re-register the component, re-bind behaviors, keep data. Approximate is fine at first. |
-| 2.4 | Runtime errors in the editor | An exception in `onUpdate` must not kill the editor. Isolate and display. |
+| 2.1 | Play-in-place | **Done.** Viewport drops orbit / gizmos / grid while Playing. Demo is no longer required to try a scene. |
+| 2.2 | Snapshot around Play | **Done.** Enter Play = snapshot. Exit asks **Keep** / **Discard**. Discard restores; Keep leaves Play edits as the edit scene. |
+| 2.3 | Hot-reload scripts in Play | **Done.** `defineComponent` patches the interned type; `engine.reloadUserComponent` rebakes live data. Vite `import.meta.hot.accept` in the editor. |
+| 2.4 | Runtime errors in the editor | **Done.** `onUpdate` throws are isolated per entity and shown in a banner. The editor keeps ticking. |
 
 **Done when:** the developer changes `speed` in the `.ts` file, saves, and the running Play session picks it up without a full page reload.
 

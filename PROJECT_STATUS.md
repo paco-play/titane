@@ -32,7 +32,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 2 — Iteration loop.** Phase 1 (schema, user components, auto Inspector, Add Component) is in. Next: play-in-place, keep/discard Play edits, HMR, error isolation. Rendering stays frozen until Phase 4. Contract: `docs/ROADMAP.md`.
+**Phase 3 — Distributable product.** Phase 2 (play-in-place, keep/discard, HMR, isolated script errors) is in. Next: project convention, `create-titane-project`, embedded editor. Rendering stays frozen until Phase 4. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -65,6 +65,12 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Batched lifecycle.** `engine.registerComponent` lists the type for Add Component and installs one UPDATE system per type. Hooks run only while simulating (Play / Step), never on a paused editor tick. `World._epoch` re-runs `onStart` after a snapshot restore.
 - [x] **Orphan payloads.** Unknown `.titane` component ids are kept, round-tripped, cloned and destroyed with the entity. Inspector shows a missing-script row.
 - [x] **Auto Inspector + Add Component.** Schema fields map to widgets. The editor sample `PlayerController` is registered through `gameplayPlugin`; Inspector source does not special-case that type.
+
+### Iteration loop
+- [x] **Play-in-place.** Play disables orbit, gizmos and the grid on the existing viewport (`setEditorChromeEnabled`). A Playing badge marks the mode. Picking is off while Playing.
+- [x] **Keep / Discard.** Stopping Play freezes the sim and asks. Discard restores the pre-Play snapshot. Keep leaves Play edits as the edit scene and saves.
+- [x] **Script HMR.** A second `defineComponent` with the same id patches schema and hooks in place. `engine.reloadUserComponent` rebakes live instances. The editor accepts `PlayerController.ts` over Vite HMR.
+- [x] **Isolated script errors.** `onStart` / `onUpdate` / `onDestroy` throws skip that entity and surface a banner. The engine tick continues.
 
 ### Shadows
 - [x] **`Light.castShadow`.** Directional and point lights write a shadow map. Ambient ignores the flag. Default `false`. Older scenes revive with `false`.
@@ -213,7 +219,7 @@ Mesh material (#14) and shadows (#16) are on `release`. Rendering is frozen.
 
 **Done when:** write `PlayerController.ts` with `speed` → it appears in Add Component → slider → save → reload → value still there.
 
-### Phase 2 — Iteration loop
+### Phase 2 — Iteration loop — done
 
 Play-in-place in the editor viewport. Snapshot on Play with explicit keep/discard. HMR of scripts during Play. `onUpdate` errors must not kill the editor.
 

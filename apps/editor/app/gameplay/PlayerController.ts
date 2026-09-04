@@ -16,3 +16,7 @@ export const PlayerController = defineComponent('PlayerController', {
     transform.isDirty = true;
   },
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}

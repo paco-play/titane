@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { f } from '../../ecs/schema/fields';
-import { createFromSchema, reviveFromSchema } from '../../ecs/schema/values';
+import { createFromSchema, reviveFromSchema, applySchemaInPlace } from '../../ecs/schema/values';
 import type { InferSchema } from '../../ecs/schema/infer';
 
 const movementSchema = {
@@ -68,6 +68,14 @@ describe('schema DSL', () => {
     it('falls back to a full default object when the payload is not an object', () => {
         expect(reviveFromSchema(movementSchema, null).speed).toBe(5);
         expect(reviveFromSchema(movementSchema, 1).speed).toBe(5);
+    });
+
+    it('rebakes live data in place when the schema gains a field', () => {
+        const data: Record<string, unknown> = { speed: 9 };
+        applySchemaInPlace(movementSchema, data);
+        expect(data.speed).toBe(9);
+        expect(data.enabled).toBe(true);
+        expect(data.stance).toBe('idle');
     });
 
     it('rejects an empty enum', () => {

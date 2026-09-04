@@ -14,6 +14,10 @@
       <!-- Canvas -->
       <div class="flex flex-col w-full h-full">
         <TopbarCanvas />
+        <TopbarScriptErrorBanner
+          :error="scriptError"
+          @dismiss="clearScriptError"
+        />
         <slot />
       </div>
       <!-- Inspector Sidebar -->
@@ -26,5 +30,16 @@
         <Inspector />
       </USidebar>
     </div>
+    <TopbarPlayExitDialog
+      :open="pendingExitPlay"
+      @keep="keepPlayChanges"
+      @discard="discardPlayChanges"
+      @dismiss="dismissPlayExit"
+    />
   </main>
 </template>
+
+<script setup lang="ts">
+const { scriptError, clearScriptError } = useTitane();
+const { pendingExitPlay, keepPlayChanges, discardPlayChanges, dismissPlayExit } = useRuntime();
+</script>

@@ -55,7 +55,7 @@ export const useViewport = () => {
    * Right clicks never reach this handler (`click.left` on the canvas).
    */
   const onCanvasClick = (event: MouseEvent): void => {
-    if (!renderer.value) return;
+    if (!renderer.value || isPlaying.value) return;
     if (renderer.value.consumeGizmoPick()) {
       saveToStorage();
       return;

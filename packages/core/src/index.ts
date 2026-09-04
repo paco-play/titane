@@ -11,6 +11,7 @@ export * from './ecs/kernel/component';
 export * from './ecs/kernel/query';
 export * from './ecs/kernel/lifecycle';
 export * from './ecs/kernel/orphans';
+export * from './ecs/kernel/patch-component';
 export * from './ecs/kernel/factory';
 export * from './ecs/kernel/transform-utils';
 
@@ -50,6 +51,7 @@ export * from './ecs/serialization';
 // Runtime Orchestrator
 export * from './runtime/engine';
 export * from './runtime/plugin';
+export * from './runtime/script-error';
 export * from './runtime/renderer-interface';
 export * from './runtime/live-preview';
 

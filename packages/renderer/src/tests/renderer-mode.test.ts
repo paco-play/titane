@@ -62,4 +62,19 @@ describe('ThreeRenderer', () => {
         expect(renderer.mode).toBe('game');
         expect(renderer.usesEditorChrome).toBe(false);
     });
+
+    it('can toggle editor chrome for play-in-place', () => {
+        const renderer = new ThreeRenderer();
+        expect(renderer.isEditorChromeEnabled).toBe(true);
+        renderer.setEditorChromeEnabled(false);
+        expect(renderer.isEditorChromeEnabled).toBe(false);
+        renderer.setEditorChromeEnabled(true);
+        expect(renderer.isEditorChromeEnabled).toBe(true);
+    });
+
+    it('ignores chrome toggles in construction game mode', () => {
+        const renderer = new ThreeRenderer({ mode: 'game' });
+        renderer.setEditorChromeEnabled(true);
+        expect(renderer.isEditorChromeEnabled).toBe(false);
+    });
 });

@@ -117,3 +117,18 @@ export const reviveFromSchema = <S extends Schema>(schema: S, raw: unknown): Inf
 
     return data;
 };
+
+/**
+ * Writes revived schema values onto an existing data object, keeping identity
+ * so Inspector bindings and SoA views stay live. Unknown keys are dropped.
+ */
+export const applySchemaInPlace = (schema: Schema, data: Record<string, unknown>): void => {
+    const revived = reviveFromSchema(schema, data) as Record<string, unknown>;
+    for (const key of Object.keys(data)) {
+        if (!(key in schema)) delete data[key];
+    }
+    for (const [key, value] of Object.entries(revived)) {
+        data[key] = value;
+    }
+};
+

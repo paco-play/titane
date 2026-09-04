@@ -149,3 +149,76 @@ describe('engine.registerComponent lifecycle', () => {
         expect(Walker.onUpdate).toHaveBeenCalledTimes(2);
     });
 });
+
+describe('script isolation and hot reload', () => {
+    const Boom = defineComponent('UserBoom', {
+        schema: {
+            armed: f.boolean({ default: true })
+        },
+        onUpdate({ data }) {
+            if (data.armed) throw new Error('boom');
+        }
+    });
+
+    const Hot = defineComponent('UserHot', {
+        schema: {
+            speed: f.number({ default: 1 })
+        }
+    });
+
+    it('isolates an onUpdate throw so the engine keeps ticking', () => {
+        const engine = createEngine();
+        engine.registerComponent(Boom);
+        const entity = createEntity(engine.world);
+        addComponent(engine.world, entity, Boom, Boom.create());
+
+        engine.isPaused = false;
+        expect(() => engine.tick(FIXED_DT)).not.toThrow();
+        expect(engine.scriptError).toMatchObject({
+            componentId: 'UserBoom',
+            entity,
+            hook: 'onUpdate',
+            message: 'boom'
+        });
+        expect(() => engine.tick(FIXED_DT)).not.toThrow();
+    });
+
+    it('does not restore after keepPlayChanges', () => {
+        const engine = createEngine();
+        const entity = createEntity(engine.world);
+        addComponent(engine.world, entity, Motor, Motor.create());
+        const live = getComponent(engine.world, entity, Motor);
+        expect(live).toBeDefined();
+        if (!live) return;
+
+        engine.saveSnapshot();
+        live.speed = 11;
+        engine.keepPlayChanges();
+        engine.restoreSnapshot();
+        expect(getComponent(engine.world, entity, Motor)?.speed).toBe(11);
+    });
+
+    it('patches schema and hooks on a second defineComponent and rebakes live data', () => {
+        const engine = createEngine();
+        engine.registerComponent(Hot);
+        const entity = createEntity(engine.world);
+        addComponent(engine.world, entity, Hot, Hot.create());
+
+        const onUpdate = vi.fn();
+        const patched = defineComponent('UserHot', {
+            schema: {
+                speed: f.number({ default: 1 }),
+                jump: f.number({ default: 3 })
+            },
+            onUpdate
+        });
+
+        expect(patched).toBe(Hot);
+        engine.reloadUserComponent(patched);
+        expect(getComponent(engine.world, entity, Hot)).toMatchObject({ speed: 1, jump: 3 });
+
+        engine.isPaused = false;
+        engine.tick(FIXED_DT);
+        expect(onUpdate).toHaveBeenCalled();
+    });
+});
