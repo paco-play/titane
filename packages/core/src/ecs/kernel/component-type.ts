@@ -38,7 +38,7 @@ export interface ComponentType<T> {
      */
     readonly createStore?: () => ComponentStore<T>;
     /**
-     * Authoring schema. Present on user components declared with `f.*`.
+     * Authoring schema. Present on user components declared with `field.*`.
      * Built-ins omit it; the Inspector then uses dedicated sections.
      */
     readonly schema?: Schema;

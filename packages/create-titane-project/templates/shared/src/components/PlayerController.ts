@@ -1,4 +1,4 @@
-import { defineComponent, f, getComponent, Transform } from '@titane/core';
+import { defineComponent, field, getComponent, Transform } from '@titane/core';
 
 /**
  * Sample user component. Declaring `speed` here is enough for Add Component,
@@ -6,7 +6,7 @@ import { defineComponent, f, getComponent, Transform } from '@titane/core';
  */
 export const PlayerController = defineComponent('PlayerController', {
     schema: {
-        speed: f.number({ min: 0, max: 20, step: 0.1, default: 5 })
+        speed: field.number({ min: 0, max: 20, step: 0.1, default: 5 })
     },
     onUpdate({ world, entity, data, dt }) {
         const transform = getComponent(world, entity, Transform);

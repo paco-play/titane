@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { f } from '../../ecs/schema/fields';
+import { field } from '../../ecs/schema/fields';
 import { createFromSchema, reviveFromSchema, applySchemaInPlace } from '../../ecs/schema/values';
 import type { InferSchema } from '../../ecs/schema/infer';
 
 const movementSchema = {
-    speed: f.number({ min: 0, max: 20, step: 0.1, default: 5 }),
-    enabled: f.boolean({ default: true }),
-    label: f.string({ default: 'hero' }),
-    tint: f.color({ default: '#4ade80' }),
-    offset: f.vec3({ default: { x: 1, y: 2, z: 3 } }),
-    spin: f.quat(),
-    target: f.entity(),
-    stance: f.enum(['idle', 'run'] as const, { default: 'idle' }),
-    skin: f.asset({ accept: 'texture' })
+    speed: field.number({ min: 0, max: 20, step: 0.1, default: 5 }),
+    enabled: field.boolean({ default: true }),
+    label: field.string({ default: 'hero' }),
+    tint: field.color({ default: '#4ade80' }),
+    offset: field.vec3({ default: { x: 1, y: 2, z: 3 } }),
+    spin: field.quat(),
+    target: field.entity(),
+    stance: field.enum(['idle', 'run'] as const, { default: 'idle' }),
+    skin: field.asset({ accept: 'texture' })
 };
 
 type MovementData = InferSchema<typeof movementSchema>;
@@ -82,7 +82,7 @@ describe('schema DSL', () => {
     });
 
     it('round-trips an asset URL and keeps the default when omitted', () => {
-        const schema = { clip: f.asset({ accept: 'audio', default: '' }) };
+        const schema = { clip: field.asset({ accept: 'audio', default: '' }) };
         expect(createFromSchema(schema).clip).toBe('');
         expect(reviveFromSchema(schema, { clip: '/assets/hit.ogg' }).clip).toBe('/assets/hit.ogg');
         expect(reviveFromSchema(schema, { clip: 3 }).clip).toBe('');
@@ -90,6 +90,6 @@ describe('schema DSL', () => {
     });
 
     it('rejects an empty enum', () => {
-        expect(() => f.enum([])).toThrow(/at least one option/);
+        expect(() => field.enum([])).toThrow(/at least one option/);
     });
 });

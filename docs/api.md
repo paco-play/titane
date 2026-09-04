@@ -11,7 +11,7 @@ Public entry points. Types travel with the handles; there is no `any` in the eng
 | `engine.registerComponent` | User type → Add Component + batched lifecycle |
 | `engine.getUserComponents` | Types listed in the Inspector |
 | `defineComponent` | Built-in factory form, or `{ schema, onStart, onUpdate, onDestroy }` |
-| `f.*` | Schema DSL (`number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`, `asset`) |
+| `field.*` | Schema DSL (`number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`, `asset`) |
 | `createPrimitive` | Entity with `Name` + `Transform` + `Mesh` |
 | `getComponent` / `addComponent` / `removeComponent` | Typed accessors |
 | `defineQuery` / `runQuery` | Zero-allocation iteration |

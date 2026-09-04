@@ -11,7 +11,6 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - `packages/core`: the engine (ECS kernel, pipeline, components, systems, serialization, runtime). No graphics dependency.
 - `packages/renderer`: the Three.js driver. The only package importing `three`.
 - `apps/editor`: the Nuxt 4 editor UI, also a **dev-only Nuxt layer** (`/titane`).
-- `apps/demo`: a Nuxt 4 game that boots the engine with no editor chrome.
 - `packages/create-titane-project`: `npm run create` scaffold (`nuxt` / `vanilla`).
 
 ## Architecture Rules
@@ -27,13 +26,15 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 | --- | --- |
 | `npm test` | Vitest on the core, the renderer, the editor, and the scaffold |
 | `npm run build` | `tsc -b` on the core, then the renderer |
-| `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor and the demo, `tsc` on the scaffold |
-| `npm run lint` | ESLint on the editor and the demo |
+| `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor, `tsc` on the scaffold |
+| `npm run lint` | ESLint on the editor |
 
 ---
 
 ## Current Milestone
-**Project panel.** Bottom Assets / Project browser. Numbered phases 0–5 are complete. Contract: `docs/ROADMAP.md`.
+**Cleanup.** Project panel layout, schema DSL `field.*`, Drop demo removed. Numbered phases 0–5 are complete. Contract: `docs/ROADMAP.md`.
+
+The Drop demo (`apps/demo`) and **Preview in Demo** live-preview are gone. A game is `npm run create`.
 
 ## Completed
 
@@ -44,16 +45,12 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ### Camera
 - [x] **`Camera` component.** `fov`, `near`, `far`, `current`. Pose comes from `Transform` (parented cameras use `worldMatrix`). Defaults match the Three.js driver (`75`, `0.1`, `1000`, `current: true`). Clamp fov 1–179, near ≥ 0.001, far > near.
 - [x] **`pickCurrentCamera` / `setCurrentCamera`.** Public helpers. Checking Current in the Inspector clears the flag on every other camera.
-- [x] **Play / game view.** `applySceneCamera` runs while editor chrome is off. No current camera leaves `setCamera` / orbit alone (demo follow-camera unchanged).
+- [x] **Play / game view.** `applySceneCamera` runs while editor chrome is off. No current camera leaves `setCamera` / orbit alone.
 - [x] **Editor restore.** Enter Play snapshots the orbit pose; Stop writes it back.
 - [x] **Inspector + Hierarchy.** Dumb fov / near / far / Current / Remove. Hierarchy `+` spawns a Camera at `(0, 2, 6)` looking down -Z.
 
 ### Live editor → demo session
-- [x] **Preview envelope.** `createLivePreviewEnvelope` / `parseLivePreviewEnvelope` in core. Typed `postMessage` payload with a revision so stale frames are ignored.
-- [x] **Editor publish.** Menu → Preview in Demo opens `demoUrl/?live=1`. Each `saveToStorage` (and the ready handshake) posts the current world to that tab.
-- [x] **Demo subscribe.** `?live=1` waits for the first envelope, then hot-reloads later ones. Timeout falls back to `drop.titane` / seed. A "Live from editor" badge shows when a push landed.
-- [x] **Gameplay rebind.** `bindGameplay` drops the previous follow / trigger systems (they close over entity IDs) and attaches new ones after `findPlayer` / `findKillZone`. `engine.removeSystem` is the public seam.
-- [x] **Kill zone on loaded scenes.** The demo now finds a `Sensor` tagged `kill-zone` after a file or live load, not only after `seedDropScene`.
+- [x] **Removed.** `apps/demo`, Menu → Preview in Demo, and `createLivePreviewEnvelope` are gone. Launch a game with `npm run create`.
 
 ### Audio
 - [x] **`Sound` component.** `url`, `volume`, `loop`, `positional`, `playing`. Empty URL is silent. Pose for positional sources comes from `Transform`.
@@ -72,7 +69,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **`engine.use(plugin)`.** `TitanePlugin` is `{ name, register(engine) }`. Duplicate or empty names throw. A plugin registers systems through the public engine API — no fork of core.
 
 ### User components
-- [x] **Schema DSL `f.*`.** `number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`. `InferSchema` is the data type; defaults and deserialize validation come from the same record.
+- [x] **Schema DSL `field.*`.** `number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`. `InferSchema` is the data type; defaults and deserialize validation come from the same record.
 - [x] **User `defineComponent`.** `defineComponent('PlayerController', { schema, onStart, onUpdate, onDestroy })`. Built-ins keep the factory form.
 - [x] **Batched lifecycle.** `engine.registerComponent` lists the type for Add Component and installs one UPDATE system per type. Hooks run only while simulating (Play / Step), never on a paused editor tick. `World._epoch` re-runs `onStart` after a snapshot restore.
 - [x] **Orphan payloads.** Unknown `.titane` component ids are kept, round-tripped, cloned and destroyed with the entity. Inspector shows a missing-script row.
@@ -93,12 +90,12 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Docs.** Getting started, ECS, writing a component, light API reference.
 
 ### Prefabs
-- [x] **`serializePrefab` / `instantiatePrefab`.** Packs a subtree with compact ids. `Transform.parent` and `f.entity()` fields that leave the subtree become `null`. Missing-script orphans round-trip.
+- [x] **`serializePrefab` / `instantiatePrefab`.** Packs a subtree with compact ids. `Transform.parent` and `field.entity()` fields that leave the subtree become `null`. Missing-script orphans round-trip.
 - [x] **Catalog.** `public/prefabs/*.titane` listed by `GET /api/titane/prefabs`. Hierarchy `+` stamps an instance; pose uses `nextSpawnPosition`.
 - [x] **Save as Prefab.** Downloads a `.titane` subtree (no File System Access). Drop the file in `public/prefabs` to spawn it again.
 
 ### Asset manager
-- [x] **`f.asset({ accept })`.** Schema field, data is a URL string. `accept` is `texture` | `model` | `audio`. Older payloads and omitted keys revive as `''`.
+- [x] **`field.asset({ accept })`.** Schema field, data is a URL string. `accept` is `texture` | `model` | `audio`. Older payloads and omitted keys revive as `''`.
 - [x] **Inspector picker.** `InspectorAssetField` lists `public/assets` (Nitro `GET /api/titane/assets`) and still allows a pasted URL. Mesh albedo, glTF URL, and Sound URL reuse the same widget.
 - [x] **User schema.** Auto Inspector routes `kind: 'asset'` through that widget. The editor sample `PlayerController` exposes `skin`.
 
@@ -143,7 +140,6 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Intersection tracking in `PhysicsSession`.** `eventQueue` (a single `RAPIER.EventQueue`) is stepped with the world each tick. `drainCollisionEvents` updates a `Map<Entity, Set<Entity>>` (`started=true` adds, `started=false` removes) so persistent overlaps are always visible.
 - [x] **`getIntersections(session, entity)`.** Public query returning the live set of entities currently overlapping a sensor.
 - [x] **`createTriggerSystem`.** Stateful system factory: compares current overlaps against the previous tick to fire `onEnter` / `onExit` exactly once per transition.
-- [x] **Demo kill-zone.** `seedDropScene` now spawns a large fixed `Sensor` box well below the slab. `useGame` wires `createTriggerSystem` to it instead of the Y-threshold `createLoseSystem`.
 
 ### Character feel
 - [x] **Locked rotations.** `createPhysicsPlayerControlSystem` locks Rapier rotations and zeros angular velocity so a sphere does not roll.
@@ -151,15 +147,14 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Jump.** Space sets upward linvel only while grounded. Air Space is ignored.
 
 ### Author → Play
-- [x] **`createPrimitive` scale and rotation.** Spawn options include `scale` and `rotation`. The demo no longer mutates Transform by hand.
+- [x] **`createPrimitive` scale and rotation.** Spawn options include `scale` and `rotation`.
 - [x] **`engine.ready` / `start()` waits for Rapier.** The constructor still starts the WASM load; `await engine.start()` is the one boot seam. Hosts no longer call `initPhysics()` themselves.
 - [x] **`RigidBody` in the Inspector.** Add / remove, kind `dynamic` | `fixed`. A Control checkbox tags `PlayerControlled` so an editor-authored body can be driven by WASD. The editor also registers `createPhysicsPlayerControlSystem()`.
-- [x] **Demo loads `public/drop.titane`.** `engine.loadWorld(deserializeWorld(...))` on boot; `seedDropScene` remains the fallback if the file is missing.
 
-### Game demo
+### Game host
 - [x] **Renderer game mode.** `new ThreeRenderer({ mode: 'game' })` skips orbit, gizmos and the grid. `setCamera({ position, lookAt })` aims the perspective camera. Default remains `editor`, so the existing viewport is unchanged.
 - [x] **Physics-aware player.** Opt-in `createPhysicsPlayerControlSystem()` writes Rapier `linvel.x/z` from WASD and leaves `linvel.y` to gravity. The kinematic `createPlayerControlSystem()` is unchanged.
-- [x] **`apps/demo`.** A Nuxt 4 Drop loop: fixed slab, dynamic player sphere, a few crates, follow camera, fall-off lose, snapshot restart. No Hierarchy / Inspector.
+- [x] **`npm run create`.** Nuxt or vanilla Vite scaffold. The Drop demo app was removed; it no longer matched this launch path.
 
 ### Simulation
 - [x] **Rapier in the PHYSICS phase.** `@dimforge/rapier3d-compat` (inlined WASM) drives entities with a `RigidBody` (`dynamic` or `fixed`). Collider shape comes from `Mesh.primitive` and `Transform.scale`. The demo cube keeps `Velocity` only, so it still slides and does not fall. Bodies with `Velocity` and no `RigidBody` still use the kinematic integrator.
@@ -272,7 +267,7 @@ Project convention, `npm run create`, editor on `/titane` in dev, prod build omi
 
 ### Phase 4 — Unfreeze — done
 
-glTF animation, physics material, `f.asset()`, Ctrl+S, and prefabs are in.
+glTF animation, physics material, `field.asset()`, Ctrl+S, and prefabs are in.
 
 ### Phase 5 — Scene camera — done
 
@@ -280,4 +275,4 @@ Play and game mode look through the current `Camera`. Edit mode keeps orbit.
 
 ### Still parked
 
-The numbered contract stops at Phase 5. Demo stays a sandbox. Do not grow it.
+The numbered contract stops at Phase 5.

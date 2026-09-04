@@ -17,6 +17,6 @@ export type {
     Schema
 } from './field';
 export type { InferField, InferSchema } from './infer';
-export { f } from './fields';
+export { field } from './fields';
 export type { NumberFieldOptions, DefaultFieldOptions, AssetFieldOptions } from './fields';
 export { createFromSchema, reviveFromSchema, parseFieldValue, applySchemaInPlace } from './values';

@@ -56,13 +56,13 @@ export const useRuntime = () => {
   };
 
   const discardPlayChanges = (): void => {
-    if (!engine.value) return;
+    if (!engine.value || !pendingExitPlay.value) return;
     engine.value.restoreSnapshot();
     finishExitPlay();
   };
 
   const keepPlayChanges = (): void => {
-    if (!engine.value) return;
+    if (!engine.value || !pendingExitPlay.value) return;
     engine.value.keepPlayChanges();
     markPersistenceDirty();
     usePersistence().saveToStorage();
@@ -101,7 +101,7 @@ export const useRuntime = () => {
 
   /**
    * Remembers the current world as the scene Reset returns to.
-   * Call after a load or after seeding the demo entities.
+   * Call after a load or after seeding the default entities.
    */
   const captureBaseline = (): void => {
     if (!engine.value) return;

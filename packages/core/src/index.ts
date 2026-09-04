@@ -56,7 +56,6 @@ export * from './runtime/engine';
 export * from './runtime/plugin';
 export * from './runtime/script-error';
 export * from './runtime/renderer-interface';
-export * from './runtime/live-preview';
 
 // Utils
 export * from './utils/clock';

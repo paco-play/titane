@@ -8,14 +8,14 @@ import { defineComponent } from '../../ecs/kernel/registry';
 import { Transform } from '../../ecs/components/transform';
 import { Name } from '../../ecs/components/name';
 import { Mesh } from '../../ecs/components/mesh';
-import { f } from '../../ecs/schema/fields';
+import { field } from '../../ecs/schema/fields';
 import { setOrphan, listOrphans } from '../../ecs/kernel/orphans';
 import { Input, createDefaultInput } from '../../ecs/components/input';
 import { serializePrefab, instantiatePrefab, isSerializedPrefab } from '../../ecs/prefab';
 
 const PrefabLink = defineComponent('PrefabLink', {
     schema: {
-        target: f.entity()
+        target: field.entity()
     }
 });
 
@@ -51,7 +51,7 @@ describe('prefabs', () => {
         expect(world.entities.active.has(root)).toBe(true);
     });
 
-    it('remaps f.entity() fields inside the subtree and nulls outsiders', () => {
+    it('remaps field.entity() fields inside the subtree and nulls outsiders', () => {
         const world = createWorld();
         const root = createEntity(world);
         const inside = createEntity(world);

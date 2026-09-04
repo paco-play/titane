@@ -11,6 +11,19 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxt/eslint'],
   // Absolute path so this file still resolves when the editor is consumed as a layer.
   css: [join(rootDir, 'app/assets/css/main.css')],
+  components: [
+    {
+      path: join(rootDir, 'app/components/Inspector/fields'),
+      prefix: 'Inspector',
+      pathPrefix: false
+    },
+    {
+      path: join(rootDir, 'app/components/Inspector/sections'),
+      prefix: 'Inspector',
+      pathPrefix: false
+    },
+    { path: join(rootDir, 'app/components') }
+  ],
   ignore: ['scenes/**'],
   watchers: {
     chokidar: {
@@ -49,11 +62,6 @@ export default defineNuxtConfig({
     dirs: [
       'composables/**',
     ]
-  },
-  runtimeConfig: {
-    public: {
-      demoUrl: 'http://localhost:3001'
-    }
   },
   typescript: {
     shim: false,

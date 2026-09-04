@@ -20,25 +20,29 @@ export const kindFromExtension = (ext: string): AssetAccept | undefined => {
   return undefined;
 };
 
-const walk = async (dir: string, root: string, out: ProjectAsset[]): Promise<void> => {
+const walkDirectory = async (
+  directory: string,
+  rootDirectory: string,
+  listedAssets: ProjectAsset[]
+): Promise<void> => {
   let entries;
   try {
-    entries = await readdir(dir, { withFileTypes: true });
+    entries = await readdir(directory, { withFileTypes: true });
   } catch {
     return;
   }
 
   for (const entry of entries) {
     if (entry.name.startsWith('.')) continue;
-    const full = join(dir, entry.name);
+    const fullPath = join(directory, entry.name);
     if (entry.isDirectory()) {
-      await walk(full, root, out);
+      await walkDirectory(fullPath, rootDirectory, listedAssets);
       continue;
     }
     const kind = kindFromExtension(extname(entry.name));
     if (!kind) continue;
-    const name = relative(root, full).split('\\').join('/');
-    out.push({ url: `/assets/${name}`, name, kind });
+    const relativePath = relative(rootDirectory, fullPath).split('\\').join('/');
+    listedAssets.push({ url: `/assets/${relativePath}`, name: relativePath, kind });
   }
 };
 
@@ -46,9 +50,9 @@ const walk = async (dir: string, root: string, out: ProjectAsset[]): Promise<voi
  * Recursively lists known textures, models and audio under `public/assets`.
  * Missing directories yield an empty list.
  */
-export const listProjectAssets = async (assetsDir: string): Promise<ProjectAsset[]> => {
-  const out: ProjectAsset[] = [];
-  await walk(assetsDir, assetsDir, out);
-  out.sort((a, b) => a.name.localeCompare(b.name));
-  return out;
+export const listProjectAssets = async (assetsDirectory: string): Promise<ProjectAsset[]> => {
+  const listedAssets: ProjectAsset[] = [];
+  await walkDirectory(assetsDirectory, assetsDirectory, listedAssets);
+  listedAssets.sort((left, right) => left.name.localeCompare(right.name));
+  return listedAssets;
 };

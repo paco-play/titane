@@ -13,7 +13,7 @@ import type {
 } from './field';
 import { IDENTITY_QUAT, ZERO_VEC3, cloneQuat, cloneVec3, type Quat, type Vec3 } from './math';
 
-/** Options for {@link f.number}. */
+/** Options for {@link field.number}. */
 export interface NumberFieldOptions {
     readonly min?: number;
     readonly max?: number;
@@ -26,7 +26,7 @@ export interface DefaultFieldOptions<T> {
     readonly default?: T;
 }
 
-/** Options for {@link f.asset}. */
+/** Options for {@link field.asset}. */
 export interface AssetFieldOptions {
     readonly accept?: AssetAccept;
     readonly default?: string;
@@ -36,7 +36,7 @@ export interface AssetFieldOptions {
  * House field DSL. A schema built from these factories infers the component
  * data type, drives Inspector widgets, and validates `.titane` payloads.
  */
-export const f = {
+export const field = {
     /**
      * Numeric scalar. Provide both `min` and `max` for a slider widget.
      */
@@ -104,7 +104,7 @@ export const f = {
     ): EnumFieldDef<T> => {
         const fallback = extras.default ?? options[0];
         if (fallback === undefined) {
-            throw new Error('[Titane] f.enum requires at least one option.');
+            throw new Error('[Titane] field.enum requires at least one option.');
         }
         return {
             kind: 'enum',

@@ -1,7 +1,7 @@
 <template>
   <main class="flex flex-col h-screen overflow-hidden">
     <TopbarMain />
-    <div class="flex justify-between w-full flex-1 min-h-0">
+    <div class="relative flex justify-between w-full flex-1 min-h-0">
       <USidebar
         side="left"
         :rail="true"

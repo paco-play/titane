@@ -13,7 +13,7 @@ A component is a typed blob interned with `defineComponent`. Built-ins (`Transfo
 ```ts
 export const PlayerController = defineComponent('PlayerController', {
   schema: {
-    speed: f.number({ min: 0, max: 20, step: 0.1, default: 5 })
+    speed: field.number({ min: 0, max: 20, step: 0.1, default: 5 })
   }
 });
 ```

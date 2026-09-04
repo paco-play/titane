@@ -17,7 +17,7 @@ It follows a strict **Entity-Component-System (ECS)** pattern to ensure maximum 
 - `packages/core`: the engine. ECS kernel, execution pipeline, standard components, built-in systems, scene serialization and runtime orchestrator. Depends on no graphics library.
 - `packages/renderer`: the Three.js driver implementing `IRenderer`. The only package that imports `three`.
 - `apps/editor`: Nuxt 4 application. Visualizes the ECS World and allows real-time data editing.
-- `apps/demo`: Nuxt 4 game that boots the engine with no editor chrome.
+- `packages/create-titane-project`: `npm run create` (`nuxt` / `vanilla`).
 
 The dependency arrow points one way only: the renderer depends on the core, never the reverse.
 Swapping to WebGPU, a headless driver or a canvas 2D debug view means adding a package next to
@@ -241,7 +241,7 @@ refreshes through `inspectTick`, because the Transform object identity does not 
 
 ### Reset vs Play
 Play still snapshots the world at unpause and restores it on pause. Reset uses a separate
-**edit baseline**, captured after a load or after the demo scene is seeded, so restoring the
+**edit baseline**, captured after a load or after the default scene is seeded, so restoring the
 authored scene does not depend on having pressed Play.
 
 ---
