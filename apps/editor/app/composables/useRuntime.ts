@@ -14,7 +14,6 @@ const editBaseline = shallowRef<World | null>(null);
  */
 export const useRuntime = () => {
   const { engine, renderer, syncWorld, selectedEntityId, notifyInspect } = useTitane();
-  const { saveToStorage } = usePersistence();
 
   const applyPlayChrome = (playing: boolean): void => {
     if (!renderer.value) return;
@@ -66,7 +65,7 @@ export const useRuntime = () => {
     if (!engine.value) return;
     engine.value.keepPlayChanges();
     markPersistenceDirty();
-    saveToStorage();
+    usePersistence().saveToStorage();
     captureBaseline();
     finishExitPlay();
   };
