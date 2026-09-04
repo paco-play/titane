@@ -30,7 +30,7 @@ Scripts are referenced by a **stable registry id**, not a file path:
 }
 ```
 
-The project code populates the registry at boot via `engine.use`. If a script is missing, the editor shows a **missing component** and **keeps the data** (Unity's missing-script behavior). Today's loader skips unknown ids with a warning — Phase 1.1 must stop dropping that data.
+The project code populates the registry at boot via `engine.use`. If a script is missing, the editor shows a **missing component** and **keeps the data** (Unity's missing-script behavior).
 
 ### Schema is the single source of truth
 
@@ -78,12 +78,12 @@ This is the phase that changes the nature of the product.
 
 | # | Task | Detail |
 | --- | --- | --- |
-| 1.1 | Data-only `.titane` | Documented here. Add registry `type` + keep unknown component payloads. |
-| 1.2 | `engine.use(plugin)` | **Done.** `{ name, register(engine) }`. Duplicate names throw. Systems register through the public API. |
-| 1.3 | Schema DSL `f.*` | `number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`. TS inference. Defaults. Deserialize validation. |
-| 1.4 | User `defineComponent` + lifecycle | `onStart` / `onUpdate` / `onDestroy`. Batched system per type. |
-| 1.5 | Auto Inspector | Schema → widget. Undo/redo on inspector writes, wired to the existing dirty flag. |
-| 1.6 | Add / remove component | Inspector lists registered types (Unity-style Add Component). |
+| 1.1 | Data-only `.titane` | **Done.** Unknown ids stay as orphan payloads; Inspector shows a missing-script row. |
+| 1.2 | `engine.use(plugin)` | **Done.** `{ name, register(engine) }`. Duplicate names throw. Systems and components register through the public API. |
+| 1.3 | Schema DSL `f.*` | **Done.** `number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`. TS inference. Defaults. Deserialize validation. |
+| 1.4 | User `defineComponent` + lifecycle | **Done.** `onStart` / `onUpdate` / `onDestroy`. Batched system per type. |
+| 1.5 | Auto Inspector | **Done.** Schema → widget. Writes use the existing dirty flag + commit (no separate undo stack in the editor yet). |
+| 1.6 | Add / remove component | **Done.** Inspector lists `engine.getUserComponents()` (Unity-style Add Component). |
 
 Widget map:
 

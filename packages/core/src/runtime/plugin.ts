@@ -1,8 +1,8 @@
 import type { TitaneEngine } from './engine';
 
 /**
- * Named extension that registers systems (and later components / field types)
- * without forking the core. The project calls `engine.use(plugin)` at boot.
+ * Named extension that registers systems and user components without
+ * forking the core. The project calls `engine.use(plugin)` at boot.
  */
 export interface TitanePlugin {
     readonly name: string;

@@ -14,6 +14,7 @@ import {
     deserializeWorld,
     type SerializedWorld
 } from '../../ecs/serialization';
+import { listOrphans } from '../../ecs/kernel/orphans';
 
 describe('ECS: Scene Serialization', () => {
     it('should round-trip a world through JSON', () => {
@@ -67,7 +68,7 @@ describe('ECS: Scene Serialization', () => {
         expect(getComponent(restored, parent, Transform)?.parent).toBeNull();
     });
 
-    it('should skip unknown components instead of corrupting the world', () => {
+    it('should keep unknown components as missing-script orphans', () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
         const restored = deserializeWorld({
@@ -78,7 +79,17 @@ describe('ECS: Scene Serialization', () => {
         });
 
         expect(restored.entities.active.has(0)).toBe(true);
+        expect(listOrphans(restored, 0)).toEqual([
+            { id: 'not-a-registered-component', data: { foo: 1 } }
+        ]);
         expect(warn).toHaveBeenCalled();
+
+        const roundTrip = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(restored))) as SerializedWorld
+        );
+        expect(listOrphans(roundTrip, 0)).toEqual([
+            { id: 'not-a-registered-component', data: { foo: 1 } }
+        ]);
 
         warn.mockRestore();
     });

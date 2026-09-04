@@ -3,6 +3,7 @@ import type { Entity } from '../ecs/types';
 import type { IRenderer } from './renderer-interface';
 import type { Scheduler } from '../ecs/pipeline/scheduler';
 import type { System } from '../ecs/pipeline/system';
+import type { AnyComponentType } from '../ecs/kernel/component-type';
 import { createWorld } from '../ecs/kernel/world';
 import { Clock } from '../utils/clock';
 import { FixedStep } from '../utils/fixed-step';
@@ -17,6 +18,7 @@ import { resetPhysicsSession, initPhysics } from '../physics/session';
 import { stepOnce, tickPaused, tickPlaying } from './advance';
 import { seedGlobalInput } from './global-input';
 import { resolvePluginName, type TitanePlugin } from './plugin';
+import { createComponentHost } from './component-host';
 
 /**
  * The high-level runner for the Titane Engine.
@@ -49,6 +51,10 @@ export class TitaneEngine {
     /** True while UPDATE/PHYSICS should run (playing tick or an explicit step). */
     private simulating = false;
     private readonly pluginNames = new Set<string>();
+    private readonly componentHost = createComponentHost(
+        (system) => this.addSystem(Phase.UPDATE, system),
+        () => this.simulating
+    );
 
     /**
      * @param renderer - The renderer implementation (driver) to use.
@@ -102,6 +108,21 @@ export class TitaneEngine {
         const name = resolvePluginName(plugin.name, this.pluginNames);
         this.pluginNames.add(name);
         plugin.register(this);
+    }
+
+    /**
+     * Exposes a user component on this engine: Add Component lists it,
+     * and lifecycle hooks run as one batched UPDATE system while simulating.
+     */
+    public registerComponent(type: AnyComponentType): void {
+        this.componentHost.registerComponent(type);
+    }
+
+    /**
+     * User components registered on this instance, in registration order.
+     */
+    public getUserComponents(): readonly AnyComponentType[] {
+        return this.componentHost.getUserComponents();
     }
 
     /**

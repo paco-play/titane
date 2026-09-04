@@ -9,8 +9,13 @@ export * from './ecs/kernel/state-manager';
 export * from './ecs/kernel/entity';
 export * from './ecs/kernel/component';
 export * from './ecs/kernel/query';
+export * from './ecs/kernel/lifecycle';
+export * from './ecs/kernel/orphans';
 export * from './ecs/kernel/factory';
 export * from './ecs/kernel/transform-utils';
+
+// Schema DSL
+export * from './ecs/schema';
 
 // Execution Pipeline
 export * from './ecs/pipeline/system';
@@ -37,6 +42,7 @@ export * from './ecs/systems/player-control';
 export * from './ecs/systems/physics-player-control';
 export * from './ecs/systems/physics';
 export * from './ecs/systems/trigger';
+export * from './ecs/systems/user-lifecycle';
 
 // Scene Persistence
 export * from './ecs/serialization';

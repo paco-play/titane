@@ -1,6 +1,10 @@
 import type { ComponentId } from '../types';
+import type { Schema } from '../schema/field';
+import type { InferSchema } from '../schema/infer';
+import { createFromSchema, reviveFromSchema } from '../schema/values';
 import type { AnyComponentType, ComponentType } from './component-type';
 import type { ComponentStore } from './store';
+import type { ComponentLifecycleContext, ComponentUpdateContext } from './lifecycle';
 
 /**
  * Dense list of every registered component type, indexed by `ComponentType.index`.
@@ -12,41 +16,79 @@ const typesByIndex: AnyComponentType[] = [];
 const typesById = new Map<ComponentId, AnyComponentType>();
 
 /**
- * Registers a new component kind and returns its typed handle.
- *
- * The returned handle is the only key accepted by the ECS accessors, which is
- * what makes them fully type-safe: the data type travels with the token.
- *
- * @param id - Stable textual identifier, also used by serialization.
- * @param create - Factory producing a fresh instance with default values.
- * @param revive - Optional rebuilder for components holding non-JSON values.
- * @param createStore - Optional packed store factory for hot numeric components.
- * @returns The typed component handle.
+ * User component declaration. The schema is the single source of truth:
+ * TypeScript infers `T` from it, the Inspector renders widgets from it,
+ * and deserialize validates against it.
+ */
+export interface UserComponentConfig<S extends Schema> {
+    readonly schema: S;
+    onStart?(ctx: ComponentLifecycleContext<InferSchema<S>>): void;
+    onUpdate?(ctx: ComponentUpdateContext<InferSchema<S>>): void;
+    onDestroy?(ctx: ComponentLifecycleContext<InferSchema<S>>): void;
+}
+
+/**
+ * Interns a handle into the global registry.
  * @throws If `id` has already been registered.
  */
-export const defineComponent = <T>(
+const intern = <T>(type: ComponentType<T>): ComponentType<T> => {
+    if (typesById.has(type.id)) {
+        throw new Error(`[Titane] Component "${type.id}" is already registered.`);
+    }
+
+    typesByIndex.push(type);
+    typesById.set(type.id, type);
+    return type;
+};
+
+/**
+ * Registers a schema-driven user component.
+ * Data type, Inspector widgets, defaults and revive all come from `schema`.
+ */
+export function defineComponent<S extends Schema>(
+    id: ComponentId,
+    config: UserComponentConfig<S>
+): ComponentType<InferSchema<S>>;
+
+/**
+ * Registers a built-in component with an explicit factory.
+ * Use this form for packed stores or revive hooks that are not schema-driven.
+ */
+export function defineComponent<T>(
     id: ComponentId,
     create: () => T,
     revive?: (raw: unknown) => T,
     createStore?: () => ComponentStore<T>
-): ComponentType<T> => {
-    if (typesById.has(id)) {
-        throw new Error(`[Titane] Component "${id}" is already registered.`);
+): ComponentType<T>;
+
+export function defineComponent(
+    id: ComponentId,
+    createOrConfig: (() => unknown) | UserComponentConfig<Schema>,
+    revive?: (raw: unknown) => unknown,
+    createStore?: () => ComponentStore<unknown>
+): ComponentType<unknown> {
+    if (typeof createOrConfig === 'function') {
+        return intern({
+            id,
+            index: typesByIndex.length,
+            create: createOrConfig,
+            revive,
+            createStore
+        });
     }
 
-    const type: ComponentType<T> = {
+    const config = createOrConfig;
+    return intern({
         id,
         index: typesByIndex.length,
-        create,
-        revive,
-        createStore
-    };
-
-    typesByIndex.push(type);
-    typesById.set(id, type);
-
-    return type;
-};
+        create: () => createFromSchema(config.schema),
+        revive: (raw) => reviveFromSchema(config.schema, raw),
+        schema: config.schema,
+        onStart: config.onStart,
+        onUpdate: config.onUpdate,
+        onDestroy: config.onDestroy
+    });
+}
 
 /**
  * Resolves a component handle from its textual identifier.

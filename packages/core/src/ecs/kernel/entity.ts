@@ -2,6 +2,7 @@ import type { World } from './world';
 import type { Entity } from '../types';
 import { getComponent, updateComponent } from './component';
 import { Transform } from '../components/transform';
+import { clearOrphansForEntity, copyOrphansForEntity } from './orphans';
 
 /**
  * Spawns a new entity in the specified world.
@@ -82,6 +83,8 @@ export const destroyEntity = (world: World, entityId: Entity): void => {
             store?.delete(doomedId);
         }
 
+        clearOrphansForEntity(world, doomedId);
+
         world.entities.recycled.push(doomedId);
         removed = true;
     }
@@ -120,6 +123,8 @@ export const cloneEntity = (world: World, sourceId: Entity): Entity => {
                 store.set(cloneId, data);
             }
         }
+
+        copyOrphansForEntity(world, originalId, cloneId);
 
         updateComponent(world, cloneId, Transform, (transform) => {
             transform.isDirty = true;

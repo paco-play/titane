@@ -1,4 +1,5 @@
 import type { World, ComponentStore } from './world';
+import { cloneOrphanMap } from './orphans';
 
 /**
  * Creates a deep copy of the entire ECS World.
@@ -18,6 +19,8 @@ export const cloneWorld = (world: World): World => {
             recycled: [...world.entities.recycled]
         },
         _stores: clonedStores,
-        _generation: 0
+        _generation: 0,
+        _epoch: world._epoch,
+        _orphans: cloneOrphanMap(world._orphans)
     };
 };

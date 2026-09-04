@@ -3,6 +3,7 @@ import type { Entity } from '../types';
 import { cloneWorld } from './world-utils';
 import { getComponentTypeByIndex } from './registry';
 import { createSparseStore } from './store';
+import { copyOrphans } from './orphans';
 
 /**
  * Captures the current state of the world as a deep clone.
@@ -63,5 +64,7 @@ export const restoreWorldState = (target: World, source: World): void => {
         });
     }
 
+    copyOrphans(target, source);
     target._generation += 1;
+    target._epoch += 1;
 };

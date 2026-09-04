@@ -1,4 +1,4 @@
-import type { Entity } from '../types';
+import type { ComponentId, Entity } from '../types';
 import type { ComponentStore } from './store';
 
 export type { ComponentStore } from './store';
@@ -24,6 +24,17 @@ export interface World {
      * Query caches compare against this instead of rescanning every frame.
      */
     _generation: number;
+    /**
+     * @internal Bumped when the world's contents are replaced in place
+     * (`restoreWorldState` / `loadWorld`). Lifecycle systems use it to
+     * re-run `onStart` after Play stop restores the edit snapshot.
+     */
+    _epoch: number;
+    /**
+     * @internal Unknown component payloads. Kept so a missing script does
+     * not destroy authored data. Use {@link listOrphans} / {@link removeOrphan}.
+     */
+    readonly _orphans: Map<ComponentId, Map<Entity, unknown>>;
 }
 
 /**
@@ -38,4 +49,6 @@ export const createWorld = (): World => ({
     },
     _stores: [],
     _generation: 0,
+    _epoch: 0,
+    _orphans: new Map()
 });

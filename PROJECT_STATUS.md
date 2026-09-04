@@ -32,7 +32,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 1 — Code ↔ ECS ↔ Inspector.** `engine.use(plugin)` is the seam. Next: schema DSL `f.*`, user lifecycle, auto Inspector. Rendering stays frozen until Phase 4. Contract: `docs/ROADMAP.md`.
+**Phase 2 — Iteration loop.** Phase 1 (schema, user components, auto Inspector, Add Component) is in. Next: play-in-place, keep/discard Play edits, HMR, error isolation. Rendering stays frozen until Phase 4. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -58,6 +58,13 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 
 ### Engine plugin
 - [x] **`engine.use(plugin)`.** `TitanePlugin` is `{ name, register(engine) }`. Duplicate or empty names throw. A plugin registers systems through the public engine API — no fork of core.
+
+### User components
+- [x] **Schema DSL `f.*`.** `number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`. `InferSchema` is the data type; defaults and deserialize validation come from the same record.
+- [x] **User `defineComponent`.** `defineComponent('PlayerController', { schema, onStart, onUpdate, onDestroy })`. Built-ins keep the factory form.
+- [x] **Batched lifecycle.** `engine.registerComponent` lists the type for Add Component and installs one UPDATE system per type. Hooks run only while simulating (Play / Step), never on a paused editor tick. `World._epoch` re-runs `onStart` after a snapshot restore.
+- [x] **Orphan payloads.** Unknown `.titane` component ids are kept, round-tripped, cloned and destroyed with the entity. Inspector shows a missing-script row.
+- [x] **Auto Inspector + Add Component.** Schema fields map to widgets. The editor sample `PlayerController` is registered through `gameplayPlugin`; Inspector source does not special-case that type.
 
 ### Shadows
 - [x] **`Light.castShadow`.** Directional and point lights write a shadow map. Ambient ignores the flag. Default `false`. Older scenes revive with `false`.
@@ -200,9 +207,9 @@ Source of truth: `docs/ROADMAP.md`. A phase is done when its user scenario passe
 
 Mesh material (#14) and shadows (#16) are on `release`. Rendering is frozen.
 
-### Phase 1 — Code ↔ ECS ↔ Inspector
+### Phase 1 — Code ↔ ECS ↔ Inspector — done
 
-`.titane` stays data-only. Behavior lives in user `.ts`. Schema is the single source of truth (TS inference + Inspector widgets + defaults). `engine.use(plugin)` registers components/systems. Auto Inspector + Add Component.
+`.titane` stays data-only. Behavior lives in user `.ts`. Schema is the single source of truth. `engine.use` + `engine.registerComponent` expose types to Add Component. Auto Inspector writes values through the existing dirty-flag / commit path.
 
 **Done when:** write `PlayerController.ts` with `speed` → it appears in Add Component → slider → save → reload → value still there.
 

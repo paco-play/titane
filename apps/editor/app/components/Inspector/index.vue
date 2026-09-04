@@ -96,6 +96,28 @@
         :controlled="isPlayerControlled"
         @update-controlled="setPlayerControlled"
       />
+      <InspectorSchemaSection
+        v-for="section in attached"
+        :key="section.type.id"
+        :label="section.label"
+        :data="section.data"
+        :fields="section.fields"
+        :inspect-tick="inspectTick"
+        :entity-options="entityOptions"
+        @update="(key, value) => setField(section.type, key, value)"
+        @remove="dropUserComponent(section.type)"
+        @commit="saveToStorage"
+      />
+      <InspectorMissingScript
+        v-for="orphan in orphans"
+        :key="orphan.id"
+        :component-id="orphan.id"
+        @remove="dropOrphan(orphan.id)"
+      />
+      <InspectorAddComponent
+        :types="availableTypes"
+        @add="addUserComponent"
+      />
     </div>
     <InspectorNoSelection v-else />
   </div>
@@ -151,6 +173,16 @@ const {
   setLightDistance,
   setLightCastShadow,
 } = useInspectorLight();
+const {
+  attached,
+  orphans,
+  availableTypes,
+  entityOptions,
+  addUserComponent,
+  dropUserComponent,
+  setField,
+  dropOrphan,
+} = useInspectorUser();
 
 /** Transform data of the selected entity, if any. */
 const transform = computed<Transform | undefined>(() => {

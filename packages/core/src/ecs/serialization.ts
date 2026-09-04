@@ -3,6 +3,7 @@ import type { Entity, ComponentId } from './types';
 import { createWorld } from './kernel/world';
 import { getComponentTypeById, getComponentTypeByIndex } from './kernel/registry';
 import { createSparseStore } from './kernel/store';
+import { setOrphan } from './kernel/orphans';
 
 /** Schema version of the `.titane` scene format. */
 export const SCENE_FORMAT_VERSION = 1;
@@ -54,6 +55,15 @@ export const serializeWorld = (world: World): SerializedWorld => {
         });
     });
 
+    world._orphans.forEach((byEntity, componentId) => {
+        if (byEntity.size === 0) return;
+        const record = serialized.components[componentId] ?? {};
+        serialized.components[componentId] = record;
+        byEntity.forEach((data, entityId) => {
+            record[String(entityId)] = structuredClone(data);
+        });
+    });
+
     return serialized;
 };
 
@@ -86,10 +96,15 @@ export const deserializeWorld = (data: SerializedWorld): World => {
     for (const [componentId, storeData] of Object.entries(data.components)) {
         const type = getComponentTypeById(componentId);
 
-        // Unknown component: its defining module was never imported. Skip it
-        // rather than corrupting the World with data nothing can interpret.
+        // Unknown component: keep the payload so a missing script does not
+        // destroy authored data. The Inspector shows a missing-script row.
         if (!type) {
-            console.warn(`[Titane] Unknown component "${componentId}" skipped while loading.`);
+            console.warn(
+                `[Titane] Unknown component "${componentId}" kept as a missing script.`
+            );
+            for (const [entityKey, raw] of Object.entries(storeData)) {
+                setOrphan(world, Number(entityKey), componentId, structuredClone(raw));
+            }
             continue;
         }
 

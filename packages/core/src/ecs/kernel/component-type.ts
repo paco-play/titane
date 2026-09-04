@@ -1,5 +1,7 @@
 import type { ComponentId } from '../types';
+import type { Schema } from '../schema/field';
 import type { ComponentStore } from './store';
+import type { ComponentLifecycleContext, ComponentUpdateContext } from './lifecycle';
 
 /**
  * Phantom marker carrying the component data type at compile time.
@@ -35,6 +37,17 @@ export interface ComponentType<T> {
      * Hot numeric components pass a SoA factory so accessors stay unchanged.
      */
     readonly createStore?: () => ComponentStore<T>;
+    /**
+     * Authoring schema. Present on user components declared with `f.*`.
+     * Built-ins omit it; the Inspector then uses dedicated sections.
+     */
+    readonly schema?: Schema;
+    /** Called once per entity when it first joins this type during simulation. */
+    onStart?(ctx: ComponentLifecycleContext<T>): void;
+    /** Called every simulation step for every entity that has this component. */
+    onUpdate?(ctx: ComponentUpdateContext<T>): void;
+    /** Called when the entity leaves this type during simulation, with last known data. */
+    onDestroy?(ctx: ComponentLifecycleContext<T>): void;
     /** @internal Compile-time only. Do not read. */
     readonly [COMPONENT_BRAND]?: T;
 }
