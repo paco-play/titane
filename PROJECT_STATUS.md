@@ -10,8 +10,9 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ## Project Structure (Monorepo)
 - `packages/core`: the engine (ECS kernel, pipeline, components, systems, serialization, runtime). No graphics dependency.
 - `packages/renderer`: the Three.js driver. The only package importing `three`.
-- `apps/editor`: the Nuxt 4 editor UI.
+- `apps/editor`: the Nuxt 4 editor UI, also a **dev-only Nuxt layer** (`/titane`).
 - `apps/demo`: a Nuxt 4 game that boots the engine with no editor chrome.
+- `packages/create-titane-project`: `npm run create` scaffold (`nuxt` / `vanilla`).
 
 ## Architecture Rules
 1. **Entities** are just `number` IDs.
@@ -24,15 +25,15 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ## Quality Gates
 | Command | Checks |
 | --- | --- |
-| `npm test` | Vitest on the core, the renderer, and the editor |
+| `npm test` | Vitest on the core, the renderer, the editor, and the scaffold |
 | `npm run build` | `tsc -b` on the core, then the renderer |
-| `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor and the demo |
+| `npm run typecheck` | `tsc -b` on core and renderer, `vue-tsc` on the editor and the demo, `tsc` on the scaffold |
 | `npm run lint` | ESLint on the editor and the demo |
 
 ---
 
 ## Current Milestone
-**Phase 3 — Distributable product.** Phase 2 (play-in-place, keep/discard, HMR, isolated script errors) is in. Next: project convention, `create-titane-project`, embedded editor. Rendering stays frozen until Phase 4. Contract: `docs/ROADMAP.md`.
+**Phase 3 — Distributable product** (in this branch). Phase 2 is on `release`. Next after merge: Phase 4 unfreeze. Rendering stays frozen until Phase 4. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -71,6 +72,13 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Keep / Discard.** Stopping Play freezes the sim and asks. Discard restores the pre-Play snapshot. Keep leaves Play edits as the edit scene and saves.
 - [x] **Script HMR.** A second `defineComponent` with the same id patches schema and hooks in place. `engine.reloadUserComponent` rebakes live instances. The editor accepts `PlayerController.ts` over Vite HMR.
 - [x] **Isolated script errors.** `onStart` / `onUpdate` / `onDestroy` throws skip that entity and surface a banner. The engine tick continues.
+
+### Distributable product
+- [x] **Project convention.** `scenes/`, `src/components/`, `public/assets/`, `titane.config.ts`. `TitaneConfig` / `applyTitaneConfig` in core.
+- [x] **`create-titane-project`.** Three questions (name, template, install). Templates: Nuxt (editor in dev) and vanilla Vite. `file:` links into the Titane checkout.
+- [x] **Embedded editor.** Standalone editor and generated Nuxt apps serve the chrome at `/titane`. The default layout is a passthrough so a game page at `/` is not wrapped in Hierarchy / Inspector.
+- [x] **Prod strip.** Generated `nuxt.config` extends `@titane/editor` only when `NODE_ENV !== 'production'`.
+- [x] **Docs.** Getting started, ECS, writing a component, light API reference.
 
 ### Shadows
 - [x] **`Light.castShadow`.** Directional and point lights write a shadow map. Ambient ignores the flag. Default `false`. Older scenes revive with `false`.
@@ -225,9 +233,9 @@ Play-in-place in the editor viewport. Snapshot on Play with explicit keep/discar
 
 **Done when:** change `speed` in the `.ts` file and the running Play session picks it up without a full reload.
 
-### Phase 3 — Distributable product
+### Phase 3 — Distributable product — done in this branch
 
-Project convention, `npm create titane-project`, editor on a dev-only route, prod build strips the editor, then docs.
+Project convention, `npm run create`, editor on `/titane` in dev, prod build omits the layer, docs under `docs/`.
 
 **Done when:** scaffold → `npm run dev` → moving cube + editor + custom component, under five minutes.
 

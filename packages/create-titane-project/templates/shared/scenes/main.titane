@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "nextId": 2,
+  "entities": [1],
+  "recycled": [],
+  "components": {
+    "name": {
+      "1": { "value": "Cube" }
+    },
+    "transform": {
+      "1": {
+        "position": { "x": 0, "y": 0.5, "z": 0 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "parent": null
+      }
+    },
+    "mesh": {
+      "1": {
+        "primitive": "box",
+        "color": "#4ade80"
+      }
+    },
+    "PlayerController": {
+      "1": { "speed": 1 }
+    }
+  }
+}

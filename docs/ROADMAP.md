@@ -125,11 +125,11 @@ This is when someone else can use Titane.
 
 | # | Task | Detail |
 | --- | --- | --- |
-| 3.1 | Project convention | `scenes/`, `src/components/`, `public/assets/`, `titane.config.ts`. Few options. |
-| 3.2 | `npm create titane-project` | Interactive scaffold: Vite vanilla / Nuxt / Next / SvelteKit, TS default, minimal playable example. |
-| 3.3 | Embedded editor in dev | Editor on a project route (e.g. `/titane`) in dev only. Not a second app to launch. |
-| 3.4 | Production build | Strips the editor. Bundle is core + renderer + scene + scripts. |
-| 3.5 | Docs | Getting started (5 minutes), ECS concepts, writing a component, API reference. Docs wait until the plugin seam exists. |
+| 3.1 | Project convention | **Done.** `scenes/`, `src/components/`, `public/assets/`, `titane.config.ts`. |
+| 3.2 | `npm create titane-project` | **Done.** Interactive scaffold: `nuxt` (editor in dev) and `vanilla` (Vite). TS default, moving cube. Next / SvelteKit are not faked. |
+| 3.3 | Embedded editor in dev | **Done.** Editor on `/titane` via the `@titane/editor` Nuxt layer. Not a second app. |
+| 3.4 | Production build | **Done.** Generated `nuxt.config` omits the layer when `NODE_ENV === 'production'`. |
+| 3.5 | Docs | **Done.** [Getting started](./getting-started.md), [ECS](./ecs.md), [writing a component](./writing-a-component.md), [API](./api.md). |
 
 **Done when:** `npm create titane-project` → three questions → `npm run dev` → a cube moves, the editor is reachable, a custom component can be added. Under five minutes, without reading docs.
 

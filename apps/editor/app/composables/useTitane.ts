@@ -1,9 +1,17 @@
 import type { Entity, ScriptError } from '@titane/core';
 import type { ShallowRef } from 'vue';
-import { TitaneEngine, Phase, createPlayerControlSystem, createPhysicsPlayerControlSystem } from '@titane/core';
+import {
+  TitaneEngine,
+  Phase,
+  applyTitaneConfig,
+  createPlayerControlSystem,
+  createPhysicsPlayerControlSystem
+} from '@titane/core';
 import { ThreeRenderer } from '@titane/renderer';
 import { markPersistenceDirty } from '~/utils/persistence-dirty';
-import { gameplayPlugin } from '~/gameplay/gameplayPlugin';
+import { titaneConfig } from '~~/titane.config';
+
+const EDITOR_GAMEPLAY_PLUGIN = 'editor-gameplay';
 
 const engineInstance = shallowRef<TitaneEngine | null>(null);
 
@@ -50,7 +58,7 @@ export const useTitane = () => {
     // Gameplay is opt-in: the engine ships no player controls of its own.
     engine.addSystem(Phase.UPDATE, createPlayerControlSystem());
     engine.addSystem(Phase.UPDATE, createPhysicsPlayerControlSystem());
-    engine.use(gameplayPlugin);
+    applyTitaneConfig(engine, titaneConfig);
 
     engine.onScriptErrorChange = (error) => {
       scriptError.value = error;
@@ -58,7 +66,12 @@ export const useTitane = () => {
     engine.onUserComponentPatch = () => {
       inspectTick.value += 1;
     };
-    wireGameplayHotReload();
+
+    if (import.meta.hot && titaneConfig.plugins.some(plugin => plugin.name === EDITOR_GAMEPLAY_PLUGIN)) {
+      void import('./useGameplayHotReload').then(({ wireGameplayHotReload }) => {
+        wireGameplayHotReload();
+      });
+    }
 
     rendererInstance.value = renderer;
     engineInstance.value = engine;

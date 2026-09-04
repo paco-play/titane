@@ -12,6 +12,7 @@
 
 <script setup lang="ts">
 import { addComponent, createPrimitive, Velocity, createVelocity } from '@titane/core';
+import { tryLoadProjectScene } from '~/utils/project-scene';
 
 /** Interval between periodic auto-saves, in milliseconds. */
 const AUTOSAVE_INTERVAL_MS = 60_000;
@@ -47,11 +48,14 @@ onMounted(async () => {
   // 2. Attempt to recover the previous session
   const hasRecovered = loadFromStorage();
 
-  // 3. Spawn a demo cube only on a truly fresh start.
+  // 3. Fresh start: project scene, then a fallback cube if that file is missing.
   // active.size starts at 1 because the engine owns the global input entity.
-  if (!hasRecovered && engine.world.entities.active.size <= 1) {
-    const demoCube = createPrimitive(engine.world, { name: 'Demo Cube', color: '#4ade80' });
-    addComponent(engine.world, demoCube, Velocity, createVelocity(0.4, 0, 0));
+  if (!hasRecovered) {
+    const loaded = await tryLoadProjectScene(engine);
+    if (!loaded && engine.world.entities.active.size <= 1) {
+      const demoCube = createPrimitive(engine.world, { name: 'Demo Cube', color: '#4ade80' });
+      addComponent(engine.world, demoCube, Velocity, createVelocity(0.4, 0, 0));
+    }
     syncWorld();
   }
 

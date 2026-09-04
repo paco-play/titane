@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TitaneEngine } from '../runtime/engine';
 import type { IRenderer } from '../runtime/renderer-interface';
-import type { TitanePlugin } from '../runtime/plugin';
+import { applyTitaneConfig, type TitanePlugin } from '../runtime/plugin';
 import { Phase } from '../ecs/pipeline/system';
 
 const createMockRenderer = (): IRenderer => ({
@@ -52,5 +52,16 @@ describe('engine.use', () => {
 
     it('rejects an empty name', () => {
         expect(() => engine.use({ name: '  ', register: vi.fn() })).toThrow(/must not be empty/);
+    });
+
+    it('applyTitaneConfig registers each plugin in order', () => {
+        const order: string[] = [];
+        applyTitaneConfig(engine, {
+            plugins: [
+                { name: 'first', register: () => { order.push('first'); } },
+                { name: 'second', register: () => { order.push('second'); } }
+            ]
+        });
+        expect(order).toEqual(['first', 'second']);
     });
 });

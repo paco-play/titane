@@ -16,6 +16,16 @@
 
 ## Quick Start
 
+From this repository:
+
+```bash
+npm run create -- --name my-game --template nuxt --yes
+cd my-game
+npm run dev
+```
+
+Game at `/`, editor at `/titane`. Details: [docs/getting-started.md](docs/getting-started.md).
+
 ```typescript
 import {
   TitaneEngine, Phase,
@@ -83,8 +93,9 @@ See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the detailed task breakdown.
 
 - `packages/core` — the engine: ECS kernel, execution pipeline, standard components, built-in systems, scene serialization, runtime orchestrator. Imports no graphics library.
 - `packages/renderer` — the Three.js driver implementing `IRenderer`. The only package that imports `three`.
-- `apps/editor` — the Nuxt 4 editor UI.
+- `apps/editor` — the Nuxt 4 editor UI (also a dev-only layer at `/titane`).
 - `apps/demo` — a Nuxt 4 game that uses the engine without editor chrome.
+- `packages/create-titane-project` — `npm run create` (`nuxt` / `vanilla`).
 
 For an in-depth look at the internal data flow, ECS definitions and the engine loop, read the [Architecture Specification](ARCHITECTURE.md).
 
@@ -109,7 +120,10 @@ in the engine.
 ## Useful Commands
 
 ```bash
-# Run the editor with HMR
+# Scaffold a game (nuxt: editor at /titane, vanilla: canvas only)
+npm run create
+
+# Run the editor with HMR (http://localhost:3000/titane)
 npm run editor:dev
 
 # Run the Drop demo (no editor chrome) on http://localhost:3001

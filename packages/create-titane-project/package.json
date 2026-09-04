@@ -1,0 +1,25 @@
+{
+  "name": "create-titane-project",
+  "version": "0.4.0",
+  "description": "Scaffold a Titane game project",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "create-titane-project": "./bin/create-titane-project.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "templates"
+  ],
+  "scripts": {
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
+  }
+}
