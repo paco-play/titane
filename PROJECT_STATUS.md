@@ -1,7 +1,8 @@
 # Titane Engine - Project Status & Roadmap
 
 ## Current Vision
-A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
+A data-oriented, ECS-based 3D **game engine** with a small, fully typed public API.
+The product is the loop **user TypeScript → ECS component → Inspector → Play**, not a scene viewer with more shaders.
 - **Core:** entity storage, typed component registry, query engine, phase scheduler, game loop.
 - **Renderer:** pluggable driver behind `IRenderer` (currently Three.js).
 - **Editor:** Nuxt 4 visual interface.
@@ -31,7 +32,14 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Mesh material** — `Mesh` still only has `color` + `albedo`. Next: roughness / metalness / emissive through the existing cache and Inspector Mesh section.
+**Phase 0 — close the visual floor**, then stop rendering work.
+
+The product is the loop **code TS → attach to entity → Inspector → Play → iterate**. Rendering features after shadows do not create that loop. Full contract: `docs/ROADMAP.md`.
+
+1. **0.1** Merge mesh material ([PR #14](https://github.com/paco-play/titane/pull/14)): `roughness`, `metalness`, `emissive`.
+2. **0.2** Shadows: `Light.castShadow`, `Mesh.castShadow` / `Mesh.receiveShadow`.
+
+After 0.2: Phase 1 (plugin + schema DSL + auto Inspector). No glTF animation, physics material, asset manager, or demo growth until Phase 4.
 
 ## Completed
 
@@ -179,22 +187,35 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-Engine features stay first. The demo is a sandbox only — do not grow it.
+Source of truth: `docs/ROADMAP.md`. A phase is done when its user scenario passes, not when its checklist is ticked. **No rendering or physics PRs between Phase 0 and Phase 4.**
 
-### 1. Next recommended
+### Phase 0 — Close the visual floor
 
-1. **Mesh material.** `roughness`, `metalness`, `emissive` on `MeshData`. `ResourceCache` keys include them. Inspector Mesh stays dumb.
-2. **Shadows.** Shadow maps on directional / point lights; one flag on `Light`.
-3. **glTF animation.** Play a named clip on `Gltf` (`clip`, `playing`, `loop`). Models are static today.
-4. **Physics material.** Friction / restitution on `RigidBody`. Collider still inferred from mesh unless an explicit shape is added later.
-5. **Engine plugin.** `type TitanePlugin = { name: string; register(engine: TitaneEngine): void }` and `engine.use(plugin)`. Registers systems (and later components) without forking core. No sandbox, no remote registry.
-6. **Editor play-in-place.** Game-mode renderer inside the editor so the demo is not required to try a scene. Editor-only.
-7. **Docus.** `apps/docs` (Nuxt Docus) covering kernel, components, systems, and the `.titane` format. After the plugin seam so examples have a real extension point.
+1. Merge mesh material (PR #14).
+2. Shadows (`Light.castShadow`, `Mesh.castShadow` / `receiveShadow`). Then freeze rendering.
 
-Do not put a Camera component in core yet. `ThreeRenderer.setCamera` plus a follow system is enough until play-in-place feels wrong.
+### Phase 1 — Code ↔ ECS ↔ Inspector
 
-### 2. Deprioritized
+`.titane` stays data-only. Behavior lives in user `.ts`. Schema is the single source of truth (TS inference + Inspector widgets + defaults). `engine.use(plugin)` registers components/systems. Auto Inspector + Add Component.
 
-1. **File System Access API**: native `CTRL+S` overwriting a file on disk without re-downloading.
-2. **Asset manager / asset metadata**: one URL field per consumer is enough until something must relink.
-3. **More demo / live-session work**: the demo stays a thin sandbox.
+**Done when:** write `PlayerController.ts` with `speed` → it appears in Add Component → slider → save → reload → value still there.
+
+### Phase 2 — Iteration loop
+
+Play-in-place in the editor viewport. Snapshot on Play with explicit keep/discard. HMR of scripts during Play. `onUpdate` errors must not kill the editor.
+
+**Done when:** change `speed` in the `.ts` file and the running Play session picks it up without a full reload.
+
+### Phase 3 — Distributable product
+
+Project convention, `npm create titane-project`, editor on a dev-only route, prod build strips the editor, then docs.
+
+**Done when:** scaffold → `npm run dev` → moving cube + editor + custom component, under five minutes.
+
+### Phase 4 — Unfreeze
+
+glTF animation, physics material, asset manager, File System Access, prefabs.
+
+### Still parked
+
+No Camera component in core yet. Demo stays a sandbox. Do not grow it.
