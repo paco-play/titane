@@ -33,7 +33,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 5 — Scene camera.** ECS `Camera` drives Play / game view. Contract: `docs/ROADMAP.md`.
+**Phase 5 — Scene camera, complete.** ECS `Camera` drives Play / game view. Contract: `docs/ROADMAP.md`. The numbered roadmap has no Phase 6. Demo stays a sandbox.
 
 ## Completed
 
@@ -266,10 +266,14 @@ Play-in-place in the editor viewport. Snapshot on Play with explicit keep/discar
 
 Project convention, `npm run create`, editor on `/titane` in dev, prod build omits the layer, docs under `docs/`.
 
-### Phase 4 — Unfreeze
+### Phase 4 — Unfreeze — done
 
 glTF animation, physics material, `f.asset()`, Ctrl+S, and prefabs are in.
 
+### Phase 5 — Scene camera — done
+
+Play and game mode look through the current `Camera`. Edit mode keeps orbit.
+
 ### Still parked
 
-Demo stays a sandbox. Do not grow it.
+The numbered contract stops at Phase 5. Demo stays a sandbox. Do not grow it.

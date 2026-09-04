@@ -161,5 +161,5 @@ Play-in-place made `setCamera` feel wrong: Play still looked through the orbit c
 - Editor: hierarchy, inspector, gizmos, pick, orbit, play/pause/step, dirty-flag save
 - Renderer: instancing, lights, albedo, PBR material, shadows, glTF, audio, scene camera
 - Rapier + sensors/triggers
-- Play snapshot restore (always discards Play edits today)
+- Play snapshot with explicit Keep / Discard
 - Demo as a sandbox only — do not grow it
