@@ -1,5 +1,5 @@
-import type { TitaneEngine, SerializedWorld } from '@titane/core';
-import { deserializeWorld } from '@titane/core';
+import type { TitaneEngine } from '@titane/core';
+import { deserializeWorld, isSerializedWorld } from '@titane/core';
 
 /** Dev-served project scene (`scenes/` via Nitro publicAssets). */
 export const PROJECT_SCENE_URL = '/scenes/main.titane';
@@ -14,8 +14,8 @@ export const tryLoadProjectScene = async (engine: TitaneEngine): Promise<boolean
     const response = await fetch(PROJECT_SCENE_URL);
     if (!response.ok) return false;
 
-    const data = await response.json() as SerializedWorld;
-    if (typeof data.version !== 'number' || !Array.isArray(data.entities)) return false;
+    const data: unknown = await response.json();
+    if (!isSerializedWorld(data)) return false;
 
     engine.loadWorld(deserializeWorld(data));
     return true;

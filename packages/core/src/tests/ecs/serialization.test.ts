@@ -13,6 +13,7 @@ import {
     SCENE_FORMAT_VERSION,
     serializeWorld,
     deserializeWorld,
+    isSerializedWorld,
     type SerializedWorld
 } from '../../ecs/serialization';
 import { listOrphans } from '../../ecs/kernel/orphans';
@@ -34,6 +35,12 @@ describe('ECS: Scene Serialization', () => {
 
     it('should stamp the format version', () => {
         expect(serializeWorld(createWorld()).version).toBe(SCENE_FORMAT_VERSION);
+    });
+
+    it('distinguishes a scene payload from a prefab-shaped object', () => {
+        expect(isSerializedWorld(serializeWorld(createWorld()))).toBe(true);
+        expect(isSerializedWorld({ version: 1, root: 0, entities: [0], components: {} })).toBe(false);
+        expect(isSerializedWorld(null)).toBe(false);
     });
 
     it('should revive the worldMatrix that JSON cannot represent', () => {

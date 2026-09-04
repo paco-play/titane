@@ -29,7 +29,7 @@ Three questions if you omit the flags: **project name**, **template** (`nuxt` or
 
 1. Open http://localhost:3000 — a green cube slides along X.
 2. Open http://localhost:3000/titane — Hierarchy, Inspector, Play.
-3. Select the cube, **Add Component**, or edit `speed` on `PlayerController`. Press Play.
+3. Select the cube, **Add Component**, or edit `speed` on `PlayerController`. Press Play. Ctrl+S writes `scenes/main.titane`.
 
 ## Project layout
 

@@ -16,7 +16,7 @@ Public entry points. Types travel with the handles; there is no `any` in the eng
 | `getComponent` / `addComponent` / `removeComponent` | Typed accessors |
 | `defineQuery` / `runQuery` | Zero-allocation iteration |
 | `Phase` / `engine.addSystem` | Pipeline registration |
-| `serializeWorld` / `deserializeWorld` | `.titane` JSON |
+| `serializeWorld` / `deserializeWorld` / `isSerializedWorld` | `.titane` JSON scenes |
 | `TitanePlugin` / `TitaneConfig` | Host seam |
 
 Built-in components include `Transform`, `Mesh`, `Name`, `Velocity`, `Light`, `Gltf` (`url`, `clip`, `playing`, `loop`), `Sound`, `RigidBody` (`kind`, `friction`, `restitution`), `Sensor`, `PlayerControlled`, `Input`.

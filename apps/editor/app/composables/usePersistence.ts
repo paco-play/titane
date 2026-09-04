@@ -7,7 +7,7 @@ const AUTOSAVE_KEY = 'titane_autosave_buffer';
 
 export const usePersistence = () => {
   const { engine, syncWorld, selectedEntityId } = useTitane();
-  const { captureBaseline } = useRuntime();
+  const { captureBaseline, isPlaying } = useRuntime();
   const { publish } = useLivePreview();
 
   /**
@@ -26,6 +26,23 @@ export const usePersistence = () => {
     link.click();
 
     URL.revokeObjectURL(url);
+  };
+
+  /**
+   * Writes `scenes/main.titane` on the host project. Falls back to a download
+   * if the dev API is unreachable. No-op while Playing so sim state is not baked in.
+   */
+  const saveToProject = async (): Promise<void> => {
+    if (!engine.value || isPlaying.value) return;
+
+    const data = serializeWorld(engine.value.world);
+    try {
+      await $fetch('/api/titane/scene', { method: 'PUT', body: data });
+      saveToStorage();
+    } catch (error) {
+      console.error('[Titane] Failed to write scenes/main.titane.', error);
+      saveToDisk('main.titane');
+    }
   };
 
   /**
@@ -108,6 +125,7 @@ export const usePersistence = () => {
 
   return {
     saveToDisk,
+    saveToProject,
     loadFromDisk,
     saveToStorage,
     saveIfDirty,

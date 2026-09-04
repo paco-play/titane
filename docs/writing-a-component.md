@@ -32,7 +32,7 @@ export const gameplayPlugin: TitanePlugin = {
 };
 ```
 
-Restart `npm run dev` (or let Vite reload). In the editor, select an entity → **Add Component** → `PlayerController`. Edit `speed`. Save. The value is in the `.titane` data, not in generated code.
+Restart `npm run dev` (or let Vite reload). In the editor, select an entity → **Add Component** → `PlayerController`. Edit `speed`. Ctrl+S writes `scenes/main.titane`. The value is in the `.titane` data, not in generated code.
 
 `f.asset({ accept: 'texture' })` stores a URL string. The Inspector shows a text field plus a list of matching files under `public/assets`.
 
