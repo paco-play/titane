@@ -1,11 +1,13 @@
 <template>
   <button
     type="button"
+    draggable="true"
     class="flex flex-col items-center gap-1 w-24 p-2 rounded-md text-center hover:bg-elevated"
     :class="selected ? 'ring-2 ring-primary bg-elevated' : ''"
     :title="item.name"
     @click="emit('select', item)"
     @dblclick="emit('open', item)"
+    @dragstart="onDragStart"
   >
     <UIcon
       :name="icon"
@@ -19,6 +21,7 @@
 
 <script setup lang="ts">
 import { PROJECT_KIND_ICON, type ProjectItem } from '~/types/project';
+import { writeProjectItemPayload } from '~/utils/project-item-payload';
 
 const props = defineProps<{
   item: ProjectItem
@@ -31,4 +34,9 @@ const emit = defineEmits<{
 }>();
 
 const icon = computed(() => PROJECT_KIND_ICON[props.item.kind]);
+
+const onDragStart = (event: DragEvent): void => {
+  if (!event.dataTransfer) return;
+  writeProjectItemPayload(event.dataTransfer, props.item);
+};
 </script>

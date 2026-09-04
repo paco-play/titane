@@ -14,7 +14,7 @@ import { Input } from '../ecs/components/input';
 import { InputDriver } from './input-driver';
 import { setupDefaultPipeline } from '../ecs/pipeline/setup';
 import { captureWorldState, restoreWorldState } from '../ecs/kernel/state-manager';
-import { resetPhysicsSession, initPhysics } from '../physics/session';
+import { resetPhysicsSession, initPhysics, setMeshColliderGeometryProvider } from '../physics/session';
 import { stepOnce, tickPaused, tickPlaying } from './advance';
 import { seedGlobalInput } from './global-input';
 import { resolvePluginName, type TitanePlugin } from './plugin';
@@ -75,6 +75,11 @@ export class TitaneEngine {
 
         // 1. Initialize the renderer driver
         this.renderer.init(canvasElement);
+        if (this.renderer.meshColliderGeometry) {
+            setMeshColliderGeometryProvider(this.world, (world, entity) =>
+                this.renderer.meshColliderGeometry?.(world, entity) ?? null
+            );
+        }
 
         // 2. Spawn the Core Global Input Entity dynamically
         this.globalInputEntity = createEntity(this.world);

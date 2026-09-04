@@ -157,7 +157,7 @@ Play-in-place made `setCamera` feel wrong: Play still looked through the orbit c
 
 ## Project panel
 
-The Inspector `field.asset()` picker is not a Project window. The editor now has a bottom **Project** panel: Scenes, Prefabs, Models, Textures, Audio. Files come from `scenes/`, `public/prefabs`, and `public/assets`. Double-click a prefab / model / sound to spawn it; a texture writes `Mesh.albedo` on the selection.
+The Inspector `field.asset()` picker is not a Project window. The editor now has a bottom **Project** panel: Scenes, Prefabs, Models, Textures, Audio. Files come from `scenes/`, `public/prefabs`, and `public/assets`. Double-click a prefab / model / sound to spawn it; a texture writes `Mesh.albedo` on the selection. Drag a tile onto the viewport to place it at the pointer. `Collider` (box / sphere / capsule / mesh) is authored in the Inspector, independent of `Mesh`.
 
 ---
 
@@ -166,5 +166,5 @@ The Inspector `field.asset()` picker is not a Project window. The editor now has
 - ECS kernel, phases, SoA stores, queries, public `addSystem` / `removeSystem`
 - Editor: hierarchy, inspector, gizmos, pick, orbit, play/pause/step, dirty-flag save, Project panel
 - Renderer: instancing, lights, albedo, PBR material, shadows, glTF, audio, scene camera
-- Rapier + sensors/triggers
+- Rapier + sensors/triggers + authored `Collider`
 - Play snapshot with explicit Keep / Discard

@@ -38,7 +38,11 @@ export const usePrefabs = () => {
     downloadJson(prefabFileName(name), serializePrefab(world, selectedEntityId.value));
   };
 
-  const spawnPrefab = async (url: string): Promise<void> => {
+  const spawnPrefab = async (
+    url: string,
+    position?: { x: number; y: number; z: number },
+    parentToSelection = true
+  ): Promise<void> => {
     if (!engine.value) return;
 
     let payload: unknown;
@@ -60,14 +64,14 @@ export const usePrefabs = () => {
     }
 
     const world = engine.value.world;
-    const parentId = selectedEntityId.value;
-    const position = nextSpawnPosition(world, parentId);
+    const parentId = parentToSelection ? selectedEntityId.value : null;
+    const pose = position ?? nextSpawnPosition(world, parentId);
     const root = instantiatePrefab(world, payload);
 
     updateComponent(world, root, Transform, (transform) => {
-      transform.position.x = position.x;
-      transform.position.y = position.y;
-      transform.position.z = position.z;
+      transform.position.x = pose.x;
+      transform.position.y = pose.y;
+      transform.position.z = pose.z;
       transform.isDirty = true;
     });
     if (parentId !== null) setParent(world, root, parentId);

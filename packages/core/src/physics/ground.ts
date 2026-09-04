@@ -37,6 +37,35 @@ export const colliderHalfHeight = (primitive: PrimitiveType, scale: Transform['s
 };
 
 /**
+ * Vertical half-extent of the live binding, including authored `Collider` shapes.
+ */
+export const colliderHalfHeightOfBinding = (
+    binding: BodyBinding,
+    transform: Transform
+): number => {
+    const scaleY = Math.abs(transform.scale.y);
+    switch (binding.colliderKind) {
+        case 'box':
+            return Math.max(MIN_EXTENT, Math.abs(binding.sizeY) * scaleY * 0.5);
+        case 'sphere':
+            return Math.max(
+                MIN_EXTENT,
+                binding.radius * Math.max(
+                    Math.abs(transform.scale.x),
+                    scaleY,
+                    Math.abs(transform.scale.z)
+                )
+            );
+        case 'capsule':
+            return Math.max(MIN_EXTENT, Math.abs(binding.height) * scaleY * 0.5 + binding.radius);
+        case 'mesh':
+            return Math.max(MIN_EXTENT, Math.abs(binding.sizeY) * scaleY * 0.5);
+        case null:
+            return colliderHalfHeight(binding.primitive, transform.scale);
+    }
+};
+
+/**
  * True when a downward ray from the body hits another collider within
  * the body's half-height plus a small skin.
  */
@@ -45,7 +74,7 @@ export const isBodyGrounded = (
     binding: BodyBinding,
     transform: Transform
 ): boolean => {
-    const halfHeight = colliderHalfHeight(binding.primitive, transform.scale);
+    const halfHeight = colliderHalfHeightOfBinding(binding, transform);
     const origin = binding.body.translation();
     const ray = new RAPIER.Ray(
         { x: origin.x, y: origin.y, z: origin.z },
