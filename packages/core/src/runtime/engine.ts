@@ -16,6 +16,7 @@ import { captureWorldState, restoreWorldState } from '../ecs/kernel/state-manage
 import { resetPhysicsSession, initPhysics } from '../physics/session';
 import { stepOnce, tickPaused, tickPlaying } from './advance';
 import { seedGlobalInput } from './global-input';
+import { resolvePluginName, type TitanePlugin } from './plugin';
 
 /**
  * The high-level runner for the Titane Engine.
@@ -47,6 +48,7 @@ export class TitaneEngine {
     private isRunning: boolean = false;
     /** True while UPDATE/PHYSICS should run (playing tick or an explicit step). */
     private simulating = false;
+    private readonly pluginNames = new Set<string>();
 
     /**
      * @param renderer - The renderer implementation (driver) to use.
@@ -91,6 +93,15 @@ export class TitaneEngine {
      */
     public removeSystem(phase: Phase, system: System): boolean {
         return unregisterSystem(this.scheduler, phase, system);
+    }
+
+    /**
+     * Runs a plugin's `register` hook once. Duplicate names throw.
+     */
+    public use(plugin: TitanePlugin): void {
+        const name = resolvePluginName(plugin.name, this.pluginNames);
+        this.pluginNames.add(name);
+        plugin.register(this);
     }
 
     /**

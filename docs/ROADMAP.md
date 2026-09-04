@@ -79,7 +79,7 @@ This is the phase that changes the nature of the product.
 | # | Task | Detail |
 | --- | --- | --- |
 | 1.1 | Data-only `.titane` | Documented here. Add registry `type` + keep unknown component payloads. |
-| 1.2 | `engine.use(plugin)` | Plugin registers components, systems, and custom Inspector field types. Prerequisite to 1.3–1.6, not a side feature. |
+| 1.2 | `engine.use(plugin)` | **Done.** `{ name, register(engine) }`. Duplicate names throw. Systems register through the public API. |
 | 1.3 | Schema DSL `f.*` | `number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`. TS inference. Defaults. Deserialize validation. |
 | 1.4 | User `defineComponent` + lifecycle | `onStart` / `onUpdate` / `onDestroy`. Batched system per type. |
 | 1.5 | Auto Inspector | Schema → widget. Undo/redo on inspector writes, wired to the existing dirty flag. |

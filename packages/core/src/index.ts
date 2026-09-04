@@ -43,6 +43,7 @@ export * from './ecs/serialization';
 
 // Runtime Orchestrator
 export * from './runtime/engine';
+export * from './runtime/plugin';
 export * from './runtime/renderer-interface';
 export * from './runtime/live-preview';
 

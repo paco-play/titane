@@ -32,7 +32,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 1 — Code ↔ ECS ↔ Inspector.** Plugin seam, schema DSL, auto Inspector. Phase 0 (mesh material + shadows) is done. Rendering is frozen until Phase 4. Contract: `docs/ROADMAP.md`.
+**Phase 1 — Code ↔ ECS ↔ Inspector.** `engine.use(plugin)` is the seam. Next: schema DSL `f.*`, user lifecycle, auto Inspector. Rendering stays frozen until Phase 4. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -55,6 +55,9 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Picking.** Loaded roots are raycast with the instanced batches. A hit walks up to `userData.titaneEntity`.
 - [x] **Gizmo on model-only entities.** The proxy syncs from the selected `Transform` even when there is no `Mesh`.
 - [x] **Inspector + Hierarchy.** Dumb URL field / remove; Hierarchy `+` spawns a Model entity without a primitive mesh.
+
+### Engine plugin
+- [x] **`engine.use(plugin)`.** `TitanePlugin` is `{ name, register(engine) }`. Duplicate or empty names throw. A plugin registers systems through the public engine API — no fork of core.
 
 ### Shadows
 - [x] **`Light.castShadow`.** Directional and point lights write a shadow map. Ambient ignores the flag. Default `false`. Older scenes revive with `false`.
