@@ -27,6 +27,20 @@ export interface SerializedWorld {
 }
 
 /**
+ * True when `raw` looks like a scene payload, not a prefab or other JSON.
+ */
+export const isSerializedWorld = (raw: unknown): raw is SerializedWorld => {
+    if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return false;
+    const data = raw as Partial<SerializedWorld>;
+    return typeof data.version === 'number'
+        && typeof data.nextId === 'number'
+        && Array.isArray(data.entities)
+        && typeof data.components === 'object'
+        && data.components !== null
+        && !Array.isArray(data.components);
+};
+
+/**
  * Converts a live ECS World into a serializable plain object.
  * @param world - The active ECS world state.
  * @returns A JSON-friendly object structure.

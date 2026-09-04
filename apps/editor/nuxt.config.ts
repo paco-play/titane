@@ -11,6 +11,12 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxt/eslint'],
   // Absolute path so this file still resolves when the editor is consumed as a layer.
   css: [join(rootDir, 'app/assets/css/main.css')],
+  ignore: ['scenes/**'],
+  watchers: {
+    chokidar: {
+      ignored: ['**/scenes/**']
+    }
+  },
   // Ensure the workspace packages are treated as ESM
   build: {
     transpile: ['@titane/core', '@titane/renderer', 'three', '@dimforge/rapier3d-compat']
@@ -19,9 +25,18 @@ export default defineNuxtConfig({
     optimizeDeps: {
       exclude: ['@dimforge/rapier3d-compat']
     },
-    assetsInclude: ['**/*.titane']
+    assetsInclude: ['**/*.titane'],
+    server: {
+      watch: {
+        // Ctrl+S writes this folder; a reload would drop the editor.
+        ignored: ['**/scenes/**']
+      }
+    }
   },
   nitro: {
+    watchOptions: {
+      ignored: ['**/scenes/**']
+    },
     publicAssets: [
       {
         dir: join(rootDir, 'scenes'),

@@ -16,7 +16,7 @@ Public entry points. Types travel with the handles; there is no `any` in the eng
 | `getComponent` / `addComponent` / `removeComponent` | Typed accessors |
 | `defineQuery` / `runQuery` | Zero-allocation iteration |
 | `Phase` / `engine.addSystem` | Pipeline registration |
-| `serializeWorld` / `deserializeWorld` | `.titane` JSON scenes |
+| `serializeWorld` / `deserializeWorld` / `isSerializedWorld` | `.titane` JSON scenes |
 | `serializePrefab` / `instantiatePrefab` | Subtree templates (`public/prefabs`) |
 | `TitanePlugin` / `TitaneConfig` | Host seam |
 

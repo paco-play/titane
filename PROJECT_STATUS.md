@@ -33,7 +33,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 4 — Unfreeze.** glTF animation, physics material, `f.asset()`, and prefabs are on `release`. Ctrl+S to disk is out of scope. Contract: `docs/ROADMAP.md`.
+**Phase 4 — Unfreeze, complete.** glTF animation, physics material, `f.asset()`, Ctrl+S, and prefabs are on `release`. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -72,6 +72,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Keep / Discard.** Stopping Play freezes the sim and asks. Discard restores the pre-Play snapshot. Keep leaves Play edits as the edit scene and saves.
 - [x] **Script HMR.** A second `defineComponent` with the same id patches schema and hooks in place. `engine.reloadUserComponent` rebakes live instances. The editor accepts `PlayerController.ts` over Vite HMR.
 - [x] **Isolated script errors.** `onStart` / `onUpdate` / `onDestroy` throws skip that entity and surface a banner. The engine tick continues.
+- [x] **Ctrl+S.** Writes `scenes/main.titane` via `PUT /api/titane/scene`. Menu **Save Project** does the same. Download is the fallback if the write fails. LocalStorage stays the recovery buffer. Ignored while Playing.
 
 ### Distributable product
 - [x] **Project convention.** `scenes/`, `src/components/`, `public/assets/`, `titane.config.ts`. `TitaneConfig` / `applyTitaneConfig` in core.
@@ -260,7 +261,7 @@ Project convention, `npm run create`, editor on `/titane` in dev, prod build omi
 
 ### Phase 4 — Unfreeze
 
-glTF animation, physics material, `f.asset()`, and prefabs are in. File System Access (Ctrl+S) is dropped.
+glTF animation, physics material, `f.asset()`, Ctrl+S, and prefabs are in.
 
 ### Still parked
 

@@ -181,7 +181,7 @@ matrices, and **rendering still runs**, so the viewport stays responsive.
 | Add logic | `engine.addSystem(Phase.UPDATE, mySystem)` |
 | Parent entities | `setParent(world, child, parent)` |
 | List children | `getChildren(world, parent)` |
-| Save / load a scene | `serializeWorld(world)` / `deserializeWorld(data)` |
+| Save / load a scene | `serializeWorld(world)` / `deserializeWorld(data)` / `isSerializedWorld(raw)` |
 | Swap the live scene | `engine.loadWorld(world)` |
 | Checkpoint / revert | `engine.saveSnapshot()` / `engine.restoreSnapshot()` |
 | Advance one frame | `engine.tick()` |

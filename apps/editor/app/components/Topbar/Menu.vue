@@ -19,8 +19,9 @@
 
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
+import { isSaveShortcut } from '~/utils/save-shortcut';
 
-const { saveToDisk, loadFromDisk } = usePersistence();
+const { saveToProject, loadFromDisk } = usePersistence();
 const { openPreview } = useLivePreview();
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -51,7 +52,7 @@ const saveItem: DropdownMenuItem = {
   label: 'Save Project',
   icon: 'i-lucide-save',
   shortcuts: ['⌘', 'S'],
-  onSelect: () => saveToDisk('my-project.titane')
+  onSelect: () => { void saveToProject(); }
 };
 
 const previewItem: DropdownMenuItem = {
@@ -65,6 +66,23 @@ const dropDownItems = computed<DropdownMenuItem[][]>(() => [
   [openItem, saveItem],
   [previewItem]
 ]);
+
+/**
+ * Writes `scenes/main.titane` and stops the browser from saving the HTML page.
+ */
+const onSaveKey = (event: KeyboardEvent): void => {
+  if (!isSaveShortcut(event)) return;
+  event.preventDefault();
+  void saveToProject();
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', onSaveKey);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onSaveKey);
+});
 
 /**
  * Triggered when the user selects a .titane file.
