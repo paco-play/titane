@@ -33,4 +33,4 @@ Built-in components include `Transform`, `Mesh`, `Name`, `Velocity`, `Light`, `G
 
 ## Editor (dev)
 
-Nuxt layer `@titane/editor`. Route `/titane`. Host `titane.config.ts` is imported as `~~/titane.config`. Production configs must not extend the layer.
+Nuxt layer `@titane/editor`. Route `/titane`. Host `titane.config.ts` is imported as `~~/titane.config`. Production configs must not extend the layer. The bottom **Project** panel lists `scenes/`, `public/prefabs`, and `public/assets`.

@@ -33,9 +33,13 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 5 — Scene camera, complete.** ECS `Camera` drives Play / game view. Contract: `docs/ROADMAP.md`. The numbered roadmap has no Phase 6. Demo stays a sandbox.
+**Project panel.** Bottom Assets / Project browser. Numbered phases 0–5 are complete. Contract: `docs/ROADMAP.md`.
 
 ## Completed
+
+### Project panel
+- [x] **Bottom browser.** Assets folders (Scenes, Prefabs, Models, Textures, Audio) plus a searchable grid. Not a Unity import pipeline — files stay in `scenes/`, `public/prefabs`, `public/assets`.
+- [x] **Open.** Double-click prefab / model / audio spawns an entity. Double-click texture writes `Mesh.albedo` when a mesh is selected. Scenes are listed, not auto-loaded.
 
 ### Camera
 - [x] **`Camera` component.** `fov`, `near`, `far`, `current`. Pose comes from `Transform` (parented cameras use `worldMatrix`). Defaults match the Three.js driver (`75`, `0.1`, `1000`, `current: true`). Clamp fov 1–179, near ≥ 0.001, far > near.
