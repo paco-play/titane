@@ -1,7 +1,8 @@
 # Titane Engine - Project Status & Roadmap
 
 ## Current Vision
-A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
+A data-oriented, ECS-based 3D **game engine** with a small, fully typed public API.
+The product is the loop **user TypeScript → ECS component → Inspector → Play**, not a scene viewer with more shaders.
 - **Core:** entity storage, typed component registry, query engine, phase scheduler, game loop.
 - **Renderer:** pluggable driver behind `IRenderer` (currently Three.js).
 - **Editor:** Nuxt 4 visual interface.
@@ -31,7 +32,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Phase 1 — Code ↔ ECS ↔ Inspector.** Plugin seam, schema DSL, auto Inspector. Rendering is frozen after shadows.
+**Phase 1 — Code ↔ ECS ↔ Inspector.** Plugin seam, schema DSL, auto Inspector. Phase 0 (mesh material + shadows) is done. Rendering is frozen until Phase 4. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -190,11 +191,34 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-Rendering is frozen. Next is the product loop: user TypeScript ↔ ECS ↔ auto Inspector.
+Source of truth: `docs/ROADMAP.md`. A phase is done when its user scenario passes, not when its checklist is ticked. **No rendering or physics PRs between Phase 0 and Phase 4.**
 
-1. **Phase 1.** `engine.use(plugin)`, schema DSL `f.*`, user `defineComponent` + lifecycle, auto Inspector, Add Component.
-2. **Phase 2.** Play-in-place, keep/discard Play edits, HMR, error isolation.
-3. **Phase 3.** `create-titane-project`, embedded editor, prod strip, docs.
-4. **Phase 4.** glTF animation, physics material, asset manager, File System Access, prefabs.
+### Phase 0 — Close the visual floor — done
 
-No Camera component in core yet. Demo stays a sandbox.
+Mesh material (#14) and shadows (#16) are on `release`. Rendering is frozen.
+
+### Phase 1 — Code ↔ ECS ↔ Inspector
+
+`.titane` stays data-only. Behavior lives in user `.ts`. Schema is the single source of truth (TS inference + Inspector widgets + defaults). `engine.use(plugin)` registers components/systems. Auto Inspector + Add Component.
+
+**Done when:** write `PlayerController.ts` with `speed` → it appears in Add Component → slider → save → reload → value still there.
+
+### Phase 2 — Iteration loop
+
+Play-in-place in the editor viewport. Snapshot on Play with explicit keep/discard. HMR of scripts during Play. `onUpdate` errors must not kill the editor.
+
+**Done when:** change `speed` in the `.ts` file and the running Play session picks it up without a full reload.
+
+### Phase 3 — Distributable product
+
+Project convention, `npm create titane-project`, editor on a dev-only route, prod build strips the editor, then docs.
+
+**Done when:** scaffold → `npm run dev` → moving cube + editor + custom component, under five minutes.
+
+### Phase 4 — Unfreeze
+
+glTF animation, physics material, asset manager, File System Access, prefabs.
+
+### Still parked
+
+No Camera component in core yet. Demo stays a sandbox. Do not grow it.
