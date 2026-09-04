@@ -1,9 +1,7 @@
 <template>
-  <main class="flex flex-col h-screen">
+  <main class="flex flex-col h-screen overflow-hidden">
     <TopbarMain />
-    <!-- Editor Layout -->
-    <div class="flex justify-between w-full h-full">
-      <!-- Hierarchy Sidebar -->
+    <div class="flex justify-between w-full flex-1 min-h-0">
       <USidebar
         side="left"
         :rail="true"
@@ -15,16 +13,16 @@
         <SidebarHierarchy />
       </USidebar>
 
-      <!-- Canvas -->
-      <div class="flex flex-col w-full h-full">
+      <div class="flex flex-col flex-1 min-w-0 min-h-0">
         <TopbarCanvas />
         <TopbarScriptErrorBanner
           :error="scriptError"
           @dismiss="clearScriptError"
         />
-        <slot />
+        <div class="flex-1 min-h-0">
+          <slot />
+        </div>
       </div>
-      <!-- Inspector Sidebar -->
       <USidebar
         side="right"
         :rail="true"
@@ -37,6 +35,7 @@
         <Inspector />
       </USidebar>
     </div>
+    <Project />
     <TopbarPlayExitDialog
       :open="pendingExitPlay"
       @keep="keepPlayChanges"
