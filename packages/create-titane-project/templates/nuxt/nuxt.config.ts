@@ -24,6 +24,12 @@ export default defineNuxtConfig({
     ssr: false,
     // Dev: embed the editor at /titane. Production build does not extend the layer.
     extends: editorLayer(),
+    ignore: ['scenes/**'],
+    watchers: {
+        chokidar: {
+            ignored: ['**/scenes/**']
+        }
+    },
     build: {
         transpile: ['@titane/core', '@titane/renderer', 'three', '@dimforge/rapier3d-compat']
     },
@@ -39,6 +45,9 @@ export default defineNuxtConfig({
         }
     },
     nitro: {
+        watchOptions: {
+            ignored: ['**/scenes/**']
+        },
         publicAssets: [
             {
                 dir: 'scenes',
