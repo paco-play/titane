@@ -23,6 +23,29 @@
           />
         </div>
 
+        <div class="space-y-2">
+          <UiFormLabel label="Clip" />
+          <UInput
+            :model-value="gltf.clip"
+            placeholder="Animation clip name"
+            size="xs"
+            :data-tick="inspectTick"
+            @update:model-value="onClip"
+            @change="emit('commit')"
+          />
+        </div>
+
+        <UCheckbox
+          :model-value="gltf.playing"
+          label="Playing"
+          @update:model-value="onPlaying"
+        />
+        <UCheckbox
+          :model-value="gltf.loop"
+          label="Loop"
+          @update:model-value="onLoop"
+        />
+
         <UButton
           label="Remove"
           color="neutral"
@@ -46,15 +69,30 @@ defineProps<{
 
 const emit = defineEmits<{
   updateUrl: [url: string];
+  updateClip: [clip: string];
+  updatePlaying: [playing: boolean];
+  updateLoop: [loop: boolean];
   remove: [];
   commit: [];
 }>();
 
-/**
- * Writes a model URL back. Whitespace-only values clear the load.
- */
 const onUrl = (value: string | number | undefined): void => {
-  const url = typeof value === 'string' ? value.trim() : '';
-  emit('updateUrl', url);
+  emit('updateUrl', typeof value === 'string' ? value.trim() : '');
+};
+
+const onClip = (value: string | number | undefined): void => {
+  emit('updateClip', typeof value === 'string' ? value.trim() : '');
+};
+
+const onPlaying = (value: boolean | 'indeterminate'): void => {
+  if (value === 'indeterminate') return;
+  emit('updatePlaying', value);
+  emit('commit');
+};
+
+const onLoop = (value: boolean | 'indeterminate'): void => {
+  if (value === 'indeterminate') return;
+  emit('updateLoop', value);
+  emit('commit');
 };
 </script>

@@ -19,7 +19,7 @@ Public entry points. Types travel with the handles; there is no `any` in the eng
 | `serializeWorld` / `deserializeWorld` | `.titane` JSON |
 | `TitanePlugin` / `TitaneConfig` | Host seam |
 
-Built-in components include `Transform`, `Mesh`, `Name`, `Velocity`, `Light`, `Gltf`, `Sound`, `RigidBody`, `Sensor`, `PlayerControlled`, `Input`.
+Built-in components include `Transform`, `Mesh`, `Name`, `Velocity`, `Light`, `Gltf` (`url`, `clip`, `playing`, `loop`), `Sound`, `RigidBody`, `Sensor`, `PlayerControlled`, `Input`.
 
 ## `@titane/renderer`
 

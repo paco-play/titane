@@ -33,7 +33,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 3 — Distributable product** (in this branch). Phase 2 is on `release`. Next after merge: Phase 4 unfreeze. Rendering stays frozen until Phase 4. Contract: `docs/ROADMAP.md`.
+**Phase 4 — Unfreeze.** Phase 3 (scaffold, `/titane`, docs) is on `release`. Next: physics material, asset manager, File System Access, prefabs. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -51,7 +51,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Inspector + Hierarchy.** Dumb Sound section (URL, volume, loop, positional, playing, remove). Hierarchy `+` spawns a Sound entity.
 
 ### glTF import
-- [x] **`Gltf` component.** `url` string. Empty draws nothing. Pose stays on `Transform`.
+- [x] **`Gltf` component.** `url`, `clip`, `playing`, `loop`. Empty URL draws nothing. Pose stays on `Transform`.
 - [x] **`ModelPool`.** Loads each URL once, clones per entity, cancels stale loads, disposes the template when the last user drops.
 - [x] **Picking.** Loaded roots are raycast with the instanced batches. A hit walks up to `userData.titaneEntity`.
 - [x] **Gizmo on model-only entities.** The proxy syncs from the selected `Transform` even when there is no `Mesh`.
@@ -79,6 +79,11 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Embedded editor.** Standalone editor and generated Nuxt apps serve the chrome at `/titane`. The default layout is a passthrough so a game page at `/` is not wrapped in Hierarchy / Inspector.
 - [x] **Prod strip.** Generated `nuxt.config` extends `@titane/editor` only when `NODE_ENV !== 'production'`.
 - [x] **Docs.** Getting started, ECS, writing a component, light API reference.
+
+### glTF animation
+- [x] **`Gltf.clip` / `Gltf.playing` / `Gltf.loop`.** Clip name, play flag, loop flag. Older scenes revive with `clip: ''`, `playing: false`, `loop: true`.
+- [x] **Mixer on the clone.** Shared template keeps clips; each entity has an `AnimationMixer`. Empty or unknown clip names leave the bind pose. Rising edge of `playing` restarts; falling edge pauses.
+- [x] **Inspector.** Clip text field plus Playing / Loop checkboxes, same pattern as Sound.
 
 ### Shadows
 - [x] **`Light.castShadow`.** Directional and point lights write a shadow map. Ambient ignores the flag. Default `false`. Older scenes revive with `false`.
@@ -233,15 +238,13 @@ Play-in-place in the editor viewport. Snapshot on Play with explicit keep/discar
 
 **Done when:** change `speed` in the `.ts` file and the running Play session picks it up without a full reload.
 
-### Phase 3 — Distributable product — done in this branch
+### Phase 3 — Distributable product — done
 
 Project convention, `npm run create`, editor on `/titane` in dev, prod build omits the layer, docs under `docs/`.
 
-**Done when:** scaffold → `npm run dev` → moving cube + editor + custom component, under five minutes.
-
 ### Phase 4 — Unfreeze
 
-glTF animation, physics material, asset manager, File System Access, prefabs.
+glTF animation (`clip` / `playing` / `loop`) is in. Remaining: physics material, asset manager, File System Access, prefabs.
 
 ### Still parked
 

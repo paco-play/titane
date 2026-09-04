@@ -1,36 +1,25 @@
 import * as THREE from 'three';
 import type { Entity, World } from '@titane/core';
 import { defineQuery, runQuery, getComponent, Gltf, Transform } from '@titane/core';
+import { cloneGltfScene, loadGltfAsset, type GltfAsset, type GltfFactory } from './gltf-asset';
+import { advanceMixer } from './model-clip';
 
 const gltfQuery = defineQuery([Gltf]);
-
-/**
- * Loads a glTF scene graph from a URL. Injected so tests can skip network I/O.
- */
-export type GltfFactory = (url: string) => Promise<THREE.Group>;
-
-const loadGltf = async (url: string): Promise<THREE.Group> => {
-    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
-    return new Promise((resolve, reject) => {
-        new GLTFLoader().load(
-            url,
-            gltf => resolve(gltf.scene),
-            undefined,
-            reject
-        );
-    });
-};
 
 /** Shared source graph plus the number of live clones. */
 interface PooledTemplate {
     refs: number;
-    ready: Promise<THREE.Group>;
+    ready: Promise<GltfAsset>;
 }
 
 /** Per-entity runtime state. */
 interface ModelEntry {
     url: string;
     root: THREE.Group | null;
+    mixer: THREE.AnimationMixer | null;
+    clips: readonly THREE.AnimationClip[];
+    clip: string;
+    playing: boolean;
     token: number;
 }
 
@@ -49,8 +38,9 @@ export class ModelPool {
     private readonly liveSet = new Set<Entity>();
     private readonly inflight = new Set<Promise<void>>();
     private token = 0;
+    private lastTime = 0;
 
-    constructor(scene: THREE.Scene, load: GltfFactory = loadGltf) {
+    constructor(scene: THREE.Scene, load: GltfFactory = loadGltfAsset) {
         this.scene = scene;
         this.load = load;
     }
@@ -98,9 +88,12 @@ export class ModelPool {
     }
 
     /**
-     * Creates, reloads and poses every live glTF entity for one render frame.
+     * Creates, reloads, poses and animates every live glTF entity for one frame.
+     * @param world - The ECS world.
+     * @param deltaSeconds - Mixer step. Omitted uses wall-clock since last sync.
      */
-    public sync(world: World): void {
+    public sync(world: World, deltaSeconds?: number): void {
+        const dt = deltaSeconds ?? this.measureDt();
         const liveEntities = runQuery(world, gltfQuery);
         this.liveSet.clear();
         for (const entity of liveEntities) this.liveSet.add(entity);
@@ -117,7 +110,7 @@ export class ModelPool {
             let entry = this.tracked.get(entity);
 
             if (!entry) {
-                entry = { url: '', root: null, token: 0 };
+                entry = this.emptyEntry();
                 this.tracked.set(entity, entry);
             }
 
@@ -128,6 +121,7 @@ export class ModelPool {
             }
 
             this.applyPose(entry, world, entity);
+            this.applyClip(entry, data, dt);
         }
     }
 
@@ -135,6 +129,30 @@ export class ModelPool {
         for (const [entity, entry] of this.tracked) this.drop(entity, entry);
         this.templates.clear();
         this.inflight.clear();
+        this.lastTime = 0;
+    }
+
+    private emptyEntry(): ModelEntry {
+        return {
+            url: '',
+            root: null,
+            mixer: null,
+            clips: [],
+            clip: '',
+            playing: false,
+            token: 0
+        };
+    }
+
+    private measureDt(): number {
+        const now = performance.now() / 1000;
+        if (this.lastTime === 0) {
+            this.lastTime = now;
+            return 0;
+        }
+        const dt = Math.max(0, now - this.lastTime);
+        this.lastTime = now;
+        return dt;
     }
 
     private beginLoad(entity: Entity, entry: ModelEntry, url: string): void {
@@ -142,17 +160,19 @@ export class ModelPool {
         entry.token = token;
 
         const work = this.retain(url)
-            .then(template => {
+            .then(asset => {
                 if (entry.token !== token) {
                     this.release(url);
                     return;
                 }
 
-                const root = template.clone(true);
+                const root = cloneGltfScene(asset.scene);
                 root.matrixAutoUpdate = false;
                 root.userData.titaneEntity = entity;
                 this.scene.add(root);
                 entry.root = root;
+                entry.clips = asset.animations;
+                entry.mixer = new THREE.AnimationMixer(root);
             })
             .catch(() => {
                 this.release(url);
@@ -162,7 +182,7 @@ export class ModelPool {
         void work.finally(() => this.inflight.delete(work));
     }
 
-    private retain(url: string): Promise<THREE.Group> {
+    private retain(url: string): Promise<GltfAsset> {
         const cached = this.templates.get(url);
         if (cached) {
             cached.refs += 1;
@@ -185,7 +205,7 @@ export class ModelPool {
         if (pooled.refs > 0) return;
 
         this.templates.delete(url);
-        void pooled.ready.then(template => disposeGraph(template)).catch(() => undefined);
+        void pooled.ready.then(asset => disposeGraph(asset.scene)).catch(() => undefined);
     }
 
     private applyPose(entry: ModelEntry, world: World, entity: Entity): void {
@@ -195,8 +215,33 @@ export class ModelPool {
         entry.root.matrix.fromArray(transform.worldMatrix);
     }
 
+    private applyClip(
+        entry: ModelEntry,
+        data: { clip: string; playing: boolean; loop: boolean },
+        dt: number
+    ): void {
+        if (!entry.mixer) return;
+        const bound = advanceMixer(
+            entry.mixer,
+            entry.clips,
+            data.clip,
+            data.playing,
+            data.loop,
+            entry.playing,
+            entry.clip,
+            dt
+        );
+        entry.clip = bound;
+        entry.playing = data.playing && bound !== '';
+    }
+
     private detach(entry: ModelEntry): void {
         entry.token += 1;
+        entry.mixer?.stopAllAction();
+        entry.mixer = null;
+        entry.clips = [];
+        entry.clip = '';
+        entry.playing = false;
         if (entry.root) {
             this.scene.remove(entry.root);
             entry.root = null;

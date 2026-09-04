@@ -162,13 +162,36 @@ describe('ECS: Scene Serialization', () => {
     it('should round-trip a glTF URL', () => {
         const world = createWorld();
         const entity = createEntity(world);
-        addComponent(world, entity, Gltf, createGltf('hero.glb'));
+        addComponent(world, entity, Gltf, createGltf('hero.glb', 'Walk', true, false));
 
         const restored = deserializeWorld(
             JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
         );
 
-        expect(getComponent(restored, entity, Gltf)?.url).toBe('hero.glb');
+        expect(getComponent(restored, entity, Gltf)).toEqual({
+            url: 'hero.glb',
+            clip: 'Walk',
+            playing: true,
+            loop: false
+        });
+    });
+
+    it('should fill Gltf animation fields when an older scene omitted them', () => {
+        const restored = deserializeWorld({
+            version: SCENE_FORMAT_VERSION,
+            nextId: 1,
+            entities: [0],
+            components: {
+                gltf: { 0: { url: 'hero.glb' } }
+            }
+        });
+
+        expect(getComponent(restored, 0, Gltf)).toEqual({
+            url: 'hero.glb',
+            clip: '',
+            playing: false,
+            loop: true
+        });
     });
 
     it('should round-trip a sound clip', () => {

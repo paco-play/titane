@@ -5,7 +5,7 @@ import {
   Gltf,
   removeComponent,
   updateComponent,
-  type GltfData,
+  type GltfData
 } from '@titane/core';
 import { useTitane } from '../useTitane';
 import { usePersistence } from '../usePersistence';
@@ -39,14 +39,38 @@ export const useInspectorGltf = () => {
     saveToStorage();
   };
 
-  const setGltfUrl = (url: string): void => {
+  const patchGltf = (write: (data: GltfData) => void): void => {
     if (selectedEntityId.value === null || !engine.value) return;
-    updateComponent(engine.value.world, selectedEntityId.value, Gltf, (data) => {
-      data.url = url;
-    });
+    updateComponent(engine.value.world, selectedEntityId.value, Gltf, write);
     notifyInspect();
     markDirty();
   };
 
-  return { gltf, addGltf, removeGltf, setGltfUrl };
+  const setGltfUrl = (url: string): void => {
+    patchGltf(data => { data.url = url; });
+  };
+
+  const setGltfClip = (clip: string): void => {
+    patchGltf(data => { data.clip = clip; });
+  };
+
+  const setGltfPlaying = (playing: boolean): void => {
+    patchGltf(data => { data.playing = playing; });
+    saveToStorage();
+  };
+
+  const setGltfLoop = (loop: boolean): void => {
+    patchGltf(data => { data.loop = loop; });
+    saveToStorage();
+  };
+
+  return {
+    gltf,
+    addGltf,
+    removeGltf,
+    setGltfUrl,
+    setGltfClip,
+    setGltfPlaying,
+    setGltfLoop
+  };
 };
