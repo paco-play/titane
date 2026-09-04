@@ -140,7 +140,7 @@ This is when someone else can use Titane.
 Only after the product loop exists.
 
 1. glTF animation (`clip`, `playing`, `loop`) — **Done.**
-2. Physics material (friction, restitution)
+2. Physics material (friction, restitution) — **Done.**
 3. Asset manager (`f.asset()` in the Inspector)
 4. File System Access (Ctrl+S to disk)
 5. Prefabs (entity + children + components, reusable)

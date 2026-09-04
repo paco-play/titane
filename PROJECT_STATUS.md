@@ -33,7 +33,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 4 — Unfreeze.** Phase 3 (scaffold, `/titane`, docs) is on `release`. Next: physics material, asset manager, File System Access, prefabs. Contract: `docs/ROADMAP.md`.
+**Phase 4 — Unfreeze.** glTF animation and physics material are in. Next: asset manager (`f.asset()`), File System Access, prefabs. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -79,6 +79,12 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Embedded editor.** Standalone editor and generated Nuxt apps serve the chrome at `/titane`. The default layout is a passthrough so a game page at `/` is not wrapped in Hierarchy / Inspector.
 - [x] **Prod strip.** Generated `nuxt.config` extends `@titane/editor` only when `NODE_ENV !== 'production'`.
 - [x] **Docs.** Getting started, ECS, writing a component, light API reference.
+
+### Physics material
+- [x] **`RigidBody.friction` / `RigidBody.restitution`.** Written onto the Rapier collider. Defaults match Rapier (`0.5`, `0`). Clamp `>= 0`. Combine rules stay Average.
+- [x] **Live sync.** Spawn and collider rebuild apply the material; Inspector edits update the live collider without rebuilding the body.
+- [x] **Revive.** Older scenes that only stored `kind` fill `friction: 0.5` and `restitution: 0`.
+- [x] **Inspector.** Friction and Restitution number fields next to Kind.
 
 ### glTF animation
 - [x] **`Gltf.clip` / `Gltf.playing` / `Gltf.loop`.** Clip name, play flag, loop flag. Older scenes revive with `clip: ''`, `playing: false`, `loop: true`.
@@ -244,7 +250,7 @@ Project convention, `npm run create`, editor on `/titane` in dev, prod build omi
 
 ### Phase 4 — Unfreeze
 
-glTF animation (`clip` / `playing` / `loop`) is in. Remaining: physics material, asset manager, File System Access, prefabs.
+glTF animation and physics material are in. Remaining: asset manager, File System Access, prefabs.
 
 ### Still parked
 

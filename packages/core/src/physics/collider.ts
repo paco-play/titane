@@ -33,6 +33,19 @@ export const colliderDescFromPrimitive = (
 };
 
 /**
+ * Writes friction and restitution onto a collider or a collider descriptor.
+ * Combine rules stay Rapier defaults (Average).
+ */
+export const applyColliderMaterial = (
+    target: { setFriction(value: number): unknown; setRestitution(value: number): unknown },
+    friction: number,
+    restitution: number
+): void => {
+    target.setFriction(friction);
+    target.setRestitution(restitution);
+};
+
+/**
  * Applies the sensor flag to a finished `ColliderDesc`.
  * Rapier records intersection events only when at least one of the two
  * shapes has `isSensor = true` and both enable `ActiveEvents.COLLISION_EVENTS`.

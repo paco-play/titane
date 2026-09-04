@@ -89,11 +89,14 @@
         @click="addLight"
       />
       <InspectorRigidBody
-        :kind="rigidKind"
+        :rigid="rigid"
         :inspect-tick="inspectTick"
         @add="addRigidBody"
         @remove="removeRigidBody"
         @update-kind="setRigidKind"
+        @update-friction="setRigidFriction"
+        @update-restitution="setRigidRestitution"
+        @commit="saveToStorage"
       />
       <InspectorPlayer
         :controlled="isPlayerControlled"
@@ -128,16 +131,13 @@
 
 <script setup lang="ts">
 import type { Axis, TransformField } from '~/types/inspector';
-import type { RigidBodyKind } from '@titane/core';
 import {
   addComponent,
   createPlayerControlled,
-  createRigidBody,
   getComponent,
   hasComponent,
   PlayerControlled,
   removeComponent,
-  RigidBody,
   Transform,
   updateComponent,
 } from '@titane/core';
@@ -177,6 +177,14 @@ const {
   setLightCastShadow,
 } = useInspectorLight();
 const {
+  rigid,
+  addRigidBody,
+  removeRigidBody,
+  setRigidKind,
+  setRigidFriction,
+  setRigidRestitution,
+} = useInspectorRigidBody();
+const {
   attached,
   orphans,
   availableTypes,
@@ -192,13 +200,6 @@ const transform = computed<Transform | undefined>(() => {
   void inspectTick.value;
   if (selectedEntityId.value === null || !engine.value) return undefined;
   return getComponent(engine.value.world, selectedEntityId.value, Transform);
-});
-
-/** RigidBody kind of the selection, or null when the component is absent. */
-const rigidKind = computed<RigidBodyKind | null>(() => {
-  void inspectTick.value;
-  if (selectedEntityId.value === null || !engine.value) return null;
-  return getComponent(engine.value.world, selectedEntityId.value, RigidBody)?.kind ?? null;
 });
 
 const isPlayerControlled = computed<boolean>(() => {
@@ -219,32 +220,6 @@ const setAxis = (field: TransformField, axis: Axis, value: number): void => {
     data.isDirty = true;
   });
   markDirty();
-};
-
-const addRigidBody = (): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  addComponent(engine.value.world, selectedEntityId.value, RigidBody, createRigidBody('dynamic'));
-  notifyInspect();
-  markDirty();
-  saveToStorage();
-};
-
-const removeRigidBody = (): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  removeComponent(engine.value.world, selectedEntityId.value, RigidBody);
-  notifyInspect();
-  markDirty();
-  saveToStorage();
-};
-
-const setRigidKind = (kind: RigidBodyKind): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  updateComponent(engine.value.world, selectedEntityId.value, RigidBody, (data) => {
-    data.kind = kind;
-  });
-  notifyInspect();
-  markDirty();
-  saveToStorage();
 };
 
 const setPlayerControlled = (controlled: boolean): void => {

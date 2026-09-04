@@ -8,6 +8,7 @@ import { Mesh, createMesh } from '../../ecs/components/mesh';
 import { Light } from '../../ecs/components/light';
 import { Gltf, createGltf } from '../../ecs/components/gltf';
 import { Sound, createSound } from '../../ecs/components/sound';
+import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
 import {
     SCENE_FORMAT_VERSION,
     serializeWorld,
@@ -191,6 +192,39 @@ describe('ECS: Scene Serialization', () => {
             clip: '',
             playing: false,
             loop: true
+        });
+    });
+
+    it('should round-trip rigid-body material fields', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, RigidBody, createRigidBody('fixed', 0.8, 0.4));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, RigidBody)).toEqual({
+            kind: 'fixed',
+            friction: 0.8,
+            restitution: 0.4
+        });
+    });
+
+    it('should fill RigidBody friction and restitution when an older scene omitted them', () => {
+        const restored = deserializeWorld({
+            version: SCENE_FORMAT_VERSION,
+            nextId: 1,
+            entities: [0],
+            components: {
+                'rigid-body': { 0: { kind: 'dynamic' } }
+            }
+        });
+
+        expect(getComponent(restored, 0, RigidBody)).toEqual({
+            kind: 'dynamic',
+            friction: 0.5,
+            restitution: 0
         });
     });
 

@@ -10,7 +10,12 @@ import { Transform as TransformType } from '../ecs/components/transform';
 import { RigidBody } from '../ecs/components/rigid-body';
 import { Mesh } from '../ecs/components/mesh';
 import { getPhysicsSession, type BodyBinding, type PhysicsSession } from './session';
-import { asSensorDesc, applyColliderScale, colliderDescFromPrimitive } from './collider';
+import {
+    applyColliderMaterial,
+    applyColliderScale,
+    asSensorDesc,
+    colliderDescFromPrimitive
+} from './collider';
 import { eulerXyzToQuat, quatToEulerXyz } from './rotation';
 import { Sensor } from '../ecs/components/sensor';
 
@@ -33,6 +38,21 @@ const writeBodyToTransform = (body: RAPIER.RigidBody, transform: Transform): voi
 const primitiveOf = (world: World, entity: Entity): PrimitiveType =>
     getComponent(world, entity, Mesh)?.primitive ?? 'box';
 
+/**
+ * Builds a collider desc that matches mesh, material, and optional sensor flag.
+ */
+const colliderDescFor = (
+    world: World,
+    entity: Entity,
+    primitive: PrimitiveType,
+    transform: Transform,
+    rigid: RigidBodyData
+): RAPIER.ColliderDesc => {
+    const desc = colliderDescFromPrimitive(primitive, transform.scale);
+    applyColliderMaterial(desc, rigid.friction, rigid.restitution);
+    return getComponent(world, entity, Sensor) !== undefined ? asSensorDesc(desc) : desc;
+};
+
 const spawnBinding = (
     session: PhysicsSession,
     world: World,
@@ -49,10 +69,10 @@ const spawnBinding = (
     desc.setRotation(eulerXyzToQuat(transform.rotation));
 
     const body = session.physics.createRigidBody(desc);
-    const isSensor = getComponent(world, entity, Sensor) !== undefined;
-    let colliderDesc = colliderDescFromPrimitive(primitive, transform.scale);
-    if (isSensor) colliderDesc = asSensorDesc(colliderDesc);
-    const collider = session.physics.createCollider(colliderDesc, body);
+    const collider = session.physics.createCollider(
+        colliderDescFor(world, entity, primitive, transform, rigid),
+        body
+    );
 
     return {
         body,
@@ -67,9 +87,12 @@ const spawnBinding = (
 
 const syncCollider = (
     session: PhysicsSession,
+    world: World,
+    entity: Entity,
     binding: BodyBinding,
     primitive: PrimitiveType,
-    transform: Transform
+    transform: Transform,
+    rigid: RigidBodyData
 ): void => {
     const scaleChanged = binding.scaleX !== transform.scale.x
         || binding.scaleY !== transform.scale.y
@@ -78,13 +101,15 @@ const syncCollider = (
     if (binding.primitive !== primitive) {
         session.physics.removeCollider(binding.collider, true);
         binding.collider = session.physics.createCollider(
-            colliderDescFromPrimitive(primitive, transform.scale),
+            colliderDescFor(world, entity, primitive, transform, rigid),
             binding.body
         );
         binding.primitive = primitive;
     } else if (scaleChanged) {
         applyColliderScale(binding.collider, primitive, transform.scale);
     }
+
+    applyColliderMaterial(binding.collider, rigid.friction, rigid.restitution);
 
     binding.scaleX = transform.scale.x;
     binding.scaleY = transform.scale.y;
@@ -123,7 +148,7 @@ export const stepPhysicsWorld = (world: World, dt: number): void => {
             binding = spawnBinding(session, world, entity, transform, rigid, primitive);
             session.bodies.set(entity, binding);
         } else {
-            syncCollider(session, binding, primitive, transform);
+            syncCollider(session, world, entity, binding, primitive, transform, rigid);
             if (rigid.kind === 'fixed') writeTransformToBody(binding.body, transform);
         }
     }
