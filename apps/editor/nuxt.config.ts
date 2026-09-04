@@ -19,7 +19,13 @@ export default defineNuxtConfig({
     optimizeDeps: {
       exclude: ['@dimforge/rapier3d-compat']
     },
-    assetsInclude: ['**/*.titane']
+    assetsInclude: ['**/*.titane'],
+    server: {
+      watch: {
+        // Ctrl+S writes this folder; a reload would drop the editor.
+        ignored: ['**/scenes/**']
+      }
+    }
   },
   nitro: {
     publicAssets: [
