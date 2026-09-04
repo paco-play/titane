@@ -37,7 +37,12 @@ export const usePersistence = () => {
 
     const data = serializeWorld(engine.value.world);
     try {
-      await $fetch('/api/titane/scene', { method: 'PUT', body: data });
+      const response = await fetch('/api/titane/scene', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error(`status ${response.status}`);
       saveToStorage();
     } catch (error) {
       console.error('[Titane] Failed to write scenes/main.titane.', error);
