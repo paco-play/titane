@@ -31,7 +31,7 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 ---
 
 ## Current Milestone
-**Shadows** — `Mesh.castShadow` / `Mesh.receiveShadow` plus `Light.castShadow` on directional and point lights.
+**Phase 1 — Code ↔ ECS ↔ Inspector.** Plugin seam, schema DSL, auto Inspector. Rendering is frozen after shadows.
 
 ## Completed
 
@@ -54,6 +54,12 @@ A data-oriented, ECS-based 3D game engine with a small, fully typed public API.
 - [x] **Picking.** Loaded roots are raycast with the instanced batches. A hit walks up to `userData.titaneEntity`.
 - [x] **Gizmo on model-only entities.** The proxy syncs from the selected `Transform` even when there is no `Mesh`.
 - [x] **Inspector + Hierarchy.** Dumb URL field / remove; Hierarchy `+` spawns a Model entity without a primitive mesh.
+
+### Shadows
+- [x] **`Light.castShadow`.** Directional and point lights write a shadow map. Ambient ignores the flag. Default `false`. Older scenes revive with `false`.
+- [x] **`Mesh.castShadow` / `Mesh.receiveShadow`.** Defaults `true`. Instanced batches split when the flags differ.
+- [x] **Renderer.** `shadowMap.enabled` with PCF soft shadows. Fixed directional ortho frustum; point far follows `distance`.
+- [x] **Inspector.** Checkboxes on Mesh; Cast shadow on Light (hidden for ambient).
 
 ### Mesh material
 - [x] **`Mesh.roughness` / `Mesh.metalness` / `Mesh.emissive`.** PBR fields on `MeshData`. Defaults match Three.js (`1`, `0`, `#000000`). Older scenes revive with those defaults.
@@ -184,21 +190,11 @@ regression test in `tests/ecs/hierarchy-integrity.test.ts`.
 
 ## Next Tasks
 
-Engine features stay first. The demo is a sandbox only — do not grow it.
+Rendering is frozen. Next is the product loop: user TypeScript ↔ ECS ↔ auto Inspector.
 
-### 1. Next recommended
+1. **Phase 1.** `engine.use(plugin)`, schema DSL `f.*`, user `defineComponent` + lifecycle, auto Inspector, Add Component.
+2. **Phase 2.** Play-in-place, keep/discard Play edits, HMR, error isolation.
+3. **Phase 3.** `create-titane-project`, embedded editor, prod strip, docs.
+4. **Phase 4.** glTF animation, physics material, asset manager, File System Access, prefabs.
 
-1. **Shadows.** Shadow maps on directional / point lights; `Light.castShadow` plus `Mesh.castShadow` / `Mesh.receiveShadow`.
-2. **glTF animation.** Play a named clip on `Gltf` (`clip`, `playing`, `loop`). Models are static today.
-3. **Physics material.** Friction / restitution on `RigidBody`. Collider still inferred from mesh unless an explicit shape is added later.
-4. **Engine plugin.** `type TitanePlugin = { name: string; register(engine: TitaneEngine): void }` and `engine.use(plugin)`. Registers systems (and later components) without forking core. No sandbox, no remote registry.
-5. **Editor play-in-place.** Game-mode renderer inside the editor so the demo is not required to try a scene. Editor-only.
-6. **Docus.** `apps/docs` (Nuxt Docus) covering kernel, components, systems, and the `.titane` format. After the plugin seam so examples have a real extension point.
-
-Do not put a Camera component in core yet. `ThreeRenderer.setCamera` plus a follow system is enough until play-in-place feels wrong.
-
-### 2. Deprioritized
-
-1. **File System Access API**: native `CTRL+S` overwriting a file on disk without re-downloading.
-2. **Asset manager / asset metadata**: one URL field per consumer is enough until something must relink.
-3. **More demo / live-session work**: the demo stays a thin sandbox.
+No Camera component in core yet. Demo stays a sandbox.

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Entity, World } from '@titane/core';
 import { defineQuery, runQuery, getComponent, Light, Transform } from '@titane/core';
 import type { LightData, LightKind } from '@titane/core';
+import { applyShadowCasting } from './light-shadow';
 
 const lightQuery = defineQuery([Light]);
 
@@ -142,6 +143,7 @@ function applyLightData(
 
     light.color.set(data.color);
     light.intensity = data.intensity;
+    applyShadowCasting(light, data);
 
     const transform = getComponent(world, entity, Transform);
     if (!transform) return;
@@ -155,6 +157,10 @@ function applyLightData(
     if (light instanceof THREE.PointLight) {
         light.distance = data.distance;
         light.position.set(px, py, pz);
+        if (light.castShadow) {
+            light.shadow.camera.far = data.distance > 0 ? data.distance : 50;
+            light.shadow.camera.updateProjectionMatrix();
+        }
         return;
     }
 

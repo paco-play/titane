@@ -65,6 +65,18 @@ export const useInspectorMesh = () => {
     });
   };
 
+  const setCastShadow = (castShadow: boolean): void => {
+    patchMesh((data) => {
+      data.castShadow = castShadow;
+    });
+  };
+
+  const setReceiveShadow = (receiveShadow: boolean): void => {
+    patchMesh((data) => {
+      data.receiveShadow = receiveShadow;
+    });
+  };
+
   return {
     mesh,
     setPrimitive,
@@ -73,5 +85,7 @@ export const useInspectorMesh = () => {
     setRoughness,
     setMetalness,
     setEmissive,
+    setCastShadow,
+    setReceiveShadow,
   };
 };

@@ -19,6 +19,8 @@
         @update-roughness="setRoughness"
         @update-metalness="setMetalness"
         @update-emissive="setEmissive"
+        @update-cast-shadow="setCastShadow"
+        @update-receive-shadow="setReceiveShadow"
         @commit="saveToStorage"
       />
       <InspectorGltf
@@ -69,6 +71,7 @@
         @update-color="setLightColor"
         @update-intensity="setLightIntensity"
         @update-distance="setLightDistance"
+        @update-cast-shadow="setLightCastShadow"
         @remove="removeLight"
         @commit="saveToStorage"
       />
@@ -126,6 +129,8 @@ const {
   setRoughness,
   setMetalness,
   setEmissive,
+  setCastShadow,
+  setReceiveShadow,
 } = useInspectorMesh();
 const { gltf, addGltf, removeGltf, setGltfUrl } = useInspectorGltf();
 const {
@@ -253,6 +258,15 @@ const setLightDistance = (distance: number): void => {
   updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
     data.distance = distance;
   });
+  markDirty();
+};
+
+const setLightCastShadow = (castShadow: boolean): void => {
+  if (selectedEntityId.value === null || !engine.value) return;
+  updateComponent(engine.value.world, selectedEntityId.value, Light, (data) => {
+    data.castShadow = castShadow;
+  });
+  notifyInspect();
   markDirty();
 };
 

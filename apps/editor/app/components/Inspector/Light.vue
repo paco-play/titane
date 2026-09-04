@@ -90,6 +90,13 @@
           />
         </div>
 
+        <UCheckbox
+          v-if="light.kind !== 'ambient'"
+          :model-value="light.castShadow"
+          label="Cast shadow"
+          @update:model-value="onCastShadow"
+        />
+
         <!-- Remove button -->
         <UButton
           label="Remove"
@@ -118,6 +125,7 @@ const emit = defineEmits<{
   updateColor: [color: string];
   updateIntensity: [intensity: number];
   updateDistance: [distance: number];
+  updateCastShadow: [castShadow: boolean];
   remove: [];
   commit: [];
 }>();
@@ -146,5 +154,11 @@ const onDistance = (raw: string | number): void => {
   const value = typeof raw === 'string' ? parseFloat(raw) : raw;
   if (!Number.isFinite(value)) return;
   emit('updateDistance', Math.max(0, value));
+};
+
+const onCastShadow = (value: boolean | 'indeterminate'): void => {
+  if (value === 'indeterminate') return;
+  emit('updateCastShadow', value);
+  emit('commit');
 };
 </script>

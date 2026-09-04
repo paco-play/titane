@@ -71,6 +71,17 @@ describe('InstancePool', () => {
         expect(pool.batchCount).toBe(2);
     });
 
+    it('splits batches when castShadow differs', () => {
+        const identity = new THREE.Matrix4();
+        const caster = createMesh('box', '#ffffff');
+        const silent = createMesh('box', '#ffffff', '', 1, 0, '#000000', false, true);
+        pool.sync(1, caster, identity.elements);
+        pool.sync(2, silent, identity.elements);
+
+        expect(pool.batchCount).toBe(2);
+        expect(pool.pickables()[0].castShadow).not.toBe(pool.pickables()[1].castShadow);
+    });
+
     it('releases an albedo material when its batch empties', () => {
         const textured = new ResourceCache(() => new THREE.Texture());
         const texturedPool = new InstancePool(scene, textured);

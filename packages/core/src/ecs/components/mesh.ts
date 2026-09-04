@@ -37,6 +37,10 @@ export interface MeshData {
     metalness: number;
     /** Emissive color. `#000000` means no glow. */
     emissive: string;
+    /** Whether this mesh writes into shadow maps. Default `true`. */
+    castShadow: boolean;
+    /** Whether this mesh receives shadows. Default `true`. */
+    receiveShadow: boolean;
 }
 
 /**
@@ -47,6 +51,8 @@ export interface MeshData {
  * @param roughness Microfacet roughness in `[0, 1]`.
  * @param metalness Metalness in `[0, 1]`.
  * @param emissive Emissive hex color.
+ * @param castShadow Whether the mesh writes into shadow maps.
+ * @param receiveShadow Whether the mesh receives shadows.
  * @returns A clean MeshData object.
  */
 export const createMesh = (
@@ -55,8 +61,19 @@ export const createMesh = (
     albedo = '',
     roughness = DEFAULT_ROUGHNESS,
     metalness = DEFAULT_METALNESS,
-    emissive = DEFAULT_EMISSIVE
-): MeshData => ({ primitive, color, albedo, roughness, metalness, emissive });
+    emissive = DEFAULT_EMISSIVE,
+    castShadow = true,
+    receiveShadow = true
+): MeshData => ({
+    primitive,
+    color,
+    albedo,
+    roughness,
+    metalness,
+    emissive,
+    castShadow,
+    receiveShadow
+});
 
 /**
  * Fills fields that older scenes omitted so every live Mesh has a complete shape.
@@ -69,7 +86,9 @@ const reviveMesh = (raw: unknown): MeshData => {
         source.albedo ?? '',
         source.roughness ?? DEFAULT_ROUGHNESS,
         source.metalness ?? DEFAULT_METALNESS,
-        source.emissive ?? DEFAULT_EMISSIVE
+        source.emissive ?? DEFAULT_EMISSIVE,
+        source.castShadow ?? true,
+        source.receiveShadow ?? true
     );
 };
 

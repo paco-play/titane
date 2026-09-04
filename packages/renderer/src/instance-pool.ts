@@ -14,6 +14,8 @@ interface BatchSpec {
     roughness: number;
     metalness: number;
     emissive: string;
+    castShadow: boolean;
+    receiveShadow: boolean;
 }
 
 const toBatchSpec = (mesh: MeshData): BatchSpec => {
@@ -24,15 +26,17 @@ const toBatchSpec = (mesh: MeshData): BatchSpec => {
         albedo: material.albedo,
         roughness: material.roughness,
         metalness: material.metalness,
-        emissive: material.emissive
+        emissive: material.emissive,
+        castShadow: mesh.castShadow,
+        receiveShadow: mesh.receiveShadow
     };
 };
 
 const batchKey = (spec: BatchSpec): string =>
-    `${spec.primitive}\0${materialKey(spec)}`;
+    `${spec.primitive}\0${materialKey(spec)}\0${spec.castShadow ? 1 : 0}\0${spec.receiveShadow ? 1 : 0}`;
 
 /**
- * Groups renderable entities into one InstancedMesh per (primitive, material).
+ * Groups renderable entities into one InstancedMesh per (primitive, material, shadow flags).
  */
 export class InstancePool {
     private readonly batches = new Map<string, InstanceBatch>();
@@ -116,6 +120,8 @@ export class InstancePool {
         const geometry = this.resources.geometry(spec.primitive);
         const material = this.resources.material(spec);
         const batch = new InstanceBatch(geometry, material, INITIAL_CAPACITY);
+        batch.mesh.castShadow = spec.castShadow;
+        batch.mesh.receiveShadow = spec.receiveShadow;
         this.scene.add(batch.mesh);
         this.batches.set(key, batch);
         this.specs.set(key, spec);

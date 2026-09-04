@@ -131,6 +131,17 @@
             </template>
           </UPopover>
         </div>
+
+        <UCheckbox
+          :model-value="mesh.castShadow"
+          label="Cast shadow"
+          @update:model-value="onCastShadow"
+        />
+        <UCheckbox
+          :model-value="mesh.receiveShadow"
+          label="Receive shadow"
+          @update:model-value="onReceiveShadow"
+        />
       </div>
     </template>
   </UCollapsible>
@@ -153,6 +164,8 @@ const emit = defineEmits<{
   updateRoughness: [roughness: number];
   updateMetalness: [metalness: number];
   updateEmissive: [emissive: string];
+  updateCastShadow: [castShadow: boolean];
+  updateReceiveShadow: [receiveShadow: boolean];
   commit: [];
 }>();
 
@@ -203,6 +216,18 @@ const onMetalness = (raw: string | number | undefined): void => {
 const onEmissive = (value: string | undefined): void => {
   if (!value) return;
   emit('updateEmissive', value.toLowerCase());
+};
+
+const onCastShadow = (value: boolean | 'indeterminate'): void => {
+  if (value === 'indeterminate') return;
+  emit('updateCastShadow', value);
+  emit('commit');
+};
+
+const onReceiveShadow = (value: boolean | 'indeterminate'): void => {
+  if (value === 'indeterminate') return;
+  emit('updateReceiveShadow', value);
+  emit('commit');
 };
 
 /**

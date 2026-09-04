@@ -26,6 +26,11 @@ export interface LightData {
      * Ignored for other kinds.
      */
     distance: number;
+    /**
+     * Whether this light writes a shadow map.
+     * Ignored for `ambient`. Default `false`.
+     */
+    castShadow: boolean;
 }
 
 /**
@@ -34,15 +39,31 @@ export interface LightData {
  * @param color - CSS hex color string.
  * @param intensity - Luminous intensity.
  * @param distance - Point-light cutoff distance (ignored for other kinds).
+ * @param castShadow - Whether directional/point lights write a shadow map.
  */
 export const createLight = (
     kind: LightKind = 'directional',
     color = '#ffffff',
     intensity = 1,
-    distance = 0
-): LightData => ({ kind, color, intensity, distance });
+    distance = 0,
+    castShadow = false
+): LightData => ({ kind, color, intensity, distance, castShadow });
+
+/**
+ * Fills fields that older scenes omitted.
+ */
+const reviveLight = (raw: unknown): LightData => {
+    const source = raw as Partial<LightData>;
+    return createLight(
+        source.kind,
+        source.color,
+        source.intensity,
+        source.distance,
+        source.castShadow ?? false
+    );
+};
 
 /**
  * Typed handle for the Light component.
  */
-export const Light = defineComponent<LightData>('light', () => createLight());
+export const Light = defineComponent<LightData>('light', () => createLight(), reviveLight);
