@@ -51,6 +51,7 @@ describe('create-titane-project', () => {
         expect(existsSync(join(directory, 'public', 'assets', '.gitkeep'))).toBe(true);
         expect(existsSync(join(directory, 'app', 'pages', 'index.vue'))).toBe(true);
         expect(existsSync(join(directory, 'nuxt.config.ts'))).toBe(true);
+        expect(existsSync(join(directory, '.npmrc'))).toBe(true);
 
         const scene = readFileSync(join(directory, 'scenes', 'main.titane'), 'utf8');
         expect(scene).toContain('PlayerController');

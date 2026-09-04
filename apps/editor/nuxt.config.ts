@@ -1,5 +1,6 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { defineNuxtConfig } from 'nuxt/config';
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 

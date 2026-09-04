@@ -97,7 +97,7 @@ const writePackageJson = (options: ScaffoldOptions): void => {
 };
 
 const installDependencies = (projectDir: string): void => {
-    const result = spawnSync('npm', ['install'], {
+    const result = spawnSync('npm', ['install', '--legacy-peer-deps'], {
         cwd: projectDir,
         stdio: 'inherit'
     });
