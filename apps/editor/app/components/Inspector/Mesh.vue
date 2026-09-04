@@ -32,17 +32,15 @@
           </div>
         </div>
 
-        <div class="space-y-2">
-          <UiFormLabel label="Albedo" />
-          <UInput
-            :model-value="mesh.albedo"
-            placeholder="Texture URL"
-            size="xs"
-            :data-tick="inspectTick"
-            @update:model-value="onAlbedo"
-            @change="emit('commit')"
-          />
-        </div>
+        <InspectorAssetField
+          label="Albedo"
+          :value="mesh.albedo"
+          accept="texture"
+          placeholder="Texture URL"
+          :inspect-tick="inspectTick"
+          @update="emit('updateAlbedo', $event)"
+          @commit="emit('commit')"
+        />
 
         <div class="space-y-2">
           <UiFormLabel label="Roughness" />
@@ -125,11 +123,6 @@ const emit = defineEmits<{
 const onPrimitive = (primitive: PrimitiveType): void => {
   emit('updatePrimitive', primitive);
   emit('commit');
-};
-
-const onAlbedo = (value: string | number | undefined): void => {
-  const url = typeof value === 'string' ? value.trim() : '';
-  emit('updateAlbedo', url);
 };
 
 const parseUnit = (raw: string | number | undefined): number | undefined => {

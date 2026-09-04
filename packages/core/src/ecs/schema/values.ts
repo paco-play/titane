@@ -72,6 +72,7 @@ export const parseFieldValue = (field: AnyFieldDef, raw: unknown): unknown => {
         case 'boolean':
             return typeof raw === 'boolean' ? raw : undefined;
         case 'string':
+        case 'asset':
             return typeof raw === 'string' ? raw : undefined;
         case 'color':
             return typeof raw === 'string' && raw.length > 0 ? raw : undefined;

@@ -11,10 +11,12 @@ export type {
     QuatFieldDef,
     EntityFieldDef,
     EnumFieldDef,
+    AssetAccept,
+    AssetFieldDef,
     AnyFieldDef,
     Schema
 } from './field';
 export type { InferField, InferSchema } from './infer';
 export { f } from './fields';
-export type { NumberFieldOptions, DefaultFieldOptions } from './fields';
+export type { NumberFieldOptions, DefaultFieldOptions, AssetFieldOptions } from './fields';
 export { createFromSchema, reviveFromSchema, parseFieldValue, applySchemaInPlace } from './values';

@@ -2,12 +2,13 @@ import { defineComponent, f, getComponent, Transform } from '@titane/core';
 
 /**
  * Sample user component for the editor sandbox.
- * Declaring `speed` here is enough for Add Component, the Inspector slider,
- * and `.titane` persistence — no editor source has to mention this type.
+ * `speed` drives Play. `skin` is an `f.asset()` field so the Inspector
+ * can pick a file from `public/assets`.
  */
 export const PlayerController = defineComponent('PlayerController', {
   schema: {
     speed: f.number({ min: 0, max: 20, step: 0.1, default: 5 }),
+    skin: f.asset({ accept: 'texture' }),
   },
   onUpdate({ world, entity, data, dt }) {
     const transform = getComponent(world, entity, Transform);

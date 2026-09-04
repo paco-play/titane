@@ -11,17 +11,15 @@
 
     <template #content>
       <div class="space-y-3 py-2">
-        <div class="space-y-2">
-          <UiFormLabel label="URL" />
-          <UInput
-            :model-value="gltf.url"
-            placeholder=".gltf / .glb URL"
-            size="xs"
-            :data-tick="inspectTick"
-            @update:model-value="onUrl"
-            @change="emit('commit')"
-          />
-        </div>
+        <InspectorAssetField
+          label="URL"
+          :value="gltf.url"
+          accept="model"
+          placeholder=".gltf / .glb URL"
+          :inspect-tick="inspectTick"
+          @update="emit('updateUrl', $event)"
+          @commit="emit('commit')"
+        />
 
         <div class="space-y-2">
           <UiFormLabel label="Clip" />
@@ -75,10 +73,6 @@ const emit = defineEmits<{
   remove: [];
   commit: [];
 }>();
-
-const onUrl = (value: string | number | undefined): void => {
-  emit('updateUrl', typeof value === 'string' ? value.trim() : '');
-};
 
 const onClip = (value: string | number | undefined): void => {
   emit('updateClip', typeof value === 'string' ? value.trim() : '');

@@ -11,7 +11,8 @@ const movementSchema = {
     offset: f.vec3({ default: { x: 1, y: 2, z: 3 } }),
     spin: f.quat(),
     target: f.entity(),
-    stance: f.enum(['idle', 'run'] as const, { default: 'idle' })
+    stance: f.enum(['idle', 'run'] as const, { default: 'idle' }),
+    skin: f.asset({ accept: 'texture' })
 };
 
 type MovementData = InferSchema<typeof movementSchema>;
@@ -29,7 +30,8 @@ describe('schema DSL', () => {
             offset: { x: 1, y: 2, z: 3 },
             spin: { x: 0, y: 0, z: 0, w: 1 },
             target: null,
-            stance: 'idle'
+            stance: 'idle',
+            skin: ''
         } satisfies MovementData);
 
         first.offset.x = 99;
@@ -57,6 +59,7 @@ describe('schema DSL', () => {
         expect(revived.spin).toEqual({ x: 0, y: 0, z: 0, w: 0.5 });
         expect(revived.target).toBe(7);
         expect(revived.stance).toBe('idle');
+        expect(revived.skin).toBe('');
         expect('extra' in revived).toBe(false);
     });
 
@@ -76,6 +79,14 @@ describe('schema DSL', () => {
         expect(data.speed).toBe(9);
         expect(data.enabled).toBe(true);
         expect(data.stance).toBe('idle');
+    });
+
+    it('round-trips an asset URL and keeps the default when omitted', () => {
+        const schema = { clip: f.asset({ accept: 'audio', default: '' }) };
+        expect(createFromSchema(schema).clip).toBe('');
+        expect(reviveFromSchema(schema, { clip: '/assets/hit.ogg' }).clip).toBe('/assets/hit.ogg');
+        expect(reviveFromSchema(schema, { clip: 3 }).clip).toBe('');
+        expect(reviveFromSchema(schema, {}).clip).toBe('');
     });
 
     it('rejects an empty enum', () => {

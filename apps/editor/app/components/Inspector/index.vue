@@ -130,20 +130,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Axis, TransformField } from '~/types/inspector';
-import {
-  addComponent,
-  createPlayerControlled,
-  getComponent,
-  hasComponent,
-  PlayerControlled,
-  removeComponent,
-  Transform,
-  updateComponent,
-} from '@titane/core';
-
-const { engine, selectedEntityId, inspectTick, notifyInspect, markDirty } = useTitane();
+const { inspectTick } = useTitane();
 const { saveToStorage } = usePersistence();
+const { transform, setAxis } = useInspectorTransform();
 const {
   mesh,
   setPrimitive,
@@ -184,6 +173,7 @@ const {
   setRigidFriction,
   setRigidRestitution,
 } = useInspectorRigidBody();
+const { isPlayerControlled, setPlayerControlled } = useInspectorPlayer();
 const {
   attached,
   orphans,
@@ -194,47 +184,4 @@ const {
   setField,
   dropOrphan,
 } = useInspectorUser();
-
-/** Transform data of the selected entity, if any. */
-const transform = computed<Transform | undefined>(() => {
-  void inspectTick.value;
-  if (selectedEntityId.value === null || !engine.value) return undefined;
-  return getComponent(engine.value.world, selectedEntityId.value, Transform);
-});
-
-const isPlayerControlled = computed<boolean>(() => {
-  void inspectTick.value;
-  if (selectedEntityId.value === null || !engine.value) return false;
-  return hasComponent(engine.value.world, selectedEntityId.value, PlayerControlled);
-});
-
-/**
- * Writes one axis back into the ECS and flags the entity for a matrix rebuild.
- * The dirty flag is what makes the transform system recompute the world matrix.
- */
-const setAxis = (field: TransformField, axis: Axis, value: number): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-
-  updateComponent(engine.value.world, selectedEntityId.value, Transform, (data) => {
-    data[field][axis] = value;
-    data.isDirty = true;
-  });
-  markDirty();
-};
-
-const setPlayerControlled = (controlled: boolean): void => {
-  if (selectedEntityId.value === null || !engine.value) return;
-  const world = engine.value.world;
-  const entity = selectedEntityId.value;
-  if (controlled) {
-    if (!hasComponent(world, entity, PlayerControlled)) {
-      addComponent(world, entity, PlayerControlled, createPlayerControlled());
-    }
-  } else {
-    removeComponent(world, entity, PlayerControlled);
-  }
-  notifyInspect();
-  markDirty();
-  saveToStorage();
-};
 </script>

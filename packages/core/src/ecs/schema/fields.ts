@@ -1,5 +1,7 @@
 import type { Entity } from '../types';
 import type {
+    AssetAccept,
+    AssetFieldDef,
     BooleanFieldDef,
     ColorFieldDef,
     EntityFieldDef,
@@ -22,6 +24,12 @@ export interface NumberFieldOptions {
 /** Options for fields that only override the default value. */
 export interface DefaultFieldOptions<T> {
     readonly default?: T;
+}
+
+/** Options for {@link f.asset}. */
+export interface AssetFieldOptions {
+    readonly accept?: AssetAccept;
+    readonly default?: string;
 }
 
 /**
@@ -74,6 +82,16 @@ export const f = {
     entity: (options: DefaultFieldOptions<Entity | null> = {}): EntityFieldDef => ({
         kind: 'entity',
         default: options.default ?? null
+    }),
+
+    /**
+     * URL of a file under `public/assets`. Empty until the author picks one.
+     * `accept` filters the Inspector list (`texture`, `model`, `audio`).
+     */
+    asset: (options: AssetFieldOptions = {}): AssetFieldDef => ({
+        kind: 'asset',
+        default: options.default ?? '',
+        accept: options.accept
     }),
 
     /**

@@ -33,7 +33,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 4 — Unfreeze.** glTF animation and physics material are in. Next: asset manager (`f.asset()`), File System Access, prefabs. Contract: `docs/ROADMAP.md`.
+**Phase 4 — Unfreeze.** glTF animation, physics material, and `f.asset()` are in. Next: File System Access, prefabs. Contract: `docs/ROADMAP.md`.
 
 ## Completed
 
@@ -79,6 +79,11 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 - [x] **Embedded editor.** Standalone editor and generated Nuxt apps serve the chrome at `/titane`. The default layout is a passthrough so a game page at `/` is not wrapped in Hierarchy / Inspector.
 - [x] **Prod strip.** Generated `nuxt.config` extends `@titane/editor` only when `NODE_ENV !== 'production'`.
 - [x] **Docs.** Getting started, ECS, writing a component, light API reference.
+
+### Asset manager
+- [x] **`f.asset({ accept })`.** Schema field, data is a URL string. `accept` is `texture` | `model` | `audio`. Older payloads and omitted keys revive as `''`.
+- [x] **Inspector picker.** `InspectorAssetField` lists `public/assets` (Nitro `GET /api/titane/assets`) and still allows a pasted URL. Mesh albedo, glTF URL, and Sound URL reuse the same widget.
+- [x] **User schema.** Auto Inspector routes `kind: 'asset'` through that widget. The editor sample `PlayerController` exposes `skin`.
 
 ### Physics material
 - [x] **`RigidBody.friction` / `RigidBody.restitution`.** Written onto the Rapier collider. Defaults match Rapier (`0.5`, `0`). Clamp `>= 0`. Combine rules stay Average.
@@ -250,7 +255,7 @@ Project convention, `npm run create`, editor on `/titane` in dev, prod build omi
 
 ### Phase 4 — Unfreeze
 
-glTF animation and physics material are in. Remaining: asset manager, File System Access, prefabs.
+glTF animation, physics material, and `f.asset()` are in. Remaining: File System Access, prefabs.
 
 ### Still parked
 

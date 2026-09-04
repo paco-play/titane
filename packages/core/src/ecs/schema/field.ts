@@ -12,7 +12,14 @@ export type FieldKind =
     | 'vec3'
     | 'quat'
     | 'enum'
-    | 'entity';
+    | 'entity'
+    | 'asset';
+
+/**
+ * Project-file filter for {@link AssetFieldDef}.
+ * The Inspector lists matching files under `public/assets`.
+ */
+export type AssetAccept = 'texture' | 'model' | 'audio';
 
 /**
  * One authored field. `T` is what TypeScript infers for the data property.
@@ -66,6 +73,15 @@ export interface EnumFieldDef<T extends string> extends FieldDef<T> {
     readonly options: readonly T[];
 }
 
+/**
+ * Project asset URL stored as a string.
+ * Empty string means unassigned. `accept` only filters the Inspector picker.
+ */
+export interface AssetFieldDef extends FieldDef<string> {
+    readonly kind: 'asset';
+    readonly accept?: AssetAccept;
+}
+
 /** Any field definition the DSL can produce. */
 export type AnyFieldDef =
     | NumberFieldDef
@@ -75,7 +91,8 @@ export type AnyFieldDef =
     | Vec3FieldDef
     | QuatFieldDef
     | EntityFieldDef
-    | EnumFieldDef<string>;
+    | EnumFieldDef<string>
+    | AssetFieldDef;
 
 /**
  * User component schema: a flat record of field definitions.

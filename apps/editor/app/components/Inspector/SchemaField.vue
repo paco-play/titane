@@ -67,6 +67,16 @@
       @update="emit('update', $event)"
       @commit="emit('commit')"
     />
+    <InspectorAssetField
+      v-else-if="field.kind === 'asset' && stringValue !== undefined"
+      :label="label"
+      :value="stringValue"
+      :accept="field.accept"
+      placeholder="Asset URL"
+      :inspect-tick="inspectTick"
+      @update="emit('update', $event)"
+      @commit="emit('commit')"
+    />
   </div>
 </template>
 

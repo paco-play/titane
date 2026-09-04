@@ -96,7 +96,7 @@ Widget map:
 | `f.vec3()` | Three drag-inputs |
 | `f.entity()` | Entity reference + hierarchy pick |
 | `f.enum([...])` | Select |
-| `f.asset(...)` | Phase 4 |
+| `f.asset(...)` | URL + picker from `public/assets` |
 
 Play-mode edits: Titane must offer an explicit **keep / discard** on exiting Play. Unity loses Play edits by default; do not copy that.
 
@@ -141,7 +141,7 @@ Only after the product loop exists.
 
 1. glTF animation (`clip`, `playing`, `loop`) — **Done.**
 2. Physics material (friction, restitution) — **Done.**
-3. Asset manager (`f.asset()` in the Inspector)
+3. Asset manager (`f.asset()` in the Inspector) — **Done.**
 4. File System Access (Ctrl+S to disk)
 5. Prefabs (entity + children + components, reusable)
 

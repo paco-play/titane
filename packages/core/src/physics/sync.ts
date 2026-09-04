@@ -2,22 +2,15 @@ import RAPIER from './load-rapier';
 import type { World } from '../ecs/kernel/world';
 import type { Entity } from '../ecs/types';
 import type { Transform } from '../ecs/components/transform';
-import type { RigidBodyData } from '../ecs/components/rigid-body';
 import type { PrimitiveType } from '../ecs/components/mesh';
 import { defineQuery, runQuery } from '../ecs/kernel/query';
 import { getComponent } from '../ecs/kernel/component';
 import { Transform as TransformType } from '../ecs/components/transform';
 import { RigidBody } from '../ecs/components/rigid-body';
 import { Mesh } from '../ecs/components/mesh';
-import { getPhysicsSession, type BodyBinding, type PhysicsSession } from './session';
-import {
-    applyColliderMaterial,
-    applyColliderScale,
-    asSensorDesc,
-    colliderDescFromPrimitive
-} from './collider';
+import { getPhysicsSession } from './session';
+import { spawnBinding, syncCollider } from './binding';
 import { eulerXyzToQuat, quatToEulerXyz } from './rotation';
-import { Sensor } from '../ecs/components/sensor';
 
 const rigidQuery = defineQuery([TransformType, RigidBody]);
 
@@ -37,84 +30,6 @@ const writeBodyToTransform = (body: RAPIER.RigidBody, transform: Transform): voi
 
 const primitiveOf = (world: World, entity: Entity): PrimitiveType =>
     getComponent(world, entity, Mesh)?.primitive ?? 'box';
-
-/**
- * Builds a collider desc that matches mesh, material, and optional sensor flag.
- */
-const colliderDescFor = (
-    world: World,
-    entity: Entity,
-    primitive: PrimitiveType,
-    transform: Transform,
-    rigid: RigidBodyData
-): RAPIER.ColliderDesc => {
-    const desc = colliderDescFromPrimitive(primitive, transform.scale);
-    applyColliderMaterial(desc, rigid.friction, rigid.restitution);
-    return getComponent(world, entity, Sensor) !== undefined ? asSensorDesc(desc) : desc;
-};
-
-const spawnBinding = (
-    session: PhysicsSession,
-    world: World,
-    entity: Entity,
-    transform: Transform,
-    rigid: RigidBodyData,
-    primitive: PrimitiveType
-): BodyBinding => {
-    const desc = rigid.kind === 'fixed'
-        ? RAPIER.RigidBodyDesc.fixed()
-        : RAPIER.RigidBodyDesc.dynamic();
-
-    desc.setTranslation(transform.position.x, transform.position.y, transform.position.z);
-    desc.setRotation(eulerXyzToQuat(transform.rotation));
-
-    const body = session.physics.createRigidBody(desc);
-    const collider = session.physics.createCollider(
-        colliderDescFor(world, entity, primitive, transform, rigid),
-        body
-    );
-
-    return {
-        body,
-        collider,
-        kind: rigid.kind,
-        primitive,
-        scaleX: transform.scale.x,
-        scaleY: transform.scale.y,
-        scaleZ: transform.scale.z
-    };
-};
-
-const syncCollider = (
-    session: PhysicsSession,
-    world: World,
-    entity: Entity,
-    binding: BodyBinding,
-    primitive: PrimitiveType,
-    transform: Transform,
-    rigid: RigidBodyData
-): void => {
-    const scaleChanged = binding.scaleX !== transform.scale.x
-        || binding.scaleY !== transform.scale.y
-        || binding.scaleZ !== transform.scale.z;
-
-    if (binding.primitive !== primitive) {
-        session.physics.removeCollider(binding.collider, true);
-        binding.collider = session.physics.createCollider(
-            colliderDescFor(world, entity, primitive, transform, rigid),
-            binding.body
-        );
-        binding.primitive = primitive;
-    } else if (scaleChanged) {
-        applyColliderScale(binding.collider, primitive, transform.scale);
-    }
-
-    applyColliderMaterial(binding.collider, rigid.friction, rigid.restitution);
-
-    binding.scaleX = transform.scale.x;
-    binding.scaleY = transform.scale.y;
-    binding.scaleZ = transform.scale.z;
-};
 
 /**
  * Creates, steps and tears down Rapier bodies to match the ECS.
@@ -156,16 +71,11 @@ export const stepPhysicsWorld = (world: World, dt: number): void => {
     const { eventQueue } = session;
     session.physics.step(eventQueue);
 
-    // --- rebuild collider handle → entity map ------------------------------
     session.colliderToEntity.clear();
     for (const [entity, binding] of session.bodies) {
         session.colliderToEntity.set(binding.collider.handle, entity);
     }
 
-    // --- drain collision events for sensors --------------------------------
-    // Rapier fires change events: started=true on first overlap, started=false
-    // when the overlap ends. We maintain a running set rather than clearing
-    // each step so persistent overlaps are always visible.
     eventQueue.drainCollisionEvents((handle1: number, handle2: number, started: boolean): void => {
         const e1 = session.colliderToEntity.get(handle1);
         const e2 = session.colliderToEntity.get(handle2);
