@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="error"
-    class="flex items-start gap-2 px-3 py-2 bg-error/10 text-error text-xs"
+    class="flex items-start gap-2 px-3 py-2 rounded-md glass-panel--subtle text-error text-xs"
   >
     <span class="flex-1">
       {{ error.componentId }} {{ error.hook }} on entity {{ error.entity }}: {{ error.message }}

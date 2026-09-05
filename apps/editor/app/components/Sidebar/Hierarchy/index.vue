@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full overflow-y-auto p-1">
+  <div class="h-full overflow-y-auto">
     <UTree
       v-model="selection"
       :items="items"

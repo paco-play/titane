@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-2">
+  <div class="space-y-1.5">
     <UiFormLabel :label="label" />
     <div
       class="flex items-center gap-2"
@@ -25,7 +25,7 @@
         @change="emit('commit')"
       />
       <UInput
-        class="w-20 shrink-0"
+        class="w-16 shrink-0"
         :model-value="value"
         type="number"
         size="xs"

@@ -9,6 +9,10 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
   modules: ['@nuxt/ui', '@nuxt/eslint'],
+  colorMode: {
+    preference: 'dark',
+    fallback: 'dark'
+  },
   // Absolute path so this file still resolves when the editor is consumed as a layer.
   css: [join(rootDir, 'app/assets/css/main.css')],
   components: [

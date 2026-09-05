@@ -1,6 +1,6 @@
 <template>
-  <nav class="w-40 shrink-0 border-r border-default p-2 space-y-1 overflow-y-auto">
-    <p class="px-2 py-1 text-xs text-muted">
+  <nav class="w-40 shrink-0 border-r border-white/10 p-(--chrome-pad) space-y-0.5 overflow-y-auto">
+    <p class="px-1.5 py-0.5 text-xs text-muted">
       Assets
     </p>
     <UButton

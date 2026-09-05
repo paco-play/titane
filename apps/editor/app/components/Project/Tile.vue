@@ -2,8 +2,8 @@
   <button
     type="button"
     draggable="true"
-    class="flex flex-col items-center gap-1 w-24 p-2 rounded-md text-center hover:bg-elevated"
-    :class="selected ? 'ring-2 ring-primary bg-elevated' : ''"
+    class="flex flex-col items-center gap-1 w-24 p-2 rounded-lg text-center hover:bg-elevated"
+    :class="selected ? 'ring-1 ring-primary bg-primary/15' : ''"
     :title="item.name"
     @click="emit('select', item)"
     @dblclick="emit('open', item)"

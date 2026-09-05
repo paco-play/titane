@@ -1,5 +1,5 @@
 <template>
-  <label class="text-xxs text-neutral-500 uppercase block mb-1">{{ label }}</label>
+  <label class="text-xxs text-muted uppercase block mb-0.5">{{ label }}</label>
 </template>
 
 <script setup lang="ts">

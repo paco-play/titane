@@ -1,5 +1,5 @@
 <template>
-  <section class="flex h-52 shrink-0 border-t border-default bg-default">
+  <UCard :ui="{ body: 'p-0 sm:p-0 flex h-52 overflow-hidden' }">
     <ProjectFolders
       :folders="folders"
       :folder="folder"
@@ -19,7 +19,7 @@
         @open="openItem"
       />
     </div>
-  </section>
+  </UCard>
 </template>
 
 <script setup lang="ts">

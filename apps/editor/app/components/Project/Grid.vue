@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 min-h-0 overflow-y-auto p-3">
+  <div class="flex-1 min-h-0 overflow-y-auto p-(--chrome-pad)">
     <div
       v-if="items.length > 0"
       class="flex flex-wrap gap-2 content-start"

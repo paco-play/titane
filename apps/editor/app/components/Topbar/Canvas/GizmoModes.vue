@@ -5,11 +5,11 @@
       :key="mode.id"
       :icon="mode.icon"
       color="neutral"
-      variant="link"
-      size="xs"
+      variant="ghost"
+      square
       :title="mode.title"
       :disabled="disabled"
-      :class="modelValue === mode.id ? 'text-highlighted' : undefined"
+      :class="modelValue === mode.id ? 'text-primary' : undefined"
       @click="emit('update:modelValue', mode.id)"
     />
   </div>

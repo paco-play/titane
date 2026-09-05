@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-3 px-3 py-2 border-b border-default">
+  <div class="flex items-center gap-2 p-(--chrome-pad) border-b border-white/10">
     <p class="text-xs font-medium shrink-0">
       Project
     </p>

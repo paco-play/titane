@@ -11,7 +11,7 @@
       >
         <template #leading>
           <span
-            class="size-3 rounded-full ring ring-inset ring-accented"
+            class="size-3.5 rounded-sm ring ring-inset ring-white/20 shrink-0"
             :style="{ backgroundColor: value }"
           />
         </template>
@@ -21,7 +21,7 @@
         <UColorPicker
           :model-value="value"
           format="hex"
-          size="sm"
+          size="xs"
           class="p-2"
           @update:model-value="onColor"
         />

@@ -1,6 +1,133 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+.liquid-glass-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 @theme {
-    --text-xxs: 0.625rem;
+  --text-xxs: 0.625rem;
+}
+
+:root {
+  --ui-radius: 0.25rem;
+  /* Shared chrome gutter — referenced from app.config.ts slots. */
+  --chrome-pad: 0.5rem;
+  --chrome-pad-tight: 0.25rem;
+}
+
+.dark {
+  --ui-bg: var(--ui-color-neutral-900);
+  --ui-bg-muted: rgb(255 255 255 / 0.06);
+  --ui-bg-elevated: rgb(255 255 255 / 0.1);
+  --ui-bg-accented: rgb(255 255 255 / 0.16);
+  --ui-border: rgb(255 255 255 / 0.12);
+  --ui-border-muted: rgb(255 255 255 / 0.08);
+  --ui-border-accented: rgb(255 255 255 / 0.2);
+}
+
+/**
+ * Main chrome (Hierarchy, Inspector, Project, Modal).
+ * Tint lives here because Nuxt UI cannot express backdrop-filter or SVG
+ * displacement. app.config.ts only references these class names.
+ */
+.glass-panel {
+  isolation: isolate;
+  background-color: rgb(18 18 20 / 0.62);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.28),
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.35),
+    0 10px 32px rgb(0 0 0 / 0.28);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+}
+
+.glass-panel--strong {
+  isolation: isolate;
+  background-color: rgb(12 12 14 / 0.78);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.3),
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.4),
+    0 16px 40px rgb(0 0 0 / 0.35);
+  -webkit-backdrop-filter: blur(28px) saturate(1.7);
+  backdrop-filter: blur(28px) saturate(1.7);
+}
+
+/**
+ * Overlays (tooltip, dropdown, context menu). Blur only — no SVG
+ * displacement, so stacked chrome stays at 2–3 filter layers.
+ */
+.glass-panel--subtle {
+  isolation: isolate;
+  background-color: rgb(18 18 20 / 0.78);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.18),
+    0 8px 24px rgb(0 0 0 / 0.28);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  backdrop-filter: blur(12px) saturate(1.3);
+}
+
+html[data-glass-filter="svg"] .glass-panel,
+html[data-glass-filter="svg"] .glass-panel--strong {
+  -webkit-backdrop-filter: url("#liquid-glass-refraction") blur(16px) saturate(1.6);
+  backdrop-filter: url("#liquid-glass-refraction") blur(16px) saturate(1.6);
+}
+
+html[data-glass-filter="svg"] .glass-panel--strong {
+  -webkit-backdrop-filter: url("#liquid-glass-refraction") blur(24px) saturate(1.7);
+  backdrop-filter: url("#liquid-glass-refraction") blur(24px) saturate(1.7);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-panel,
+  .glass-panel--strong,
+  .glass-panel--subtle {
+    background-color: rgb(18 18 20 / 0.94);
+  }
+}
+
+* {
+  scrollbar-color: rgb(255 255 255 / 0.1) transparent;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(255 255 255 / 0.1);
+  border: none;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(255 255 255 / 0.22);
 }

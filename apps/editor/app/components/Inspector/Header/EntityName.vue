@@ -4,8 +4,6 @@
       v-model="entityName"
       variant="soft"
       placeholder="GameObject Name..."
-      size="sm"
-      :ui="{ base: 'text-sm' }"
     />
   </div>
 </template>

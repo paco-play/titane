@@ -1,8 +1,10 @@
 <template>
-  <div class="flex flex-col h-full">
-    <div v-if="transform" class="space-y-6 overflow-y-auto">
+  <div class="flex flex-col h-full min-h-0">
+    <div
+      v-if="transform"
+      class="flex-1 min-h-0 space-y-2 overflow-y-auto"
+    >
       <InspectorHeader />
-      <USeparator />
       <InspectorItem
         :transform="transform"
         :inspect-tick="inspectTick"
@@ -35,16 +37,6 @@
         @remove="removeGltf"
         @commit="saveToStorage"
       />
-      <UButton
-        v-else
-        label="Add glTF"
-        color="neutral"
-        variant="outline"
-        size="xs"
-        icon="i-lucide-box"
-        block
-        @click="addGltf"
-      />
       <InspectorSound
         v-if="sound"
         :sound="sound"
@@ -57,16 +49,6 @@
         @remove="removeSound"
         @commit="saveToStorage"
       />
-      <UButton
-        v-else
-        label="Add Sound"
-        color="neutral"
-        variant="outline"
-        size="xs"
-        icon="i-lucide-volume-2"
-        block
-        @click="addSound"
-      />
       <InspectorLight
         v-if="light"
         :light="light"
@@ -78,16 +60,6 @@
         @update-cast-shadow="setLightCastShadow"
         @remove="removeLight"
         @commit="saveToStorage"
-      />
-      <UButton
-        v-else
-        label="Add Light"
-        color="neutral"
-        variant="outline"
-        size="xs"
-        icon="i-lucide-sun"
-        block
-        @click="addLight"
       />
       <InspectorCamera
         :camera="camera"
@@ -146,12 +118,23 @@
         :component-id="orphan.id"
         @remove="dropOrphan(orphan.id)"
       />
+    </div>
+    <div
+      v-if="transform"
+      class="shrink-0 pt-2"
+    >
       <InspectorAddComponent
         :types="availableTypes"
+        :can-add-gltf="!gltf"
+        :can-add-sound="!sound"
+        :can-add-light="!light"
         @add="addUserComponent"
+        @add-gltf="addGltf"
+        @add-sound="addSound"
+        @add-light="addLight"
       />
     </div>
-    <InspectorNoSelection v-else />
+    <InspectorNoSelection v-if="!transform" />
   </div>
 </template>
 

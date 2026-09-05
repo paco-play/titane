@@ -11,25 +11,32 @@
 
     <template #content>
       <div class="space-y-2 py-2">
-        <div class="space-y-2">
-          <UiFormLabel label="Primitive" />
-          <div
-            class="flex items-center"
-            :data-tick="inspectTick"
-          >
-            <UButton
-              v-for="option in PRIMITIVE_OPTIONS"
-              :key="option.value"
-              :icon="option.icon"
-              :label="option.label"
-              color="neutral"
-              variant="link"
-              size="xs"
-              :title="option.label"
-              :class="mesh.primitive === option.value ? 'text-highlighted' : undefined"
-              @click="onPrimitive(option.value)"
-            />
+        <div class="grid grid-cols-[1fr_auto] gap-2 items-end">
+          <div class="space-y-2">
+            <UiFormLabel label="Primitive" />
+            <div
+              class="flex items-center"
+              :data-tick="inspectTick"
+            >
+              <UButton
+                v-for="option in PRIMITIVE_OPTIONS"
+                :key="option.value"
+                :icon="option.icon"
+                :label="option.label"
+                color="neutral"
+                variant="ghost"
+                :title="option.label"
+                :class="mesh.primitive === option.value ? 'text-primary' : undefined"
+                @click="onPrimitive(option.value)"
+              />
+            </div>
           </div>
+          <InspectorColorField
+            label="Color"
+            :value="mesh.color"
+            @update="emit('updateColor', $event)"
+            @commit="emit('commit')"
+          />
         </div>
 
         <InspectorAssetField
@@ -42,44 +49,32 @@
           @commit="emit('commit')"
         />
 
-        <div class="space-y-2">
-          <UiFormLabel label="Roughness" />
-          <UInput
-            :model-value="mesh.roughness"
-            type="number"
-            size="xs"
-            :min="0"
-            :max="1"
-            :step="0.1"
-            @update:model-value="onRoughness"
-            @change="emit('commit')"
-          />
-        </div>
+        <InspectorNumberField
+          label="Roughness"
+          :value="mesh.roughness"
+          :inspect-tick="inspectTick"
+          :min="0"
+          :max="1"
+          :step="0.01"
+          @update="onRoughness"
+          @commit="emit('commit')"
+        />
 
-        <div class="space-y-2">
-          <UiFormLabel label="Metalness" />
-          <UInput
-            :model-value="mesh.metalness"
-            type="number"
-            size="xs"
-            :min="0"
-            :max="1"
-            :step="0.1"
-            @update:model-value="onMetalness"
-            @change="emit('commit')"
-          />
-        </div>
+        <InspectorNumberField
+          label="Metalness"
+          :value="mesh.metalness"
+          :inspect-tick="inspectTick"
+          :min="0"
+          :max="1"
+          :step="0.01"
+          @update="onMetalness"
+          @commit="emit('commit')"
+        />
 
         <InspectorColorField
           label="Emissive"
           :value="mesh.emissive"
           @update="emit('updateEmissive', $event)"
-          @commit="emit('commit')"
-        />
-        <InspectorColorField
-          label="Color"
-          :value="mesh.color"
-          @update="emit('updateColor', $event)"
           @commit="emit('commit')"
         />
 
@@ -125,23 +120,12 @@ const onPrimitive = (primitive: PrimitiveType): void => {
   emit('commit');
 };
 
-const parseUnit = (raw: string | number | undefined): number | undefined => {
-  if (raw === undefined) return undefined;
-  const value = typeof raw === 'string' ? parseFloat(raw) : raw;
-  if (!Number.isFinite(value)) return undefined;
-  return Math.min(1, Math.max(0, value));
+const onRoughness = (value: number): void => {
+  emit('updateRoughness', Math.min(1, Math.max(0, value)));
 };
 
-const onRoughness = (raw: string | number | undefined): void => {
-  const value = parseUnit(raw);
-  if (value === undefined) return;
-  emit('updateRoughness', value);
-};
-
-const onMetalness = (raw: string | number | undefined): void => {
-  const value = parseUnit(raw);
-  if (value === undefined) return;
-  emit('updateMetalness', value);
+const onMetalness = (value: number): void => {
+  emit('updateMetalness', Math.min(1, Math.max(0, value)));
 };
 
 const onCastShadow = (value: boolean | 'indeterminate'): void => {
