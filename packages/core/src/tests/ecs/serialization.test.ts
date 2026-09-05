@@ -181,7 +181,8 @@ describe('ECS: Scene Serialization', () => {
             url: 'hero.glb',
             clip: 'Walk',
             playing: true,
-            loop: false
+            loop: false,
+            fade: 0
         });
     });
 
@@ -199,8 +200,21 @@ describe('ECS: Scene Serialization', () => {
             url: 'hero.glb',
             clip: '',
             playing: false,
-            loop: true
+            loop: true,
+            fade: 0
         });
+    });
+
+    it('should round-trip Gltf fade', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Gltf, createGltf('hero.glb', 'Walk', true, true, 0.2));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Gltf)?.fade).toBe(0.2);
     });
 
     it('should round-trip rigid-body material fields', () => {

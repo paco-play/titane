@@ -13,11 +13,23 @@ const configureLoop = (action: THREE.AnimationAction, loop: boolean): void => {
     action.clampWhenFinished = !loop;
 };
 
+const startAction = (action: THREE.AnimationAction, loop: boolean): void => {
+    configureLoop(action, loop);
+    action.reset();
+    action.enabled = true;
+    action.paused = false;
+    action.setEffectiveTimeScale(1);
+    action.setEffectiveWeight(1);
+    action.play();
+};
+
 /**
- * Starts, pauses and advances one entity mixer from ECS glTF fields.
+ * Starts, pauses, crossfades and advances one entity mixer from ECS glTF fields.
  *
- * Rising edge of `playing` (or a clip change) resets and plays. Falling edge
- * pauses so the pose is kept. An empty or unknown clip name stops all actions.
+ * Rising edge of `playing` resets and plays. A clip change while playing
+ * crossfades when `fade` is greater than 0; `fade === 0` is a hard cut.
+ * Falling edge pauses so the pose is kept. An empty or unknown clip name
+ * stops all actions.
  *
  * @returns The clip name that is now bound, or `''` when nothing is bound.
  */
@@ -29,7 +41,8 @@ export const advanceMixer = (
     loop: boolean,
     wasPlaying: boolean,
     previousClip: string,
-    dt: number
+    dt: number,
+    fade = 0
 ): string => {
     if (clip === '') {
         mixer.stopAllAction();
@@ -42,19 +55,31 @@ export const advanceMixer = (
         return '';
     }
 
-    const action = mixer.clipAction(found);
-    configureLoop(action, loop);
+    const incoming = mixer.clipAction(found);
+    configureLoop(incoming, loop);
 
     if (!playing) {
-        if (wasPlaying) action.paused = true;
+        if (wasPlaying) incoming.paused = true;
         return clip;
     }
 
+    const fadeSeconds = Number.isFinite(fade) ? Math.max(0, fade) : 0;
     const clipChanged = previousClip !== clip;
-    if (!wasPlaying || clipChanged) {
-        action.reset();
-        action.paused = false;
-        action.play();
+
+    if (!wasPlaying) {
+        mixer.stopAllAction();
+        startAction(incoming, loop);
+    } else if (clipChanged) {
+        const outgoingSource = findClip(clips, previousClip);
+        const outgoing = outgoingSource ? mixer.clipAction(outgoingSource) : undefined;
+        startAction(incoming, loop);
+        if (outgoing && outgoing !== incoming && fadeSeconds > 0) {
+            outgoing.enabled = true;
+            outgoing.paused = false;
+            outgoing.crossFadeTo(incoming, fadeSeconds, false);
+        } else {
+            outgoing?.stop();
+        }
     }
 
     mixer.update(dt);

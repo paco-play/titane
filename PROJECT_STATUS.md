@@ -65,7 +65,7 @@ The Drop demo (`apps/demo`) and **Preview in Demo** live-preview are gone. A gam
 - [x] **Inspector + Hierarchy.** Dumb Sound section (URL, volume, loop, positional, playing, remove). Hierarchy `+` spawns a Sound entity.
 
 ### glTF import
-- [x] **`Gltf` component.** `url`, `clip`, `playing`, `loop`. Empty URL draws nothing. Pose stays on `Transform`.
+- [x] **`Gltf` component.** `url`, `clip`, `playing`, `loop`, `fade`. Empty URL draws nothing. Pose stays on `Transform`.
 - [x] **`ModelPool`.** Loads each URL once, clones per entity, cancels stale loads, disposes the template when the last user drops.
 - [x] **Picking.** Loaded roots are raycast with the instanced batches. A hit walks up to `userData.titaneEntity`.
 - [x] **Gizmo on model-only entities.** The proxy syncs from the selected `Transform` even when there is no `Mesh`.
@@ -112,9 +112,10 @@ The Drop demo (`apps/demo`) and **Preview in Demo** live-preview are gone. A gam
 - [x] **Inspector.** Friction and Restitution number fields next to Kind.
 
 ### glTF animation
-- [x] **`Gltf.clip` / `Gltf.playing` / `Gltf.loop`.** Clip name, play flag, loop flag. Older scenes revive with `clip: ''`, `playing: false`, `loop: true`.
-- [x] **Mixer on the clone.** Shared template keeps clips; each entity has an `AnimationMixer`. Empty or unknown clip names leave the bind pose. Rising edge of `playing` restarts; falling edge pauses.
-- [x] **Inspector.** Clip text field plus Playing / Loop checkboxes, same pattern as Sound.
+- [x] **`Gltf.clip` / `Gltf.playing` / `Gltf.loop` / `Gltf.fade`.** Clip name, play flag, loop flag, crossfade seconds. Older scenes revive with `clip: ''`, `playing: false`, `loop: true`, `fade: 0`.
+- [x] **Mixer on the clone.** Shared template keeps clips; each entity has an `AnimationMixer`. Empty or unknown clip names leave the bind pose. Rising edge of `playing` restarts; falling edge pauses. A clip change while playing uses `outgoing.crossFadeTo` when `fade > 0`.
+- [x] **`playGltfClip`.** Gameplay helper: sets `clip` + `playing`. Optional fade overrides the stored duration.
+- [x] **Inspector.** Clip text field, Playing / Loop checkboxes, Fade number. Same pattern as Sound / Camera.
 
 ### Shadows
 - [x] **`Light.castShadow`.** Directional and point lights write a shadow map. Ambient ignores the flag. Default `false`. Older scenes revive with `false`.

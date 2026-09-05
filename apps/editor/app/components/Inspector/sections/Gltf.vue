@@ -44,6 +44,20 @@
           @update:model-value="onLoop"
         />
 
+        <div class="space-y-2">
+          <UiFormLabel label="Fade" />
+          <UInput
+            :model-value="gltf.fade"
+            type="number"
+            size="xs"
+            :min="0"
+            :step="0.05"
+            :data-tick="inspectTick"
+            @update:model-value="onFade"
+            @change="emit('commit')"
+          />
+        </div>
+
         <UButton
           label="Remove"
           color="neutral"
@@ -70,6 +84,7 @@ const emit = defineEmits<{
   updateClip: [clip: string];
   updatePlaying: [playing: boolean];
   updateLoop: [loop: boolean];
+  updateFade: [fade: number];
   remove: [];
   commit: [];
 }>();
@@ -88,5 +103,11 @@ const onLoop = (value: boolean | 'indeterminate'): void => {
   if (value === 'indeterminate') return;
   emit('updateLoop', value);
   emit('commit');
+};
+
+const onFade = (raw: string | number | undefined): void => {
+  const value = typeof raw === 'string' ? parseFloat(raw) : raw;
+  if (typeof value !== 'number' || !Number.isFinite(value)) return;
+  emit('updateFade', value);
 };
 </script>

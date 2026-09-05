@@ -139,7 +139,7 @@ This is when someone else can use Titane.
 
 Only after the product loop exists.
 
-1. glTF animation (`clip`, `playing`, `loop`) — **Done.**
+1. glTF animation (`clip`, `playing`, `loop`, `fade`) — **Done.**
 2. Physics material (friction, restitution) — **Done.**
 3. Asset manager (`field.asset()` in the Inspector) — **Done.**
 4. Ctrl+S writes `scenes/main.titane` — **Done.** Dev Nitro `PUT /api/titane/scene`. Not the browser File System Access API.

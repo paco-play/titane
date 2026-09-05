@@ -64,6 +64,10 @@ export const useInspectorGltf = () => {
     saveToStorage();
   };
 
+  const setGltfFade = (fade: number): void => {
+    patchGltf(data => { data.fade = Number.isFinite(fade) ? Math.max(0, fade) : 0; });
+  };
+
   return {
     gltf,
     addGltf,
@@ -71,6 +75,7 @@ export const useInspectorGltf = () => {
     setGltfUrl,
     setGltfClip,
     setGltfPlaying,
-    setGltfLoop
+    setGltfLoop,
+    setGltfFade
   };
 };
