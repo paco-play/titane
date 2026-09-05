@@ -31,6 +31,7 @@
         @update-clip="setGltfClip"
         @update-playing="setGltfPlaying"
         @update-loop="setGltfLoop"
+        @update-fade="setGltfFade"
         @remove="removeGltf"
         @commit="saveToStorage"
       />
@@ -169,7 +170,7 @@ const {
   setCastShadow,
   setReceiveShadow,
 } = useInspectorMesh();
-const { gltf, addGltf, removeGltf, setGltfUrl, setGltfClip, setGltfPlaying, setGltfLoop } = useInspectorGltf();
+const { gltf, addGltf, removeGltf, setGltfUrl, setGltfClip, setGltfPlaying, setGltfLoop, setGltfFade } = useInspectorGltf();
 const {
   sound,
   addSound,

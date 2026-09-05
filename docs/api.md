@@ -14,13 +14,14 @@ Public entry points. Types travel with the handles; there is no `any` in the eng
 | `field.*` | Schema DSL (`number`, `boolean`, `string`, `color`, `vec3`, `quat`, `enum`, `entity`, `asset`) |
 | `createPrimitive` | Entity with `Name` + `Transform` + `Mesh` |
 | `getComponent` / `addComponent` / `removeComponent` | Typed accessors |
+| `playGltfClip` | Sets `Gltf.clip` + `playing`. Optional fade overrides the stored duration |
 | `defineQuery` / `runQuery` | Zero-allocation iteration |
 | `Phase` / `engine.addSystem` | Pipeline registration |
 | `serializeWorld` / `deserializeWorld` / `isSerializedWorld` | `.titane` JSON scenes |
 | `serializePrefab` / `instantiatePrefab` | Subtree templates (`public/prefabs`) |
 | `TitanePlugin` / `TitaneConfig` | Host seam |
 
-Built-in components include `Transform`, `Mesh`, `Name`, `Velocity`, `Light`, `Gltf` (`url`, `clip`, `playing`, `loop`), `Sound`, `Camera` (`fov`, `near`, `far`, `current`), `RigidBody` (`kind`, `friction`, `restitution`), `Collider` (`kind` box/sphere/capsule/mesh, `center`, `size`, `radius`, `height`), `Sensor`, `PlayerControlled`, `Input`. `pickCurrentCamera` / `setCurrentCamera` choose which camera Play and game mode use. A `Collider` overrides `Mesh.primitive` for physics. `mesh` colliders are Rapier trimeshes from the loaded glTF (not stored in `.titane`) and force a fixed body.
+Built-in components include `Transform`, `Mesh`, `Name`, `Velocity`, `Light`, `Gltf` (`url`, `clip`, `playing`, `loop`, `fade`), `Sound`, `Camera` (`fov`, `near`, `far`, `current`), `RigidBody` (`kind`, `friction`, `restitution`), `Collider` (`kind` box/sphere/capsule/mesh, `center`, `size`, `radius`, `height`), `Sensor`, `PlayerControlled`, `Input`. `pickCurrentCamera` / `setCurrentCamera` choose which camera Play and game mode use. A `Collider` overrides `Mesh.primitive` for physics. `mesh` colliders are Rapier trimeshes from the loaded glTF (not stored in `.titane`) and force a fixed body. Changing `Gltf.clip` while playing crossfades when `fade` is greater than 0; `fade === 0` is a hard cut.
 
 ## `@titane/renderer`
 

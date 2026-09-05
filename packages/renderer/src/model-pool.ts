@@ -224,7 +224,7 @@ export class ModelPool {
 
     private applyClip(
         entry: ModelEntry,
-        data: { clip: string; playing: boolean; loop: boolean },
+        data: { clip: string; playing: boolean; loop: boolean; fade: number },
         dt: number
     ): void {
         if (!entry.mixer) return;
@@ -236,7 +236,8 @@ export class ModelPool {
             data.loop,
             entry.playing,
             entry.clip,
-            dt
+            dt,
+            data.fade
         );
         entry.clip = bound;
         entry.playing = data.playing && bound !== '';
