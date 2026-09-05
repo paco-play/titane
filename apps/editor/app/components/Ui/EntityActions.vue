@@ -1,5 +1,5 @@
 <template>
-  <UDropdownMenu :items="dropdownitems" size="sm">
+  <UDropdownMenu :items="dropdownitems" size="xs">
     <UButton
       icon="i-lucide-ellipsis-vertical"
       color="neutral"

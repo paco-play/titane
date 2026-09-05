@@ -36,19 +36,26 @@
           </div>
         </div>
 
-        <USidebar
-          class="pointer-events-auto"
-          side="right"
-          variant="floating"
-          collapsible="none"
-        >
-          <template #header>
-            <h2 class="text-xs text-muted">
-              Inspector
-            </h2>
-          </template>
-          <Inspector />
-        </USidebar>
+        <Transition name="inspector-dock">
+          <div
+            v-if="selectedEntityId !== null"
+            class="inspector-dock pointer-events-auto h-full shrink-0 overflow-hidden [--sidebar-width:18rem]"
+          >
+            <USidebar
+              class="h-full min-w-(--sidebar-width)"
+              side="right"
+              variant="floating"
+              collapsible="none"
+            >
+              <template #header>
+                <h2 class="text-xs text-muted">
+                  Inspector
+                </h2>
+              </template>
+              <Inspector />
+            </USidebar>
+          </div>
+        </Transition>
       </div>
 
       <div class="pointer-events-auto px-2 pb-2">
@@ -66,6 +73,6 @@
 </template>
 
 <script setup lang="ts">
-const { scriptError, clearScriptError } = useTitane();
+const { scriptError, clearScriptError, selectedEntityId } = useTitane();
 const { pendingExitPlay, keepPlayChanges, discardPlayChanges, dismissPlayExit } = useRuntime();
 </script>

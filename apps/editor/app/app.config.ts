@@ -11,11 +11,23 @@ const glassStrong = 'glass-panel--strong bg-transparent ring-0 shadow-none';
 const pad = 'p-(--chrome-pad) sm:p-(--chrome-pad)';
 const padX = 'px-(--chrome-pad) sm:px-(--chrome-pad)';
 
+/** Ring only — kills the elevated gray fill on outline fields. */
+const fieldOutline =
+  'bg-transparent hover:bg-transparent focus:bg-transparent disabled:bg-transparent dark:hover:bg-transparent dark:focus:bg-transparent dark:disabled:bg-transparent';
+
+const fieldXs = {
+  base: 'px-1 py-0 text-xxs/4 gap-0.5 h-6 md:text-xxs',
+  leading: 'ps-1.5',
+  trailing: 'pe-1.5',
+  leadingIcon: 'size-3',
+  trailingIcon: 'size-3'
+};
+
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'amber',
-      secondary: 'orange',
+      primary: 'navy',
+      secondary: 'marine',
       neutral: 'zinc',
       warning: 'amber'
     },
@@ -150,19 +162,33 @@ export default defineAppConfig({
         base: 'rounded-md'
       },
       variants: {
+        variant: {
+          outline: fieldOutline
+        },
         size: {
-          xs: {
-            base: 'px-1.5 py-0.5 text-xs/4 gap-0.5'
-          },
+          xs: fieldXs,
           sm: {
-            base: 'px-2 py-1 text-xs/4 gap-1'
+            base: 'px-1.5 py-0.5 text-xs/4 gap-1 md:text-xs'
           }
         }
       },
+      compoundVariants: [
+        {
+          leading: true,
+          size: 'xs',
+          class: 'ps-4'
+        },
+        {
+          trailing: true,
+          size: 'xs',
+          class: 'pe-4'
+        }
+      ],
       defaultVariants: {
         size: 'xs',
         color: 'neutral',
-        variant: 'subtle'
+        variant: 'outline',
+        fixed: true
       }
     },
     select: {
@@ -171,26 +197,57 @@ export default defineAppConfig({
         content: `${glassOverlay} rounded-md overflow-hidden`
       },
       variants: {
+        variant: {
+          outline: fieldOutline
+        },
         size: {
           xs: {
-            base: 'px-1.5 py-0.5 text-xs/4 gap-0.5'
+            ...fieldXs,
+            item: 'p-1 text-xxs gap-1',
+            itemLeadingIcon: 'size-3',
+            itemTrailingIcon: 'size-3',
+            trailingIcon: 'size-3'
           }
         }
       },
+      compoundVariants: [
+        {
+          leading: true,
+          size: 'xs',
+          class: 'ps-4'
+        },
+        {
+          trailing: true,
+          size: 'xs',
+          class: 'pe-5'
+        }
+      ],
       defaultVariants: {
         size: 'xs',
         color: 'neutral',
-        variant: 'subtle'
+        variant: 'outline',
+        fixed: true
       }
     },
     textarea: {
       slots: {
         base: 'rounded-md'
       },
+      variants: {
+        variant: {
+          outline: fieldOutline
+        },
+        size: {
+          xs: {
+            base: 'px-1 py-0.5 text-xxs/4 gap-0.5 md:text-xxs'
+          }
+        }
+      },
       defaultVariants: {
         size: 'xs',
         color: 'neutral',
-        variant: 'subtle'
+        variant: 'outline',
+        fixed: true
       }
     },
     button: {
@@ -200,12 +257,12 @@ export default defineAppConfig({
       variants: {
         size: {
           xs: {
-            base: 'px-1.5 py-0.5 text-xs gap-1',
-            leadingIcon: 'size-3.5',
-            trailingIcon: 'size-3.5'
+            base: 'px-1 py-0 text-xxs gap-0.5 h-6',
+            leadingIcon: 'size-3',
+            trailingIcon: 'size-3'
           },
           sm: {
-            base: 'px-2 py-1 text-xs gap-1',
+            base: 'px-1.5 py-0.5 text-xs gap-1',
             leadingIcon: 'size-3.5',
             trailingIcon: 'size-3.5'
           }
@@ -215,7 +272,7 @@ export default defineAppConfig({
         {
           size: 'xs',
           square: true,
-          class: 'p-0.5'
+          class: 'p-0.5 size-6'
         },
         {
           size: 'sm',
@@ -235,7 +292,7 @@ export default defineAppConfig({
       variants: {
         size: {
           xs: {
-            thumb: 'size-2.5'
+            thumb: 'size-2'
           }
         }
       },
@@ -266,7 +323,7 @@ export default defineAppConfig({
       variants: {
         size: {
           xs: {
-            link: 'px-1.5 py-0.5 text-xs gap-1'
+            link: 'px-1 py-0.5 text-xxs gap-1'
           }
         },
         selected: {

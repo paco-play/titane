@@ -13,6 +13,37 @@
   --text-xxs: 0.625rem;
 }
 
+/**
+ * Brand palettes sampled from the navy/teal gradient.
+ * navy-800 = dark pole (#00253A), marine-600 = light pole (#045C68).
+ * Midtones are lifted so primary stays readable as an accent on dark glass.
+ */
+@theme static {
+  --color-navy-50: #eef6f9;
+  --color-navy-100: #d4e8f0;
+  --color-navy-200: #a3cddc;
+  --color-navy-300: #6aa3bb;
+  --color-navy-400: #2b7f99;
+  --color-navy-500: #0f5a73;
+  --color-navy-600: #08485c;
+  --color-navy-700: #03384a;
+  --color-navy-800: #00253a;
+  --color-navy-900: #01151f;
+  --color-navy-950: #07080a;
+
+  --color-marine-50: #eef8f9;
+  --color-marine-100: #d2eef1;
+  --color-marine-200: #a5dce3;
+  --color-marine-300: #6bbfca;
+  --color-marine-400: #2e96a4;
+  --color-marine-500: #0a7482;
+  --color-marine-600: #045c68;
+  --color-marine-700: #034a54;
+  --color-marine-800: #03383f;
+  --color-marine-900: #02262b;
+  --color-marine-950: #011418;
+}
+
 :root {
   --ui-radius: 0.25rem;
   /* Shared chrome gutter — referenced from app.config.ts slots. */
@@ -130,4 +161,43 @@ html[data-glass-filter="svg"] .glass-panel--strong {
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgb(255 255 255 / 0.22);
+}
+
+/**
+ * Inspector appear/disappear. Width lives in CSS because Vue Transition
+ * cannot express the spring curve via Tailwind utilities alone.
+ */
+.inspector-dock {
+  width: var(--sidebar-width, 18rem);
+  transform-origin: 100% 50%;
+}
+
+.inspector-dock-enter-active,
+.inspector-dock-leave-active {
+  transition:
+    width 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: width, opacity, transform;
+}
+
+.inspector-dock-enter-from,
+.inspector-dock-leave-to {
+  width: 0;
+  opacity: 0;
+  transform: translate3d(14px, 0, 0) scale(0.96);
+}
+
+.inspector-dock-enter-to,
+.inspector-dock-leave-from {
+  width: var(--sidebar-width, 18rem);
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inspector-dock-enter-active,
+  .inspector-dock-leave-active {
+    transition-duration: 0.01ms;
+  }
 }

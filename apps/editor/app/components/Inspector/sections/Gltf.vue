@@ -1,16 +1,17 @@
 <template>
-  <UCollapsible default-open>
+  <UCollapsible>
     <UButton
       label="glTF"
       color="neutral"
-      variant="soft"
+      variant="outline"
       trailing-icon="i-lucide-chevron-down"
-      size="sm"
+      size="xs"
       block
+      class="justify-start"
     />
 
     <template #content>
-      <div class="space-y-3 py-2">
+      <div class="space-y-1.5 py-1.5">
         <InspectorAssetField
           label="URL"
           :value="gltf.url"

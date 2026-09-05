@@ -1,22 +1,24 @@
 <template>
-  <div class="space-y-2">
+  <div class="space-y-1">
     <UiFormLabel :label="label" />
-    <UInput
-      :model-value="value"
-      :placeholder="placeholder"
-      size="xs"
-      :data-tick="inspectTick"
-      @update:model-value="onInput"
-      @change="emit('commit')"
-    />
-    <USelect
-      v-if="items.length > 0"
-      :model-value="picked"
-      :items="items"
-      placeholder="Project assets"
-      size="xs"
-      @update:model-value="onPick"
-    />
+    <div :class="split ? 'grid grid-cols-[1fr_6.75rem] gap-2 items-center' : 'flex flex-col gap-1'">
+      <UInput
+        :model-value="value"
+        :placeholder="placeholder"
+        size="xs"
+        :data-tick="inspectTick"
+        @update:model-value="onInput"
+        @change="emit('commit')"
+      />
+      <USelect
+        v-if="items.length > 0"
+        :model-value="picked"
+        :items="items"
+        placeholder="Project assets"
+        size="xs"
+        @update:model-value="onPick"
+      />
+    </div>
   </div>
 </template>
 
@@ -29,6 +31,8 @@ const props = defineProps<{
   inspectTick: number;
   accept?: AssetAccept;
   placeholder?: string;
+  /** URL and project picker on one row — used in Mesh where vertical stack felt cramped. */
+  split?: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -1,16 +1,17 @@
 <template>
-  <UCollapsible default-open>
+  <UCollapsible>
     <UButton
       :label="`Missing script: ${componentId}`"
       color="warning"
-      variant="soft"
+      variant="outline"
       trailing-icon="i-lucide-chevron-down"
-      size="sm"
+      size="xs"
       block
+      class="justify-start"
     />
 
     <template #content>
-      <div class="space-y-2 py-2">
+      <div class="space-y-1.5 py-1.5">
         <p class="text-xs text-muted">
           The component is not registered in this session. Authored values are kept.
         </p>

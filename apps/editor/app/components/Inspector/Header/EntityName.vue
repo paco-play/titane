@@ -2,7 +2,6 @@
   <div v-if="hasName">
     <UInput
       v-model="entityName"
-      variant="soft"
       placeholder="GameObject Name..."
     />
   </div>

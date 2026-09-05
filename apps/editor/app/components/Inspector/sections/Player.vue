@@ -1,16 +1,17 @@
 <template>
-  <UCollapsible default-open>
+  <UCollapsible>
     <UButton
       label="Control"
       color="neutral"
-      variant="soft"
+      variant="outline"
       trailing-icon="i-lucide-chevron-down"
-      size="sm"
+      size="xs"
       block
+      class="justify-start"
     />
 
     <template #content>
-      <div class="py-2">
+      <div class="py-1.5">
         <UCheckbox
           :model-value="controlled"
           label="Player controlled"

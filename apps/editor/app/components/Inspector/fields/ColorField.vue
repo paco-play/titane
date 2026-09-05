@@ -8,6 +8,7 @@
         variant="outline"
         size="xs"
         block
+        class="bg-transparent hover:bg-transparent"
       >
         <template #leading>
           <span

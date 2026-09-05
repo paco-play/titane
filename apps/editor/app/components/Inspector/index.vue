@@ -134,7 +134,6 @@
         @add-light="addLight"
       />
     </div>
-    <InspectorNoSelection v-if="!transform" />
   </div>
 </template>
 
