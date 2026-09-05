@@ -13,17 +13,13 @@ const configureLoop = (action: THREE.AnimationAction, loop: boolean): void => {
     action.clampWhenFinished = !loop;
 };
 
-const beginAction = (
-    action: THREE.AnimationAction,
-    loop: boolean,
-    weight: number
-): void => {
+const startAction = (action: THREE.AnimationAction, loop: boolean): void => {
     configureLoop(action, loop);
     action.reset();
     action.enabled = true;
     action.paused = false;
     action.setEffectiveTimeScale(1);
-    action.setEffectiveWeight(weight);
+    action.setEffectiveWeight(1);
     action.play();
 };
 
@@ -72,17 +68,16 @@ export const advanceMixer = (
 
     if (!wasPlaying) {
         mixer.stopAllAction();
-        beginAction(incoming, loop, 1);
+        startAction(incoming, loop);
     } else if (clipChanged) {
         const outgoingSource = findClip(clips, previousClip);
         const outgoing = outgoingSource ? mixer.clipAction(outgoingSource) : undefined;
+        startAction(incoming, loop);
         if (outgoing && outgoing !== incoming && fadeSeconds > 0) {
-            beginAction(incoming, loop, 0);
             outgoing.enabled = true;
             outgoing.paused = false;
             outgoing.crossFadeTo(incoming, fadeSeconds, false);
         } else {
-            beginAction(incoming, loop, 1);
             outgoing?.stop();
         }
     }
