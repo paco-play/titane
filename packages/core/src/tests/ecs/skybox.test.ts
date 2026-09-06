@@ -5,15 +5,16 @@ import { addComponent } from '../../ecs/kernel/component';
 import {
     Skybox,
     createSkybox,
-    DEFAULT_SKYBOX_COLOR
+    DEFAULT_SKYBOX_COLOR,
+    DEFAULT_SKYBOX_CUBEMAP
 } from '../../ecs/components/skybox';
 import { pickSkybox } from '../../ecs/kernel/skybox-utils';
 
 describe('Skybox', () => {
-    it('defaults to the engine void color and no cubemap', () => {
+    it('defaults to the engine sky cubemap', () => {
         expect(createSkybox()).toEqual({
             color: DEFAULT_SKYBOX_COLOR,
-            cubemap: ''
+            cubemap: DEFAULT_SKYBOX_CUBEMAP
         });
     });
 
@@ -24,6 +25,10 @@ describe('Skybox', () => {
         expect(revive).toBeDefined();
         if (!revive) return;
         expect(revive({})).toEqual({
+            color: DEFAULT_SKYBOX_COLOR,
+            cubemap: DEFAULT_SKYBOX_CUBEMAP
+        });
+        expect(revive({ cubemap: '' })).toEqual({
             color: DEFAULT_SKYBOX_COLOR,
             cubemap: ''
         });

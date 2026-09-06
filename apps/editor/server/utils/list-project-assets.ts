@@ -10,6 +10,13 @@ const EXTENSIONS: Record<AssetAccept, readonly string[]> = {
 };
 
 /**
+ * Engine default sky lives under `public/engine`. Skip leftovers that were
+ * dropped in `public/assets` so they never show in Project / the asset picker.
+ */
+export const isEngineOwnedAsset = (relativePath: string): boolean =>
+  relativePath === 'sky_118_2k.png' || relativePath.startsWith('sky_118_cubemap_2k/');
+
+/**
  * Maps a file extension to an asset kind, or `undefined` when ignored.
  */
 export const kindFromExtension = (ext: string): AssetAccept | undefined => {
@@ -42,6 +49,7 @@ const walkDirectory = async (
     const kind = kindFromExtension(extname(entry.name));
     if (!kind) continue;
     const relativePath = relative(rootDirectory, fullPath).split('\\').join('/');
+    if (isEngineOwnedAsset(relativePath)) continue;
     listedAssets.push({ url: `/assets/${relativePath}`, name: relativePath, kind });
   }
 };

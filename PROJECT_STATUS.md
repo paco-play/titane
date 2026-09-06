@@ -282,7 +282,7 @@ Play and game mode look through the current `Camera`. Edit mode keeps orbit.
 
 ### Phase 6 — Authoring truth
 
-Collider wireframe overlay in edit. Engine skybox (default color, serialized component, Inspector). Host `/scenes/main.titane` and host `titane.config.ts` win over the editor layer sample. Hierarchy `syncWorld` after runtime spawn.
+Collider wireframe overlay in edit. Engine skybox (default cubemap under `public/engine`, hidden from Project). Host `/scenes/main.titane` and host `titane.config.ts` win over the editor layer sample. Hierarchy `syncWorld` after runtime spawn. World inspector (empty selection → scene skybox / global VFX) is 6.4.
 
 **Done when:** a `Collider` is visible, the sky survives save/reload, `/titane` opens the project scene and plugins.
 

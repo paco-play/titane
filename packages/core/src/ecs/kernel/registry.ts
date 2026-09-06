@@ -30,12 +30,12 @@ export interface UserComponentConfig<S extends Schema> {
 
 /**
  * Interns a handle into the global registry.
- * @throws If `id` has already been registered.
+ * A second intern with the same id returns the live handle so Vite HMR of a
+ * built-in module does not throw and take down the Inspector.
  */
 const intern = <T>(type: ComponentType<T>): ComponentType<T> => {
-    if (typesById.has(type.id)) {
-        throw new Error(`[Titane] Component "${type.id}" is already registered.`);
-    }
+    const existing = typesById.get(type.id);
+    if (existing) return existing as ComponentType<T>;
 
     typesByIndex.push(type);
     typesById.set(type.id, type);

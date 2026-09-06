@@ -28,7 +28,7 @@
             label="Cubemap"
             :value="skybox.cubemap"
             accept="texture"
-            placeholder="Equirectangular texture URL"
+            placeholder="Cube folder or texture URL"
             :inspect-tick="inspectTick"
             @update="emit('updateCubemap', $event)"
             @commit="emit('commit')"
@@ -48,7 +48,7 @@
           color="neutral"
           variant="outline"
           size="xs"
-          icon="i-lucide-sun"
+          icon="i-lucide-cloud"
           block
           @click="emit('add')"
         />

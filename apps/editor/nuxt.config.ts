@@ -40,7 +40,7 @@ export default defineNuxtConfig({
   },
   vite: {
     optimizeDeps: {
-      exclude: ['@dimforge/rapier3d-compat']
+      exclude: ['@dimforge/rapier3d-compat', '@titane/core', '@titane/renderer']
     },
     assetsInclude: ['**/*.titane'],
     server: {

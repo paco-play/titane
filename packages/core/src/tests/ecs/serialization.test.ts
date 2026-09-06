@@ -7,7 +7,7 @@ import { Name, createName } from '../../ecs/components/name';
 import { Mesh, createMesh } from '../../ecs/components/mesh';
 import { Light } from '../../ecs/components/light';
 import { Camera, createCamera } from '../../ecs/components/camera';
-import { Skybox, createSkybox } from '../../ecs/components/skybox';
+import { Skybox, createSkybox, DEFAULT_SKYBOX_CUBEMAP } from '../../ecs/components/skybox';
 import { Gltf, createGltf } from '../../ecs/components/gltf';
 import { Sound, createSound } from '../../ecs/components/sound';
 import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
@@ -330,8 +330,8 @@ describe('ECS: Scene Serialization', () => {
         });
 
         expect(getComponent(restored, 0, Skybox)).toEqual({
-            color: '#0a0a0a',
-            cubemap: ''
+            color: '#6eb6e0',
+            cubemap: DEFAULT_SKYBOX_CUBEMAP
         });
     });
 

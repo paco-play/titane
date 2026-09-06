@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { kindFromExtension, listProjectAssets } from '../server/utils/list-project-assets';
+import { kindFromExtension, listProjectAssets, isEngineOwnedAsset } from '../server/utils/list-project-assets';
 
 describe('listProjectAssets', () => {
   it('maps known extensions to asset kinds', () => {
@@ -27,6 +27,22 @@ describe('listProjectAssets', () => {
     expect(await listProjectAssets(root)).toEqual([
       { url: '/assets/crate.glb', name: 'crate.glb', kind: 'model' },
       { url: '/assets/textures/hero.png', name: 'textures/hero.png', kind: 'texture' }
+    ]);
+  });
+
+  it('omits the engine default skybox', async () => {
+    expect(isEngineOwnedAsset('sky_118_2k.png')).toBe(true);
+    expect(isEngineOwnedAsset('sky_118_cubemap_2k/px.png')).toBe(true);
+    expect(isEngineOwnedAsset('white.png')).toBe(false);
+
+    const root = mkdtempSync(join(tmpdir(), 'titane-engine-sky-'));
+    mkdirSync(join(root, 'sky_118_cubemap_2k'));
+    writeFileSync(join(root, 'sky_118_2k.png'), '');
+    writeFileSync(join(root, 'sky_118_cubemap_2k', 'px.png'), '');
+    writeFileSync(join(root, 'white.png'), '');
+
+    expect(await listProjectAssets(root)).toEqual([
+      { url: '/assets/white.png', name: 'white.png', kind: 'texture' }
     ]);
   });
 });
