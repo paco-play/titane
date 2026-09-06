@@ -72,6 +72,15 @@
         @update-current="setCameraCurrent"
         @commit="saveToStorage"
       />
+      <InspectorSkybox
+        :skybox="skybox"
+        :inspect-tick="inspectTick"
+        @add="addSkybox"
+        @remove="removeSkybox"
+        @update-color="setSkyboxColor"
+        @update-cubemap="setSkyboxCubemap"
+        @commit="saveToStorage"
+      />
       <InspectorRigidBody
         :rigid="rigid"
         :inspect-tick="inspectTick"
@@ -182,6 +191,13 @@ const {
   setCameraFar,
   setCameraCurrent,
 } = useInspectorCamera();
+const {
+  skybox,
+  addSkybox,
+  removeSkybox,
+  setSkyboxColor,
+  setSkyboxCubemap
+} = useInspectorSkybox();
 const {
   rigid,
   addRigidBody,

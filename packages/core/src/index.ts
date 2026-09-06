@@ -15,6 +15,7 @@ export * from './ecs/kernel/patch-component';
 export * from './ecs/kernel/factory';
 export * from './ecs/kernel/transform-utils';
 export * from './ecs/kernel/camera-utils';
+export * from './ecs/kernel/skybox-utils';
 
 // Schema DSL
 export * from './ecs/schema';
@@ -37,6 +38,7 @@ export * from './ecs/components/light';
 export * from './ecs/components/gltf';
 export * from './ecs/components/sound';
 export * from './ecs/components/camera';
+export * from './ecs/components/skybox';
 
 // Built-in Systems
 export * from './ecs/systems/movement';

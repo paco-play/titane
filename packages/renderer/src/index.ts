@@ -19,3 +19,4 @@ export * from './local-trs';
 export * from './gizmo';
 export * from './collider-visual';
 export * from './collider-overlay';
+export * from './skybox';

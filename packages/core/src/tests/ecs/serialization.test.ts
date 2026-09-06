@@ -7,6 +7,7 @@ import { Name, createName } from '../../ecs/components/name';
 import { Mesh, createMesh } from '../../ecs/components/mesh';
 import { Light } from '../../ecs/components/light';
 import { Camera, createCamera } from '../../ecs/components/camera';
+import { Skybox, createSkybox } from '../../ecs/components/skybox';
 import { Gltf, createGltf } from '../../ecs/components/gltf';
 import { Sound, createSound } from '../../ecs/components/sound';
 import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
@@ -300,6 +301,37 @@ describe('ECS: Scene Serialization', () => {
             near: 0.1,
             far: 1000,
             current: true
+        });
+    });
+
+    it('should round-trip a skybox', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Skybox, createSkybox('#1e293b', '/assets/sky.png'));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Skybox)).toEqual({
+            color: '#1e293b',
+            cubemap: '/assets/sky.png'
+        });
+    });
+
+    it('should fill Skybox fields when an older scene omitted them', () => {
+        const restored = deserializeWorld({
+            version: SCENE_FORMAT_VERSION,
+            nextId: 1,
+            entities: [0],
+            components: {
+                skybox: { 0: {} }
+            }
+        });
+
+        expect(getComponent(restored, 0, Skybox)).toEqual({
+            color: '#0a0a0a',
+            cubemap: ''
         });
     });
 

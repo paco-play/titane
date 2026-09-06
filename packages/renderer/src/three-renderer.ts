@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { IRenderer, World, Entity, MeshColliderGeometry } from '@titane/core';
-import { defineQuery, runQuery, getComponent, Transform, Mesh } from '@titane/core';
+import { defineQuery, runQuery, getComponent, Transform, Mesh, DEFAULT_SKYBOX_COLOR } from '@titane/core';
 import { ResourceCache } from './resource-cache';
 import { LightPool } from './light-pool';
 import { ModelPool } from './model-pool';
@@ -26,6 +26,7 @@ import {
 import { applySceneCamera } from './scene-camera';
 import { ColliderOverlay } from './collider-overlay';
 import type { ColliderOverlayMode } from './collider-visual';
+import { SkyboxApplier } from './skybox';
 import {
     captureEditorCamera,
     restoreEditorCamera,
@@ -51,6 +52,7 @@ export class ThreeRenderer implements IRenderer {
     private renderer!: THREE.WebGLRenderer;
     private gridHelper: THREE.GridHelper | undefined;
     private colliderOverlay: ColliderOverlay | undefined;
+    private skybox: SkyboxApplier | undefined;
     private orbit: OrbitControls | undefined;
     private pool: InstancePool | undefined;
 
@@ -127,7 +129,8 @@ export class ThreeRenderer implements IRenderer {
 
     public init(canvas: HTMLCanvasElement): void {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color('#0a0a0a');
+        this.scene.background = new THREE.Color(DEFAULT_SKYBOX_COLOR);
+        this.skybox = new SkyboxApplier();
 
         this.camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
         this.camera.position.set(5, 5, 5);
@@ -262,6 +265,7 @@ export class ThreeRenderer implements IRenderer {
                 return getComponent(world, entity, Transform)?.worldMatrix ?? null;
             }
         });
+        this.skybox?.apply(world, this.scene);
         this.renderer.render(this.scene, this.camera);
     }
 
@@ -341,6 +345,7 @@ export class ThreeRenderer implements IRenderer {
     }
 
     public dispose(): void {
+        this.skybox?.dispose();
         this.colliderOverlay?.dispose();
         this.gizmos.dispose();
         this.orbit?.dispose();
