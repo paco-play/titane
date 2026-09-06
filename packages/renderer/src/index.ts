@@ -17,3 +17,5 @@ export * from './model-bounds';
 export * from './model-trimesh';
 export * from './local-trs';
 export * from './gizmo';
+export * from './collider-visual';
+export * from './collider-overlay';

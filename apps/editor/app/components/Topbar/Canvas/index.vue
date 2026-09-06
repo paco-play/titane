@@ -45,13 +45,31 @@
       square
       @click="toggleGrid"
     />
+    <UButton
+      :icon="colliderOverlayMode === 'all' ? 'i-lucide-boxes' : 'i-lucide-box'"
+      color="neutral"
+      variant="ghost"
+      square
+      :title="colliderOverlayMode === 'all' ? 'Collider overlay: all' : 'Collider overlay: selection'"
+      @click="toggleColliderOverlay"
+    />
   </UCard>
 </template>
 
 <script setup lang="ts">
 import type { GizmoModeOption } from './GizmoModes.vue';
 
-const { isPlaying, togglePlay, isGridVisible, toggleGrid, resetScene, canReset, stepFrame } = useRuntime();
+const {
+  isPlaying,
+  togglePlay,
+  isGridVisible,
+  toggleGrid,
+  colliderOverlayMode,
+  toggleColliderOverlay,
+  resetScene,
+  canReset,
+  stepFrame
+} = useRuntime();
 const { gizmoMode, setGizmoMode } = useViewport();
 
 const GIZMO_MODES = [

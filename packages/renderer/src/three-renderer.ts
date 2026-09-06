@@ -24,6 +24,8 @@ import {
     type ThreeRendererOptions
 } from './renderer-mode';
 import { applySceneCamera } from './scene-camera';
+import { ColliderOverlay } from './collider-overlay';
+import type { ColliderOverlayMode } from './collider-visual';
 import {
     captureEditorCamera,
     restoreEditorCamera,
@@ -48,6 +50,7 @@ export class ThreeRenderer implements IRenderer {
     private camera!: THREE.PerspectiveCamera;
     private renderer!: THREE.WebGLRenderer;
     private gridHelper: THREE.GridHelper | undefined;
+    private colliderOverlay: ColliderOverlay | undefined;
     private orbit: OrbitControls | undefined;
     private pool: InstancePool | undefined;
 
@@ -159,6 +162,7 @@ export class ThreeRenderer implements IRenderer {
         this.scene.add(this.gridHelper);
         this.orbit = createOrbitControls(this.camera, canvas);
         this.gizmos.attach(this.camera, canvas, this.scene, this.orbit);
+        this.colliderOverlay = new ColliderOverlay(this.scene, entity => this.localAabb(entity));
     }
 
     /**
@@ -189,6 +193,14 @@ export class ThreeRenderer implements IRenderer {
      */
     public setGridVisible(visible: boolean): void {
         if (this.gridHelper) this.gridHelper.visible = visible;
+    }
+
+    /**
+     * Collider wireframes: selection only, or every authored collider.
+     * Editor chrome, deliberately absent from `IRenderer`.
+     */
+    public setColliderOverlayMode(mode: ColliderOverlayMode): void {
+        this.colliderOverlay?.setMode(mode);
     }
 
     /**
@@ -240,6 +252,16 @@ export class ThreeRenderer implements IRenderer {
 
         this.gizmos.apply();
         if (!this.chromeEnabled) applySceneCamera(world, this.camera);
+        this.colliderOverlay?.sync(world, {
+            selected: this.gizmos.entity,
+            visible: this.chromeEnabled,
+            worldMatrixOf: entity => {
+                if (this.gizmos.dragging && entity === this.gizmos.entity) {
+                    return this.gizmos.draggedMatrix();
+                }
+                return getComponent(world, entity, Transform)?.worldMatrix ?? null;
+            }
+        });
         this.renderer.render(this.scene, this.camera);
     }
 
@@ -319,6 +341,7 @@ export class ThreeRenderer implements IRenderer {
     }
 
     public dispose(): void {
+        this.colliderOverlay?.dispose();
         this.gizmos.dispose();
         this.orbit?.dispose();
         this.lights?.dispose();

@@ -1,9 +1,11 @@
 import { captureWorldState, restoreWorldState, type World } from '@titane/core';
+import type { ColliderOverlayMode } from '@titane/renderer';
 import { useTitane } from './useTitane';
 import { markPersistenceDirty } from '~/utils/persistence-dirty';
 
 const isPlaying = ref<boolean>(false);
 const isGridVisible = ref<boolean>(true);
+const colliderOverlayMode = ref<ColliderOverlayMode>('selected');
 const pendingExitPlay = ref<boolean>(false);
 
 /** Scene as it was after the last load or first seed. Independent of play snapshots. */
@@ -18,7 +20,10 @@ export const useRuntime = () => {
   const applyPlayChrome = (playing: boolean): void => {
     if (!renderer.value) return;
     renderer.value.setEditorChromeEnabled(!playing);
-    if (!playing) renderer.value.setGridVisible(isGridVisible.value);
+    if (!playing) {
+      renderer.value.setGridVisible(isGridVisible.value);
+      renderer.value.setColliderOverlayMode(colliderOverlayMode.value);
+    }
   };
 
   const enterPlay = (): void => {
@@ -89,6 +94,16 @@ export const useRuntime = () => {
   };
 
   /**
+   * Cycles collider wireframes between the current selection and every collider.
+   */
+  const toggleColliderOverlay = (): void => {
+    if (!renderer.value) return;
+
+    colliderOverlayMode.value = colliderOverlayMode.value === 'selected' ? 'all' : 'selected';
+    if (!isPlaying.value) renderer.value.setColliderOverlayMode(colliderOverlayMode.value);
+  };
+
+  /**
    * Advances the simulation by one fixed timestep without entering play mode.
    */
   const stepFrame = (): void => {
@@ -129,6 +144,8 @@ export const useRuntime = () => {
     dismissPlayExit,
     isGridVisible,
     toggleGrid,
+    colliderOverlayMode,
+    toggleColliderOverlay,
     stepFrame,
     captureBaseline,
     resetScene,
