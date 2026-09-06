@@ -155,6 +155,54 @@ Play-in-place made `setCamera` feel wrong: Play still looked through the orbit c
 
 ---
 
+## Phase 6 — Authoring truth
+
+The viewport must show colliders, sky, and the host project.
+
+| # | Task | Detail |
+| --- | --- | --- |
+| 6.1 | Collider overlay | Wireframe box / sphere / capsule / mesh (bounds) in edit. Selection + toggle “show all”. Hidden in Play. Follows `Collider` (independent of `Mesh`). |
+| 6.2 | Engine skybox | Stop hardcoding `scene.background = '#0a0a0a'`. Engine default (color). Serialized component: color and/or cubemap / `field.asset()`. Inspector. Play and game mode. |
+| 6.3 | Host scene + plugins | `/scenes/main.titane` is the project file, not the layer cube. Host `titane.config.ts` registers in the embedded editor. Hierarchy `syncWorld` after runtime spawn. Autosave must not hide a valid project scene. |
+
+**Done when:** a `Collider` is visible in the viewport, the sky changes from the Inspector and survives save/reload, `/titane` opens the project scene and plugins.
+
+---
+
+## Phase 7 — Camera and input
+
+| # | Task | Detail |
+| --- | --- | --- |
+| 7.1 | Orthographic camera | `Camera.projection` perspective \| orthographic + `orthoSize`. Play / game. Edit orbit stays perspective. |
+| 7.2 | Pick on `IRenderer` | `pick` + `worldPointFromPointer` on the interface (already on `ThreeRenderer`). |
+| 7.3 | Mouse `justPressed` | Same one-frame impulse as keyboard. Held `buttons` stay. |
+
+**Done when:** a current ortho camera is used in Play; a game host clicks through `engine.renderer` without casting `ThreeRenderer`; a mouse click is a one-frame impulse.
+
+---
+
+## Phase 8 — VFX
+
+| # | Task | Detail |
+| --- | --- | --- |
+| 8.1 | `Vfx` component | Burst / loop, lifetime, rate, color, size, `field.asset()` texture. Data in `.titane`. |
+| 8.2 | Renderer pool | CPU quads. Not one Entity per particle. |
+
+**Done when:** Add Component `Vfx` → Play → particles → save/reload → same asset and params.
+
+---
+
+## Phase 9 — Pathfinding
+
+| # | Task | Detail |
+| --- | --- | --- |
+| 9.1 | Nav data | Bake from walkable colliders (grid or simple navmesh). Optional debug draw (same family as 6.1). |
+| 9.2 | `Agent` | Destination, speed. System moves `Transform` (and the Rapier body when present). Mobs and objects. |
+
+**Done when:** an Agent walks A → B around baked colliders in Play, with no ad-hoc grid in game code.
+
+---
+
 ## Project panel
 
 The Inspector `field.asset()` picker is not a Project window. The editor now has a bottom **Project** panel: Scenes, Prefabs, Models, Textures, Audio. Files come from `scenes/`, `public/prefabs`, and `public/assets`. Double-click a prefab / model / sound to spawn it; a texture writes `Mesh.albedo` on the selection. Drag a tile onto the viewport to place it at the pointer. `Collider` (box / sphere / capsule / mesh) is authored in the Inspector, independent of `Mesh`.

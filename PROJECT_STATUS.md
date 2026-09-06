@@ -280,6 +280,26 @@ glTF animation, physics material, `field.asset()`, Ctrl+S, and prefabs are in.
 
 Play and game mode look through the current `Camera`. Edit mode keeps orbit.
 
-### Still parked
+### Phase 6 — Authoring truth
 
-The numbered contract stops at Phase 5.
+Collider wireframe overlay in edit. Engine skybox (default color, serialized component, Inspector). Host `/scenes/main.titane` and host `titane.config.ts` win over the editor layer sample. Hierarchy `syncWorld` after runtime spawn.
+
+**Done when:** a `Collider` is visible, the sky survives save/reload, `/titane` opens the project scene and plugins.
+
+### Phase 7 — Camera and input
+
+Orthographic `Camera`. `pick` / `worldPointFromPointer` on `IRenderer`. Mouse `justPressed`.
+
+**Done when:** Play uses a current ortho camera; a host picks without casting `ThreeRenderer`; a mouse click is a one-frame impulse.
+
+### Phase 8 — VFX
+
+`Vfx` component (burst/loop, lifetime, rate, color, size, texture asset). Renderer particle pool (CPU quads, not one Entity per particle).
+
+**Done when:** Add Component `Vfx` → Play → particles → save/reload → same asset and params.
+
+### Phase 9 — Pathfinding
+
+Nav bake from walkable colliders. `Agent` moves `Transform` (and Rapier body when present). Optional nav debug draw.
+
+**Done when:** an Agent walks A → B around baked colliders in Play, with no ad-hoc grid in game code.
