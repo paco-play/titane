@@ -15,6 +15,7 @@
 <script setup lang="ts">
 import { addComponent, createPrimitive, Velocity, createVelocity } from '@titane/core';
 import { tryLoadProjectScene } from '~/utils/project-scene';
+import { bootEditorWorld } from '~/utils/boot-editor-world';
 
 /** Interval between periodic auto-saves, in milliseconds. */
 const AUTOSAVE_INTERVAL_MS = 60_000;
@@ -41,32 +42,24 @@ onMounted(async () => {
 
   const engine = initEngine(canvasReference.value);
 
-  // 1. Persist on every structural change. Registered before the scene exists
-  // so the demo cube is saved through the same path as any later edit: it used
-  // to be created after the watch and never synced, so a reload before the
-  // periodic save re-created it and the scene accumulated duplicates.
+  // Persist on every structural change. Registered before the scene exists
+  // so the first syncWorld() writes the loaded project, not a leftover cube.
   stopEntityWatch = watch(entities, () => saveToStorage());
 
-  // 2. Attempt to recover the previous session
-  const hasRecovered = loadFromStorage();
-
-  // 3. Fresh start: project scene, then a fallback cube if that file is missing.
-  // active.size starts at 1 because the engine owns the global input entity.
-  if (!hasRecovered) {
-    const loaded = await tryLoadProjectScene(engine);
-    if (!loaded && engine.world.entities.active.size <= 1) {
+  await bootEditorWorld({
+    loadProject: () => tryLoadProjectScene(engine),
+    loadAutosave: () => loadFromStorage(),
+    seedEmpty: () => {
+      if (engine.world.entities.active.size > 1) return;
       const demoCube = createPrimitive(engine.world, { name: 'Demo Cube', color: '#4ade80' });
       addComponent(engine.world, demoCube, Velocity, createVelocity(0.4, 0, 0));
     }
-    syncWorld();
-  }
-
+  });
+  syncWorld();
   captureBaseline();
 
-  // 4. Periodic auto-save for in-place component edits the Set watcher misses.
   autoSaveInterval = window.setInterval(saveIfDirty, AUTOSAVE_INTERVAL_MS);
 
-  // 5. Start simulation and listen for resize
   window.addEventListener('resize', onResize);
   window.addEventListener('keydown', onKeyDown);
   await engine.start();

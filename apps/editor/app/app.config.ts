@@ -16,9 +16,9 @@ const fieldOutline =
   'bg-transparent hover:bg-transparent focus:bg-transparent disabled:bg-transparent dark:hover:bg-transparent dark:focus:bg-transparent dark:disabled:bg-transparent';
 
 const fieldXs = {
-  base: 'px-1 py-0 text-xxs/4 gap-0.5 h-6 md:text-xxs',
-  leading: 'ps-1.5',
-  trailing: 'pe-1.5',
+  base: 'px-2 py-1 text-xxs/4 gap-1 h-6 md:text-xxs',
+  leading: 'ps-2',
+  trailing: 'pe-2',
   leadingIcon: 'size-3',
   trailingIcon: 'size-3'
 };
@@ -176,12 +176,12 @@ export default defineAppConfig({
         {
           leading: true,
           size: 'xs',
-          class: 'ps-4'
+          class: 'ps-7'
         },
         {
           trailing: true,
           size: 'xs',
-          class: 'pe-4'
+          class: 'pe-7'
         }
       ],
       defaultVariants: {
@@ -214,12 +214,12 @@ export default defineAppConfig({
         {
           leading: true,
           size: 'xs',
-          class: 'ps-4'
+          class: 'ps-7'
         },
         {
           trailing: true,
           size: 'xs',
-          class: 'pe-5'
+          class: 'pe-7'
         }
       ],
       defaultVariants: {
@@ -257,9 +257,9 @@ export default defineAppConfig({
       variants: {
         size: {
           xs: {
-            base: 'px-1 py-0 text-xxs gap-0.5 h-6',
-            leadingIcon: 'size-3',
-            trailingIcon: 'size-3'
+            base: 'px-2 py-1 text-xxs gap-1 h-6',
+            leadingIcon: 'size-3.5',
+            trailingIcon: 'size-3.5'
           },
           sm: {
             base: 'px-1.5 py-0.5 text-xs gap-1',
@@ -272,12 +272,12 @@ export default defineAppConfig({
         {
           size: 'xs',
           square: true,
-          class: 'p-0.5 size-6'
+          class: 'p-0 size-6 justify-center'
         },
         {
           size: 'sm',
           square: true,
-          class: 'p-1'
+          class: 'p-1 justify-center'
         }
       ],
       defaultVariants: {

@@ -1,6 +1,7 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineNuxtConfig } from 'nuxt/config';
+import { projectScenesDirectory } from './server/utils/project-scenes-directory';
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 
@@ -56,7 +57,7 @@ export default defineNuxtConfig({
     },
     publicAssets: [
       {
-        dir: join(rootDir, 'scenes'),
+        dir: projectScenesDirectory(),
         baseURL: 'scenes',
         maxAge: 0
       }

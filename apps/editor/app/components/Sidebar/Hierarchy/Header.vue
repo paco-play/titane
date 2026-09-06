@@ -18,6 +18,7 @@
         variant="ghost"
         color="neutral"
         size="xs"
+        square
         :title="selectedEntityId === null ? 'Add primitive' : 'Add as child of selection'"
       />
     </UDropdownMenu>

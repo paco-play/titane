@@ -163,7 +163,7 @@ The viewport must show colliders, sky, and the host project.
 | --- | --- | --- |
 | 6.1 | Collider overlay | **Done.** Wireframe box / sphere / capsule / mesh (bounds) in edit. Selection + toggle “show all”. Hidden in Play. Follows `Collider` (independent of `Mesh`). |
 | 6.2 | Engine skybox | **Done.** Engine default cubemap (`public/engine`, not Project textures). Serialized `Skybox` (`color` + `cubemap`). Play and game mode. Replacing that default is 6.4, not a mesh component. |
-| 6.3 | Host scene + plugins | `/scenes/main.titane` is the project file, not the layer cube. Host `titane.config.ts` registers in the embedded editor. Hierarchy `syncWorld` after runtime spawn. Autosave must not hide a valid project scene. |
+| 6.3 | Host scene + plugins | **Done.** `/scenes/main.titane` is the project file (cwd, not the layer sample). Host `titane.config.ts` registers in the embedded editor. Hierarchy `syncWorld` after runtime spawn. Autosave cannot hide a valid project scene. |
 | 6.4 | World inspector | Empty Hierarchy selection inspects the **current world**: Skybox (swap the engine default), later global VFX / environment. Scene-wide, not parked on a Cube. |
 
 **Done when:** a `Collider` is visible in the viewport, empty selection authors the world skybox and it survives save/reload, `/titane` opens the project scene and plugins.

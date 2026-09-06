@@ -5,6 +5,7 @@
       color="neutral"
       variant="outline"
       size="xs"
+      square
     />
   </UDropdownMenu>
   <!-- Hidden file input for loading projects -->

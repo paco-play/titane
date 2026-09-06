@@ -5,6 +5,7 @@
       color="neutral"
       variant="ghost"
       size="xs"
+      square
     />
   </UDropdownMenu>
 </template>

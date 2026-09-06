@@ -11,11 +11,38 @@ const pendingExitPlay = ref<boolean>(false);
 /** Scene as it was after the last load or first seed. Independent of play snapshots. */
 const editBaseline = shallowRef<World | null>(null);
 
+let playHierarchyRaf = 0;
+
 /**
  * Controls the engine's execution state.
  */
 export const useRuntime = () => {
   const { engine, renderer, syncWorld, selectedEntityId, notifyInspect } = useTitane();
+
+  const stopPlayHierarchySync = (): void => {
+    if (playHierarchyRaf === 0) return;
+    cancelAnimationFrame(playHierarchyRaf);
+    playHierarchyRaf = 0;
+  };
+
+  const startPlayHierarchySync = (): void => {
+    stopPlayHierarchySync();
+    if (!engine.value) return;
+    let lastSize = engine.value.world.entities.active.size;
+    const loop = (): void => {
+      if (!isPlaying.value || !engine.value) {
+        playHierarchyRaf = 0;
+        return;
+      }
+      const size = engine.value.world.entities.active.size;
+      if (size !== lastSize) {
+        lastSize = size;
+        syncWorld();
+      }
+      playHierarchyRaf = requestAnimationFrame(loop);
+    };
+    playHierarchyRaf = requestAnimationFrame(loop);
+  };
 
   const applyPlayChrome = (playing: boolean): void => {
     if (!renderer.value) return;
@@ -33,9 +60,11 @@ export const useRuntime = () => {
     engine.value.saveSnapshot();
     engine.value.isPaused = false;
     applyPlayChrome(true);
+    startPlayHierarchySync();
   };
 
   const finishExitPlay = (): void => {
+    stopPlayHierarchySync();
     pendingExitPlay.value = false;
     isPlaying.value = false;
     if (engine.value) engine.value.isPaused = true;

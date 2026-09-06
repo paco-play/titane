@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { projectScenesDirectory } from '../../utils/project-scenes-directory';
 import { looksLikeSerializedWorld, writeProjectScene } from '../../utils/write-project-scene';
 
 /**
@@ -36,6 +36,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Not a Titane scene' });
   }
 
-  await writeProjectScene(join(process.cwd(), 'scenes'), body);
+  await writeProjectScene(projectScenesDirectory(), body);
   return { ok: true as const };
 });
