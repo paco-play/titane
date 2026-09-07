@@ -1,10 +1,14 @@
 import type { Entity } from '@titane/core';
 import type { TreeItem } from '@nuxt/ui';
-import { getComponent, hasComponent, Name, Input, Transform } from '@titane/core';
+import { getComponent, Name, Transform } from '@titane/core';
 import { buildIndexedForest } from '~/utils/hierarchy-index';
+import { isHierarchyVisible } from '~/utils/hierarchy-visible';
+
+/** UTree key for the scene row that opens the World inspector. */
+export const WORLD_HIERARCHY_KEY = 'world';
 
 export interface HierarchyItem extends TreeItem {
-  id: Entity;
+  id?: Entity;
   children?: HierarchyItem[];
 }
 
@@ -14,13 +18,14 @@ export interface HierarchyItem extends TreeItem {
  * @returns The hierarchy items, the count of visible entities and the selection bridge.
  */
 export const useHierarchy = () => {
-  const { engine, entities, selectedEntityId } = useTitane();
+  const { engine, entities, selectedEntityId, selectedWorld } = useTitane();
 
   /**
    * Internal cache used to map Entity IDs to their respective TreeItem objects.
    * This allows the selection logic to retrieve the full object in O(1) time.
    */
   const entityToNodeCache = new Map<Entity, HierarchyItem>();
+  let worldNode: HierarchyItem | undefined;
 
   /**
    * Filters out internal engine entities to only show user-relevant GameObjects.
@@ -30,7 +35,7 @@ export const useHierarchy = () => {
     const world = engine.value.world;
 
     return Array.from(entities.value).filter(
-      entityId => !hasComponent(world, entityId, Input)
+      entityId => isHierarchyVisible(world, entityId)
     );
   });
 
@@ -54,16 +59,21 @@ export const useHierarchy = () => {
   };
 
   /**
-   * Reactive tree structure for the UTree component.
-   * Indexes children once, then walks the map so a deep chain is O(n).
+   * Reactive tree: a World row, then the entity forest.
    */
   const hierarchyItems = computed<HierarchyItem[]>(() => {
     entityToNodeCache.clear();
-    if (!engine.value) return [];
+    worldNode = {
+      label: 'World',
+      value: WORLD_HIERARCHY_KEY,
+      defaultExpanded: true
+    };
+
+    if (!engine.value) return [worldNode];
 
     const world = engine.value.world;
 
-    return buildIndexedForest(visibleEntities.value, resolveDisplayParent, (entityId, children) => {
+    const forest = buildIndexedForest(visibleEntities.value, resolveDisplayParent, (entityId, children) => {
       const node: HierarchyItem = {
         id: entityId,
         label: getComponent(world, entityId, Name)?.value || `GameObject #${entityId}`,
@@ -75,17 +85,29 @@ export const useHierarchy = () => {
       entityToNodeCache.set(entityId, node);
       return node;
     });
+
+    return [worldNode, ...forest];
   });
 
   /**
-   * Bridge between the Engine's numerical ID selection and the UI's object-based selection.
+   * Bridge between engine selection and the UI's object-based selection.
    */
   const selectionBridge = computed<HierarchyItem | undefined>({
     get: () => {
+      if (selectedWorld.value) {
+        return worldNode ?? { label: 'World', value: WORLD_HIERARCHY_KEY };
+      }
       if (selectedEntityId.value === null) return undefined;
       return entityToNodeCache.get(selectedEntityId.value);
     },
     set: (incomingSelection) => {
+      if (incomingSelection?.value === WORLD_HIERARCHY_KEY) {
+        selectedEntityId.value = null;
+        selectedWorld.value = true;
+        return;
+      }
+
+      selectedWorld.value = false;
       selectedEntityId.value = incomingSelection?.id ?? null;
     }
   });

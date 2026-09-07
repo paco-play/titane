@@ -1,5 +1,5 @@
 <template>
-  <UCollapsible>
+  <UCollapsible :default-open="true">
     <UButton
       label="Skybox"
       color="neutral"
@@ -11,46 +11,34 @@
     />
 
     <template #content>
-      <div class="space-y-1.5 py-1.5">
-        <div
-          v-if="skybox"
-          class="space-y-3"
-          :data-tick="inspectTick"
-        >
-          <InspectorColorField
-            label="Color"
-            :value="skybox.color"
-            @update="emit('updateColor', $event)"
-            @commit="emit('commit')"
-          />
+      <div
+        class="space-y-3 py-1.5"
+        :data-tick="inspectTick"
+      >
+        <InspectorColorField
+          label="Color"
+          :value="skybox.color"
+          @update="emit('updateColor', $event)"
+          @commit="emit('commit')"
+        />
 
-          <InspectorAssetField
-            label="Cubemap"
-            :value="skybox.cubemap"
-            accept="texture"
-            placeholder="Cube folder or texture URL"
-            :inspect-tick="inspectTick"
-            @update="emit('updateCubemap', $event)"
-            @commit="emit('commit')"
-          />
+        <InspectorAssetField
+          label="Cubemap"
+          :value="skybox.cubemap"
+          accept="texture"
+          placeholder="Cube folder or texture URL"
+          :inspect-tick="inspectTick"
+          @update="emit('updateCubemap', $event)"
+          @commit="emit('commit')"
+        />
 
-          <UButton
-            label="Remove"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-            @click="emit('remove')"
-          />
-        </div>
         <UButton
-          v-else
-          label="Add Skybox"
+          v-if="authored"
+          label="Reset to engine default"
           color="neutral"
-          variant="outline"
+          variant="ghost"
           size="xs"
-          icon="i-lucide-cloud"
-          block
-          @click="emit('add')"
+          @click="emit('reset')"
         />
       </div>
     </template>
@@ -61,13 +49,13 @@
 import type { SkyboxData } from '@titane/core';
 
 defineProps<{
-  skybox: SkyboxData | null
+  skybox: SkyboxData
+  authored: boolean
   inspectTick: number
 }>();
 
 const emit = defineEmits<{
-  add: []
-  remove: []
+  reset: []
   updateColor: [color: string]
   updateCubemap: [cubemap: string]
   commit: []

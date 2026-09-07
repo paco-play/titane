@@ -35,6 +35,16 @@ const activeEntities = shallowRef<Set<Entity>>(new Set());
 const selectedEntityId = ref<Entity | null>(null);
 
 /**
+ * Hierarchy "World" row. Independent of `selectedEntityId` so a canvas miss
+ * can close the Inspector without inspecting the scene by default.
+ */
+const selectedWorld = ref(false);
+
+watch(selectedEntityId, (entityId) => {
+  if (entityId !== null) selectedWorld.value = false;
+});
+
+/**
  * Bumped whenever an in-place component edit should refresh the Inspector.
  * Structural changes already go through `syncWorld`; this covers gizmo drags
  * that mutate the same Transform object Vue is already holding.
@@ -96,6 +106,11 @@ export const useTitane = () => {
     inspectTick.value += 1;
   };
 
+  const clearSelection = (): void => {
+    selectedWorld.value = false;
+    selectedEntityId.value = null;
+  };
+
   /**
    * Flags in-place component edits for the deferred auto-save timer.
    * Structural changes already persist through `syncWorld` + the entity watcher.
@@ -116,11 +131,13 @@ export const useTitane = () => {
     /** This ref updates only when syncWorld() is called */
     entities: activeEntities as ShallowRef<Set<Entity>>,
     selectedEntityId,
+    selectedWorld,
     inspectTick,
     scriptError,
     initEngine,
     syncWorld,
     notifyInspect,
+    clearSelection,
     markDirty,
     clearScriptError
   };

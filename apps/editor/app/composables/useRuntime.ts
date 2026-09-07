@@ -17,7 +17,7 @@ let playHierarchyRaf = 0;
  * Controls the engine's execution state.
  */
 export const useRuntime = () => {
-  const { engine, renderer, syncWorld, selectedEntityId, notifyInspect } = useTitane();
+  const { engine, renderer, syncWorld, clearSelection, notifyInspect } = useTitane();
 
   const stopPlayHierarchySync = (): void => {
     if (playHierarchyRaf === 0) return;
@@ -159,7 +159,7 @@ export const useRuntime = () => {
     if (!engine.value || !editBaseline.value || isPlaying.value) return;
 
     restoreWorldState(engine.value.world, editBaseline.value);
-    selectedEntityId.value = null;
+    clearSelection();
     syncWorld();
     notifyInspect();
   };

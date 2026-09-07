@@ -32,7 +32,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Project drop + Collider.** Drag tiles from Project onto the viewport. Authored colliders (box / sphere / capsule / mesh) sit beside `RigidBody`. Numbered phases 0–5 are complete. Contract: `docs/ROADMAP.md`.
+**Phase 6 — Authoring truth.** Collider overlay, engine skybox, host scene + plugins, World inspector. Numbered phases 0–6 are complete. Next is Phase 7. Contract: `docs/ROADMAP.md`.
 
 The Drop demo (`apps/demo`) and **Preview in Demo** live-preview are gone. A game is `npm run create`.
 
@@ -282,7 +282,7 @@ Play and game mode look through the current `Camera`. Edit mode keeps orbit.
 
 ### Phase 6 — Authoring truth
 
-Collider wireframe overlay in edit. Engine skybox (default cubemap under `public/engine`, hidden from Project). Host `/scenes/main.titane` and host `titane.config.ts` win over the editor layer sample. Hierarchy `syncWorld` after runtime spawn. World inspector (empty selection → scene skybox / global VFX) is 6.4.
+Collider wireframe overlay in edit. Engine skybox (default cubemap under `public/engine`, hidden from Project). Host `/scenes/main.titane` and host `titane.config.ts` win over the editor layer sample. Hierarchy `syncWorld` after runtime spawn. Empty Hierarchy **World** row authors the scene Skybox via `ensureSkybox` (Transform-less entity, hidden in Hierarchy). Inspector stays closed until a row is selected.
 
 **Done when:** a `Collider` is visible, the sky survives save/reload, `/titane` opens the project scene and plugins.
 

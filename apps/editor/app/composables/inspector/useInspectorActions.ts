@@ -6,7 +6,7 @@ import { useTitane } from '../useTitane';
  * (Deletion, Duplication, etc.)
  */
 export const useInspectorActions = () => {
-  const { engine, selectedEntityId, syncWorld } = useTitane();
+  const { engine, selectedEntityId, clearSelection, syncWorld } = useTitane();
 
   /**
    * Removes the currently selected entity from the world.
@@ -16,7 +16,7 @@ export const useInspectorActions = () => {
 
     destroyEntity(engine.value.world, selectedEntityId.value);
 
-    selectedEntityId.value = null;
+    clearSelection();
     syncWorld();
   };
 

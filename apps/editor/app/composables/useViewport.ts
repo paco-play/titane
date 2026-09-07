@@ -9,7 +9,7 @@ const gizmoMode = ref<GizmoMode>('translate');
  * Wires viewport picking and the transform gizmo to the shared engine state.
  */
 export const useViewport = () => {
-  const { engine, renderer, selectedEntityId, notifyInspect, markDirty } = useTitane();
+  const { engine, renderer, selectedEntityId, clearSelection, notifyInspect, markDirty } = useTitane();
   const { isPlaying } = useRuntime();
   const { saveToStorage } = usePersistence();
   const { openItemAt } = useProjectOpen();
@@ -63,7 +63,12 @@ export const useViewport = () => {
       return;
     }
 
-    selectedEntityId.value = renderer.value.pick(event.clientX, event.clientY);
+    const picked = renderer.value.pick(event.clientX, event.clientY);
+    if (picked === null) {
+      clearSelection();
+      return;
+    }
+    selectedEntityId.value = picked;
   };
 
   /**

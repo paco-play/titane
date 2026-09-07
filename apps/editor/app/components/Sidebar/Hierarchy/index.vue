@@ -21,14 +21,15 @@
 </template>
 
 <script setup lang="ts">
-import type { HierarchyItem } from '~/composables/sidebar/useHierarchy';
+import { WORLD_HIERARCHY_KEY, type HierarchyItem } from '~/composables/sidebar/useHierarchy';
 
 const { items, selection } = useHierarchy();
 
 /**
- * Picks the icon of a tree row: a folder for branches, a box for leaves.
+ * Picks the icon of a tree row: a globe for World, a folder for branches, a box for leaves.
  */
 const itemIcon = (item: HierarchyItem, expanded: boolean): string => {
+  if (item.value === WORLD_HIERARCHY_KEY) return 'i-lucide-globe';
   if (!item.children) return 'i-lucide-box';
   return expanded ? 'i-lucide-folder-open' : 'i-lucide-folder';
 };

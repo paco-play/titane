@@ -319,6 +319,24 @@ describe('ECS: Scene Serialization', () => {
         });
     });
 
+    it('should round-trip a Transform-less world skybox', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Name, createName('Skybox'));
+        addComponent(world, entity, Skybox, createSkybox('#1e293b', '/assets/sky.png'));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Name)?.value).toBe('Skybox');
+        expect(getComponent(restored, entity, Transform)).toBeUndefined();
+        expect(getComponent(restored, entity, Skybox)).toEqual({
+            color: '#1e293b',
+            cubemap: '/assets/sky.png'
+        });
+    });
+
     it('should fill Skybox fields when an older scene omitted them', () => {
         const restored = deserializeWorld({
             version: SCENE_FORMAT_VERSION,

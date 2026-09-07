@@ -38,7 +38,7 @@
 
         <Transition name="inspector-dock">
           <div
-            v-if="selectedEntityId !== null"
+            v-if="selectedWorld || selectedEntityId !== null"
             class="inspector-dock pointer-events-auto h-full shrink-0 overflow-hidden [--sidebar-width:18rem]"
           >
             <USidebar
@@ -73,6 +73,6 @@
 </template>
 
 <script setup lang="ts">
-const { scriptError, clearScriptError, selectedEntityId } = useTitane();
+const { scriptError, clearScriptError, selectedEntityId, selectedWorld } = useTitane();
 const { pendingExitPlay, keepPlayChanges, discardPlayChanges, dismissPlayExit } = useRuntime();
 </script>
