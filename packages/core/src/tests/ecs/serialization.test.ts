@@ -279,10 +279,31 @@ describe('ECS: Scene Serialization', () => {
         );
 
         expect(getComponent(restored, entity, Camera)).toEqual({
+            projection: 'perspective',
             fov: 60,
+            orthoSize: 5,
             near: 0.2,
             far: 200,
             current: false
+        });
+    });
+
+    it('should round-trip an orthographic camera', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Camera, createCamera(75, 0.1, 1000, true, 'orthographic', 8));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Camera)).toEqual({
+            projection: 'orthographic',
+            fov: 75,
+            orthoSize: 8,
+            near: 0.1,
+            far: 1000,
+            current: true
         });
     });
 
@@ -297,7 +318,9 @@ describe('ECS: Scene Serialization', () => {
         });
 
         expect(getComponent(restored, 0, Camera)).toEqual({
+            projection: 'perspective',
             fov: 75,
+            orthoSize: 5,
             near: 0.1,
             far: 1000,
             current: true

@@ -170,7 +170,7 @@ matrices, and **rendering still runs**, so the viewport stays responsive.
 | Spawn a renderable | `createPrimitive(world, { name, primitive, color, position, rotation, scale })` |
 | Physics body | `addComponent(world, entity, RigidBody, createRigidBody('dynamic' or 'fixed', friction?, restitution?))` |
 | Await Rapier WASM | `await engine.ready` (or `await engine.start()`, which waits on it) |
-| Scene camera | `addComponent(world, entity, Camera, createCamera())`. Play / game look through the `current` one. |
+| Scene camera | `addComponent(world, entity, Camera, createCamera())`. Play / game look through the `current` one. `projection: 'orthographic'` + `orthoSize` in Play / game; edit orbit stays perspective. |
 | Host camera override | `renderer.setCamera({ position, lookAt })` when no ECS camera is current |
 | Add data | `addComponent(world, entity, Type, data)` |
 | Read data | `getComponent(world, entity, Type)` |

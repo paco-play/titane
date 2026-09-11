@@ -23,7 +23,7 @@ import {
     type RendererMode,
     type ThreeRendererOptions
 } from './renderer-mode';
-import { applySceneCamera } from './scene-camera';
+import { applyOrthographicSize, applySceneCamera } from './scene-camera';
 import { ColliderOverlay } from './collider-overlay';
 import type { ColliderOverlayMode } from './collider-visual';
 import { SkyboxApplier } from './skybox';
@@ -48,7 +48,10 @@ export class ThreeRenderer implements IRenderer {
     private chromeEnabled: boolean;
 
     private scene!: THREE.Scene;
-    private camera!: THREE.PerspectiveCamera;
+    private perspective!: THREE.PerspectiveCamera;
+    private orthographic!: THREE.OrthographicCamera;
+    private camera!: THREE.Camera;
+    private audioListener: THREE.AudioListener | undefined;
     private renderer!: THREE.WebGLRenderer;
     private gridHelper: THREE.GridHelper | undefined;
     private colliderOverlay: ColliderOverlay | undefined;
@@ -101,12 +104,13 @@ export class ThreeRenderer implements IRenderer {
      */
     public setEditorChromeEnabled(enabled: boolean): void {
         if (!usesEditorChrome(this.mode)) return;
-        if (this.camera && this.orbit) {
+        if (this.perspective && this.orbit) {
             if (!enabled && this.chromeEnabled) {
-                this.editorPose = captureEditorCamera(this.camera, this.orbit.target);
+                this.editorPose = captureEditorCamera(this.perspective, this.orbit.target);
             }
             if (enabled && !this.chromeEnabled && this.editorPose) {
-                restoreEditorCamera(this.camera, this.orbit.target, this.editorPose);
+                this.camera = this.perspective;
+                restoreEditorCamera(this.perspective, this.orbit.target, this.editorPose);
                 this.orbit.update();
             }
         }
@@ -132,9 +136,11 @@ export class ThreeRenderer implements IRenderer {
         this.scene.background = new THREE.Color(DEFAULT_SKYBOX_COLOR);
         this.skybox = new SkyboxApplier();
 
-        this.camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-        this.camera.position.set(5, 5, 5);
-        this.camera.lookAt(0, 0, 0);
+        this.perspective = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+        this.perspective.position.set(5, 5, 5);
+        this.perspective.lookAt(0, 0, 0);
+        this.orthographic = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
+        this.camera = this.perspective;
 
         this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -153,18 +159,19 @@ export class ThreeRenderer implements IRenderer {
         this.models = new ModelPool(this.scene);
         this.pool = new InstancePool(this.scene, this.resources);
 
-        const audio = createBrowserAudioPool(this.scene, this.camera);
+        const audio = createBrowserAudioPool(this.scene, this.perspective);
         this.audio = audio.pool;
         this.resumeAudio = audio.resume;
         this.disposeAudioListener = audio.disposeListener;
+        this.audioListener = audio.listener;
         canvas.addEventListener('pointerdown', this.resumeAudio);
 
         if (!this.usesEditorChrome) return;
 
         this.gridHelper = new THREE.GridHelper(20, 20, '#444444', '#222222');
         this.scene.add(this.gridHelper);
-        this.orbit = createOrbitControls(this.camera, canvas);
-        this.gizmos.attach(this.camera, canvas, this.scene, this.orbit);
+        this.orbit = createOrbitControls(this.perspective, canvas);
+        this.gizmos.attach(this.perspective, canvas, this.scene, this.orbit);
         this.colliderOverlay = new ColliderOverlay(this.scene, entity => this.localAabb(entity));
     }
 
@@ -173,8 +180,18 @@ export class ThreeRenderer implements IRenderer {
      * No-op until `init` has run.
      */
     public setCamera(pose: CameraPose): void {
-        if (!this.camera) return;
-        applyCameraPose(this.camera, pose);
+        if (!this.perspective) return;
+        applyCameraPose(this.perspective, pose);
+        this.camera = this.perspective;
+    }
+
+    /**
+     * Keeps positional audio on the camera currently drawing the frame.
+     */
+    private bindAudioListener(): void {
+        if (!this.audioListener || this.audioListener.parent === this.camera) return;
+        this.audioListener.removeFromParent();
+        this.camera.add(this.audioListener);
     }
 
     public handleResize(): void {
@@ -186,8 +203,10 @@ export class ThreeRenderer implements IRenderer {
 
     public setSize(width: number, height: number): void {
         this.renderer.setSize(width, height, false);
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
+        const aspect = width / Math.max(1, height);
+        this.perspective.aspect = aspect;
+        this.perspective.updateProjectionMatrix();
+        applyOrthographicSize(this.orthographic, Math.max(this.orthographic.top, 0.001), aspect);
     }
 
     /**
@@ -254,7 +273,18 @@ export class ThreeRenderer implements IRenderer {
         }
 
         this.gizmos.apply();
-        if (!this.chromeEnabled) applySceneCamera(world, this.camera);
+        if (this.chromeEnabled) {
+            this.camera = this.perspective;
+        } else {
+            const canvas = this.renderer.domElement;
+            const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
+            const applied = applySceneCamera(world, {
+                perspective: this.perspective,
+                orthographic: this.orthographic
+            }, aspect);
+            if (applied) this.camera = applied;
+        }
+        this.bindAudioListener();
         this.colliderOverlay?.sync(world, {
             selected: this.gizmos.entity,
             visible: this.chromeEnabled,

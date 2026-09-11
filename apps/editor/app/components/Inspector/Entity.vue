@@ -67,6 +67,8 @@
         @add="addCamera"
         @remove="removeCamera"
         @update-fov="setCameraFov"
+        @update-ortho-size="setCameraOrthoSize"
+        @update-projection="setCameraProjection"
         @update-near="setCameraNear"
         @update-far="setCameraFar"
         @update-current="setCameraCurrent"
@@ -178,6 +180,8 @@ const {
   addCamera,
   removeCamera,
   setCameraFov,
+  setCameraOrthoSize,
+  setCameraProjection,
   setCameraNear,
   setCameraFar,
   setCameraCurrent,

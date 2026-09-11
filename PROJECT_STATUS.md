@@ -288,7 +288,7 @@ Collider wireframe overlay in edit. Engine skybox (default cubemap under `public
 
 ### Phase 7 — Camera and input
 
-Orthographic `Camera`. `pick` / `worldPointFromPointer` on `IRenderer`. Mouse `justPressed`.
+Orthographic `Camera` (`projection` + `orthoSize`) in Play / game; edit orbit stays perspective. `pick` / `worldPointFromPointer` on `IRenderer`. Mouse `justPressed`.
 
 **Done when:** Play uses a current ortho camera; a host picks without casting `ThreeRenderer`; a mouse click is a one-frame impulse.
 

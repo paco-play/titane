@@ -45,6 +45,7 @@ export const createBrowserAudioPool = (scene: THREE.Scene, camera: THREE.Object3
     pool: AudioPool;
     resume: () => void;
     disposeListener: () => void;
+    listener: THREE.AudioListener;
 } => {
     const listener = new THREE.AudioListener();
     camera.add(listener);
@@ -57,6 +58,7 @@ export const createBrowserAudioPool = (scene: THREE.Scene, camera: THREE.Object3
     return {
         pool,
         resume: () => { void listener.context.resume(); },
-        disposeListener: () => { camera.remove(listener); }
+        disposeListener: () => { listener.parent?.remove(listener); },
+        listener
     };
 };

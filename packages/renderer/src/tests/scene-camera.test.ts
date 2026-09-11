@@ -11,17 +11,25 @@ import {
     Transform,
     transformSystem
 } from '@titane/core';
-import { applySceneCamera } from '../scene-camera';
+import { applyOrthographicSize, applySceneCamera } from '../scene-camera';
 import { captureEditorCamera, restoreEditorCamera } from '../editor-camera';
+
+const viewCameras = (): {
+    perspective: THREE.PerspectiveCamera;
+    orthographic: THREE.OrthographicCamera;
+} => ({
+    perspective: new THREE.PerspectiveCamera(75, 1, 0.1, 1000),
+    orthographic: new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000)
+});
 
 describe('applySceneCamera', () => {
     it('does nothing when no camera is current', () => {
         const world = createWorld();
-        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-        camera.position.set(9, 9, 9);
+        const cameras = viewCameras();
+        cameras.perspective.position.set(9, 9, 9);
 
-        expect(applySceneCamera(world, camera)).toBe(false);
-        expect(camera.position.x).toBe(9);
+        expect(applySceneCamera(world, cameras, 1)).toBeNull();
+        expect(cameras.perspective.position.x).toBe(9);
     });
 
     it('writes world pose and projection from the current camera', () => {
@@ -31,13 +39,14 @@ describe('applySceneCamera', () => {
         addComponent(world, entity, Camera, createCamera(60, 0.2, 200));
         transformSystem(world);
 
-        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-        expect(applySceneCamera(world, camera)).toBe(true);
-        expect(camera.position.y).toBeCloseTo(2);
-        expect(camera.position.z).toBeCloseTo(6);
-        expect(camera.fov).toBe(60);
-        expect(camera.near).toBe(0.2);
-        expect(camera.far).toBe(200);
+        const cameras = viewCameras();
+        const applied = applySceneCamera(world, cameras, 1);
+        expect(applied).toBe(cameras.perspective);
+        expect(cameras.perspective.position.y).toBeCloseTo(2);
+        expect(cameras.perspective.position.z).toBeCloseTo(6);
+        expect(cameras.perspective.fov).toBe(60);
+        expect(cameras.perspective.near).toBe(0.2);
+        expect(cameras.perspective.far).toBe(200);
     });
 
     it('uses the parented world pose, not local TRS', () => {
@@ -50,11 +59,39 @@ describe('applySceneCamera', () => {
         setParent(world, child, parent);
         transformSystem(world);
 
-        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-        expect(applySceneCamera(world, camera)).toBe(true);
-        expect(camera.position.x).toBeCloseTo(10);
-        expect(camera.position.y).toBeCloseTo(2);
-        expect(camera.position.z).toBeCloseTo(6);
+        const cameras = viewCameras();
+        expect(applySceneCamera(world, cameras, 1)).toBe(cameras.perspective);
+        expect(cameras.perspective.position.x).toBeCloseTo(10);
+        expect(cameras.perspective.position.y).toBeCloseTo(2);
+        expect(cameras.perspective.position.z).toBeCloseTo(6);
+    });
+
+    it('writes an orthographic frustum from orthoSize', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Transform, createTransform({ x: 1, y: 2, z: 3 }));
+        addComponent(world, entity, Camera, createCamera(75, 0.5, 250, true, 'orthographic', 8));
+        transformSystem(world);
+
+        const cameras = viewCameras();
+        const applied = applySceneCamera(world, cameras, 2);
+        expect(applied).toBe(cameras.orthographic);
+        expect(cameras.orthographic.position.x).toBeCloseTo(1);
+        expect(cameras.orthographic.near).toBe(0.5);
+        expect(cameras.orthographic.far).toBe(250);
+        expect(cameras.orthographic.top).toBe(8);
+        expect(cameras.orthographic.bottom).toBe(-8);
+        expect(cameras.orthographic.right).toBe(16);
+        expect(cameras.orthographic.left).toBe(-16);
+    });
+});
+
+describe('applyOrthographicSize', () => {
+    it('keeps a minimum height and aspect', () => {
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
+        applyOrthographicSize(camera, 0, 0);
+        expect(camera.top).toBe(0.001);
+        expect(camera.right).toBeCloseTo(0.001 * 0.001);
     });
 });
 

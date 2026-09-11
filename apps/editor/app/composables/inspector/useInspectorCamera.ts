@@ -54,6 +54,18 @@ export const useInspectorCamera = () => {
     }, false);
   };
 
+  const setCameraOrthoSize = (orthoSize: number): void => {
+    patchCamera((data) => {
+      data.orthoSize = Math.max(0.001, orthoSize);
+    }, false);
+  };
+
+  const setCameraProjection = (projection: CameraData['projection']): void => {
+    patchCamera((data) => {
+      data.projection = projection;
+    });
+  };
+
   const setCameraNear = (near: number): void => {
     patchCamera((data) => {
       data.near = Math.max(0.001, near);
@@ -85,6 +97,8 @@ export const useInspectorCamera = () => {
     addCamera,
     removeCamera,
     setCameraFov,
+    setCameraOrthoSize,
+    setCameraProjection,
     setCameraNear,
     setCameraFar,
     setCameraCurrent

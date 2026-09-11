@@ -174,7 +174,7 @@ The viewport must show colliders, sky, and the host project.
 
 | # | Task | Detail |
 | --- | --- | --- |
-| 7.1 | Orthographic camera | `Camera.projection` perspective \| orthographic + `orthoSize`. Play / game. Edit orbit stays perspective. |
+| 7.1 | Orthographic camera | **Done.** `Camera.projection` perspective \| orthographic + `orthoSize`. Play / game. Edit orbit stays perspective. |
 | 7.2 | Pick on `IRenderer` | `pick` + `worldPointFromPointer` on the interface (already on `ThreeRenderer`). |
 | 7.3 | Mouse `justPressed` | Same one-frame impulse as keyboard. Held `buttons` stay. |
 

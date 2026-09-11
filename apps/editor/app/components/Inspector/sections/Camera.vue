@@ -18,6 +18,25 @@
           :data-tick="inspectTick"
         >
           <div class="space-y-2">
+            <UiFormLabel label="Projection" />
+            <div class="flex items-center gap-1">
+              <UButton
+                v-for="option in CAMERA_PROJECTION_OPTIONS"
+                :key="option.value"
+                :label="option.label"
+                color="neutral"
+                variant="link"
+                size="xs"
+                :class="camera.projection === option.value ? 'text-highlighted' : undefined"
+                @click="onProjection(option.value)"
+              />
+            </div>
+          </div>
+
+          <div
+            v-if="camera.projection === 'perspective'"
+            class="space-y-2"
+          >
             <UiFormLabel label="Fov" />
             <UInput
               :model-value="camera.fov"
@@ -27,6 +46,22 @@
               :max="179"
               :step="1"
               @update:model-value="onFov"
+              @change="emit('commit')"
+            />
+          </div>
+
+          <div
+            v-else
+            class="space-y-2"
+          >
+            <UiFormLabel label="Ortho size" />
+            <UInput
+              :model-value="camera.orthoSize"
+              type="number"
+              size="xs"
+              :min="0.001"
+              :step="0.1"
+              @update:model-value="onOrthoSize"
               @change="emit('commit')"
             />
           </div>
@@ -87,7 +122,8 @@
 </template>
 
 <script setup lang="ts">
-import type { CameraData } from '@titane/core';
+import type { CameraData, CameraProjection } from '@titane/core';
+import { CAMERA_PROJECTION_OPTIONS } from '~/types/camera';
 
 defineProps<{
   camera: CameraData | null
@@ -98,7 +134,9 @@ defineProps<{
 const emit = defineEmits<{
   add: []
   remove: []
+  updateProjection: [projection: CameraProjection]
   updateFov: [fov: number]
+  updateOrthoSize: [orthoSize: number]
   updateNear: [near: number]
   updateFar: [far: number]
   updateCurrent: [current: boolean]
@@ -115,6 +153,17 @@ const onFov = (raw: string | number | undefined): void => {
   const value = asFinite(raw);
   if (value === null) return;
   emit('updateFov', value);
+};
+
+const onOrthoSize = (raw: string | number | undefined): void => {
+  const value = asFinite(raw);
+  if (value === null) return;
+  emit('updateOrthoSize', value);
+};
+
+const onProjection = (projection: CameraProjection): void => {
+  emit('updateProjection', projection);
+  emit('commit');
 };
 
 const onNear = (raw: string | number | undefined): void => {
