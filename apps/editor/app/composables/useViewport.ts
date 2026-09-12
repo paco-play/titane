@@ -95,6 +95,7 @@ export const useViewport = () => {
 
   /**
    * W / E / R switch gizmo mode while the simulation is paused.
+   * F frames the orbit target on the current selection.
    */
   const onKeyDown = (event: KeyboardEvent): void => {
     if (isPlaying.value) return;
@@ -103,6 +104,9 @@ export const useViewport = () => {
     if (event.code === 'KeyW') gizmoMode.value = 'translate';
     else if (event.code === 'KeyE') gizmoMode.value = 'rotate';
     else if (event.code === 'KeyR') gizmoMode.value = 'scale';
+    else if (event.code === 'KeyF' && selectedEntityId.value !== null) {
+      renderer.value?.focus(selectedEntityId.value);
+    }
   };
 
   /**

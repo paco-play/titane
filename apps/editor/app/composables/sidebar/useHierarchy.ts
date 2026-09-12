@@ -3,9 +3,7 @@ import type { TreeItem } from '@nuxt/ui';
 import { getComponent, Name, Transform } from '@titane/core';
 import { buildIndexedForest } from '~/utils/hierarchy-index';
 import { isHierarchyVisible } from '~/utils/hierarchy-visible';
-
-/** UTree key for the scene row that opens the World inspector. */
-export const WORLD_HIERARCHY_KEY = 'world';
+import { WORLD_HIERARCHY_KEY } from '~/utils/hierarchy-reparent';
 
 export interface HierarchyItem extends TreeItem {
   id?: Entity;
@@ -94,6 +92,8 @@ export const useHierarchy = () => {
    */
   const selectionBridge = computed<HierarchyItem | undefined>({
     get: () => {
+      const tree = hierarchyItems.value;
+      void tree;
       if (selectedWorld.value) {
         return worldNode ?? { label: 'World', value: WORLD_HIERARCHY_KEY };
       }

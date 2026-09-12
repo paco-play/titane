@@ -13,7 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import { addComponent, createPrimitive, Velocity, createVelocity } from '@titane/core';
 import { tryLoadProjectScene } from '~/utils/project-scene';
 import { bootEditorWorld } from '~/utils/boot-editor-world';
 
@@ -43,17 +42,13 @@ onMounted(async () => {
   const engine = initEngine(canvasReference.value);
 
   // Persist on every structural change. Registered before the scene exists
-  // so the first syncWorld() writes the loaded project, not a leftover cube.
+  // so the first syncWorld() writes the loaded project.
   stopEntityWatch = watch(entities, () => saveToStorage());
 
   await bootEditorWorld({
     loadProject: () => tryLoadProjectScene(engine),
     loadAutosave: () => loadFromStorage(),
-    seedEmpty: () => {
-      if (engine.world.entities.active.size > 1) return;
-      const demoCube = createPrimitive(engine.world, { name: 'Demo Cube', color: '#4ade80' });
-      addComponent(engine.world, demoCube, Velocity, createVelocity(0.4, 0, 0));
-    }
+    seedEmpty: () => undefined
   });
   syncWorld();
   captureBaseline();

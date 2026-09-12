@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createWorld } from '../../ecs/kernel/world';
 import { createEntity, destroyEntity } from '../../ecs/kernel/entity';
 import { createPrimitive } from '../../ecs/kernel/factory';
-import { setParent, getChildren } from '../../ecs/kernel/transform-utils';
+import { setParent, getChildren, canSetParent } from '../../ecs/kernel/transform-utils';
 import { getComponent, hasComponent } from '../../ecs/kernel/component';
 import { Transform } from '../../ecs/components/transform';
 import { serializeWorld, deserializeWorld } from '../../ecs/serialization';
@@ -94,5 +94,19 @@ describe('Hierarchy integrity on destroy', () => {
         }
 
         expect(Array.from(world.entities.active)).toEqual([keptRoot]);
+    });
+
+    it('rejects parenting to self or a descendant', () => {
+        const world = createWorld();
+        const parent = createPrimitive(world, { name: 'Parent' });
+        const child = createPrimitive(world, { name: 'Child' });
+        setParent(world, child, parent);
+
+        expect(canSetParent(world, parent, parent)).toBe(false);
+        expect(canSetParent(world, parent, child)).toBe(false);
+        expect(canSetParent(world, child, null)).toBe(true);
+
+        setParent(world, parent, child);
+        expect(getComponent(world, parent, Transform)?.parent).toBeNull();
     });
 });

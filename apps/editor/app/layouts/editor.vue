@@ -22,7 +22,7 @@
           <SidebarHierarchy />
         </USidebar>
 
-        <div class="relative flex-1 min-w-0">
+        <div class="relative flex-1 min-w-0 pointer-events-none">
           <div class="absolute top-0 inset-x-0 flex flex-col items-center gap-2 pointer-events-none">
             <div class="pointer-events-auto">
               <TopbarCanvas />

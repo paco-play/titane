@@ -13,6 +13,7 @@ export type GizmoTransformHandler = (entity: Entity, trs: LocalTrs) => void;
  *
  * Instanced meshes have no per-entity Object3D, so the gizmo is attached to a
  * proxy whose world pose is copied from (and written back to) the ECS.
+ * Pick consumption is tied to a real handle drag, not every canvas `mouseDown`.
  */
 export class GizmoController {
     public onTransform: GizmoTransformHandler | null = null;
@@ -46,11 +47,9 @@ export class GizmoController {
         this.gizmo = createTransformGizmo(camera, canvas, scene);
         this.gizmo.setVisible(false);
 
-        this.gizmo.controls.addEventListener('mouseDown', () => {
-            this.consumedPick = true;
-        });
         this.gizmo.controls.addEventListener('dragging-changed', (event) => {
             this.dragging = event.value === true;
+            if (this.dragging) this.consumedPick = true;
             if (this.orbit) this.orbit.enabled = !this.dragging;
         });
         this.gizmo.controls.addEventListener('objectChange', () => this.commit());
@@ -65,7 +64,6 @@ export class GizmoController {
     public setTarget(entityId: Entity | null): void {
         this.entity = entityId;
         this.apply();
-        if (entityId !== null) this.focus(entityId);
     }
 
     public setMode(mode: GizmoMode): void {

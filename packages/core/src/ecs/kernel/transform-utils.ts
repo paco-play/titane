@@ -8,12 +8,35 @@ import { defineQuery, runQuery } from './query';
 const transformQuery = defineQuery([Transform]);
 
 /**
+ * True when `parentId` can parent `childId` without a cycle.
+ * Unparent (`null`) is always allowed. Self-parent and parenting under a
+ * descendant are rejected.
+ */
+export const canSetParent = (
+    world: World,
+    childId: Entity,
+    parentId: Entity | null
+): boolean => {
+    if (parentId === null) return true;
+    if (parentId === childId) return false;
+
+    let current: Entity | null = parentId;
+    const seen = new Set<Entity>();
+    while (current !== null) {
+        if (current === childId) return false;
+        if (seen.has(current)) return false;
+        seen.add(current);
+        current = getComponent(world, current, Transform)?.parent ?? null;
+    }
+    return true;
+};
+
+/**
  * Sets a parent-child relationship between two entities.
- * @param world - The ECS world instance.
- * @param childId - The entity that will become the child.
- * @param parentId - The entity that will become the parent (or null to detach).
+ * No-op when the link would cycle.
  */
 export const setParent = (world: World, childId: Entity, parentId: Entity | null): void => {
+    if (!canSetParent(world, childId, parentId)) return;
     updateComponent(world, childId, Transform, (transform) => {
         transform.parent = parentId;
         transform.isDirty = true;
