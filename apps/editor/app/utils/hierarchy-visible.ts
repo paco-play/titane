@@ -1,5 +1,5 @@
 import type { Entity, World } from '@titane/core';
-import { hasComponent, Input, PostFx, Skybox, Transform } from '@titane/core';
+import { hasComponent, Input, Nav, PostFx, Skybox, Transform } from '@titane/core';
 
 /**
  * Whether an entity belongs in the Hierarchy tree.
@@ -10,5 +10,7 @@ import { hasComponent, Input, PostFx, Skybox, Transform } from '@titane/core';
 export const isHierarchyVisible = (world: World, entityId: Entity): boolean => {
   if (hasComponent(world, entityId, Input)) return false;
   if (hasComponent(world, entityId, Transform)) return true;
-  return !hasComponent(world, entityId, Skybox) && !hasComponent(world, entityId, PostFx);
+  return !hasComponent(world, entityId, Skybox)
+    && !hasComponent(world, entityId, PostFx)
+    && !hasComponent(world, entityId, Nav);
 };

@@ -24,6 +24,7 @@ const props = defineProps<{
   canAddSound: boolean;
   canAddLight: boolean;
   canAddVfx: boolean;
+  canAddAgent: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -32,6 +33,7 @@ const emit = defineEmits<{
   addSound: [];
   addLight: [];
   addVfx: [];
+  addAgent: [];
 }>();
 
 /**
@@ -66,6 +68,13 @@ const items = computed<DropdownMenuItem[][]>(() => {
       label: 'Vfx',
       icon: 'i-lucide-sparkles',
       onSelect: () => emit('addVfx'),
+    });
+  }
+  if (props.canAddAgent) {
+    builtins.push({
+      label: 'Agent',
+      icon: 'i-lucide-bot',
+      onSelect: () => emit('addAgent'),
     });
   }
 

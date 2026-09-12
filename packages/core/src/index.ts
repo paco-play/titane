@@ -17,6 +17,7 @@ export * from './ecs/kernel/transform-utils';
 export * from './ecs/kernel/camera-utils';
 export * from './ecs/kernel/skybox-utils';
 export * from './ecs/kernel/post-fx-utils';
+export * from './ecs/kernel/nav-utils';
 
 // Schema DSL
 export * from './ecs/schema';
@@ -42,6 +43,8 @@ export * from './ecs/components/camera';
 export * from './ecs/components/skybox';
 export * from './ecs/components/vfx';
 export * from './ecs/components/post-fx';
+export * from './ecs/components/nav';
+export * from './ecs/components/agent';
 
 // Built-in Systems
 export * from './ecs/systems/movement';
@@ -52,6 +55,10 @@ export * from './ecs/systems/physics-player-control';
 export * from './ecs/systems/physics';
 export * from './ecs/systems/trigger';
 export * from './ecs/systems/user-lifecycle';
+export * from './ecs/systems/agent';
+export * from './nav/bake';
+export * from './nav/astar';
+export * from './nav/bounds';
 
 // Scene Persistence
 export * from './ecs/serialization';

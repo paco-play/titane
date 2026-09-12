@@ -186,10 +186,12 @@ The viewport must show colliders, sky, and the host project.
 
 | # | Task | Detail |
 | --- | --- | --- |
-| 8.1 | `Vfx` component | Burst / loop, lifetime, rate, color, size, `field.asset()` texture. Data in `.titane`. |
-| 8.2 | Renderer pool | CPU quads. Not one Entity per particle. |
+| 8.1 | `Vfx` component | Burst / loop, lifetime, rate, color, size, `field.asset()` texture. Data in `.titane`. **Done.** |
+| 8.2 | Renderer pool | CPU quads. Not one Entity per particle. **Done.** |
 
 **Done when:** Add Component `Vfx` → Play → particles → save/reload → same asset and params.
+
+World post filters (`PostFx`: bloom / exposure / contrast / saturation / tint / vignette) ship with this phase. Authored from the Hierarchy **World** row, same Transform-less pattern as Skybox.
 
 ---
 
@@ -197,10 +199,18 @@ The viewport must show colliders, sky, and the host project.
 
 | # | Task | Detail |
 | --- | --- | --- |
-| 9.1 | Nav data | Bake from walkable colliders (grid or simple navmesh). Optional debug draw (same family as 6.1). |
-| 9.2 | `Agent` | Destination, speed. System moves `Transform` (and the Rapier body when present). Mobs and objects. |
+| 9.1 | Nav data | Bake from walkable colliders (grid or simple navmesh). Optional debug draw (same family as 6.1). **Done.** |
+| 9.2 | `Agent` | Destination, speed. System moves `Transform` (and the Rapier body when present). Mobs and objects. **Done.** |
 
 **Done when:** an Agent walks A → B around baked colliders in Play, with no ad-hoc grid in game code.
+
+Authored paths (waypoints / spline drawn in the editor, loops for ambient movers) are not this phase.
+
+---
+
+## Later — Authored paths
+
+Manual path in the editor: waypoints or a spline, loop playback. For ambient movers (birds left → right), not nav-bake A → B.
 
 ---
 

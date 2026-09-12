@@ -3,6 +3,7 @@ import {
   Input,
   Mesh,
   Name,
+  Nav,
   PostFx,
   Skybox,
   Transform,
@@ -11,6 +12,7 @@ import {
   createDefaultInput,
   createMesh,
   createName,
+  createNav,
   createPostFx,
   createSkybox,
   createTransform,
@@ -41,6 +43,15 @@ describe('isHierarchyVisible', () => {
     const entity = createEntity(world);
     addComponent(world, entity, Name, createName('PostFx'));
     addComponent(world, entity, PostFx, createPostFx());
+
+    expect(isHierarchyVisible(world, entity)).toBe(false);
+  });
+
+  it('hides a Transform-less Nav entity', () => {
+    const world = createWorld();
+    const entity = createEntity(world);
+    addComponent(world, entity, Name, createName('Nav'));
+    addComponent(world, entity, Nav, createNav());
 
     expect(isHierarchyVisible(world, entity)).toBe(false);
   });

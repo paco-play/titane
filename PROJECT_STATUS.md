@@ -32,7 +32,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 7 — Camera and input.** Orthographic camera, `IRenderer.pick` / `worldPointFromPointer`, mouse `justPressed`. Numbered phases 0–7 are complete. Next is Phase 8. Contract: `docs/ROADMAP.md`.
+**Phase 9 — Pathfinding.** Nav bake from walkable colliders and `Agent` A → B. Numbered phases 0–9 are complete. Authored looping paths are later. Contract: `docs/ROADMAP.md`.
 
 The Drop demo (`apps/demo`) and **Preview in Demo** live-preview are gone. A game is `npm run create`.
 
@@ -296,14 +296,16 @@ Orthographic `Camera` (`projection` + `orthoSize`) in Play / game; edit orbit st
 
 **Done when:** Play uses a current ortho camera; a host picks without casting `ThreeRenderer`; a mouse click is a one-frame impulse.
 
-### Phase 8 — VFX
+### Phase 8 — VFX — done
 
-`Vfx` component (burst/loop, lifetime, rate, color, size, texture asset). Renderer particle pool (CPU quads, not one Entity per particle).
+`Vfx` emitter (burst/loop, lifetime, rate, color, size, texture). Renderer CPU quad pool. World `PostFx` filters (bloom + color grade + vignette) on the Hierarchy World row.
 
 **Done when:** Add Component `Vfx` → Play → particles → save/reload → same asset and params.
 
-### Phase 9 — Pathfinding
+### Phase 9 — Pathfinding — done
 
 Nav bake from walkable colliders. `Agent` moves `Transform` (and Rapier body when present). Optional nav debug draw.
 
 **Done when:** an Agent walks A → B around baked colliders in Play, with no ad-hoc grid in game code.
+
+Authored looping paths (waypoints / spline) are later, not this phase.

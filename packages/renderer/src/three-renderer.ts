@@ -26,6 +26,7 @@ import {
 import { applyOrthographicSize, applySceneCamera } from './scene-camera';
 import { ColliderOverlay } from './collider-overlay';
 import type { ColliderOverlayMode } from './collider-visual';
+import { NavOverlay } from './nav-overlay';
 import { SkyboxApplier } from './skybox';
 import { VfxPool } from './vfx-pool';
 import { PostFxComposer } from './post-fx';
@@ -57,6 +58,7 @@ export class ThreeRenderer implements IRenderer {
     private renderer!: THREE.WebGLRenderer;
     private gridHelper: THREE.GridHelper | undefined;
     private colliderOverlay: ColliderOverlay | undefined;
+    private navOverlay: NavOverlay | undefined;
     private skybox: SkyboxApplier | undefined;
     private orbit: OrbitControls | undefined;
     private pool: InstancePool | undefined;
@@ -179,6 +181,7 @@ export class ThreeRenderer implements IRenderer {
         this.orbit = createOrbitControls(this.perspective, canvas);
         this.gizmos.attach(this.perspective, canvas, this.scene, this.orbit);
         this.colliderOverlay = new ColliderOverlay(this.scene, entity => this.localAabb(entity));
+        this.navOverlay = new NavOverlay(this.scene);
     }
 
     /**
@@ -230,6 +233,13 @@ export class ThreeRenderer implements IRenderer {
      */
     public setColliderOverlayMode(mode: ColliderOverlayMode): void {
         this.colliderOverlay?.setMode(mode);
+    }
+
+    /**
+     * Walkable nav-grid quads. Editor chrome, deliberately absent from `IRenderer`.
+     */
+    public setNavOverlayVisible(visible: boolean): void {
+        this.navOverlay?.setVisible(visible);
     }
 
     /**
@@ -303,6 +313,7 @@ export class ThreeRenderer implements IRenderer {
                 return getComponent(world, entity, Transform)?.worldMatrix ?? null;
             }
         });
+        this.navOverlay?.sync(world, this.chromeEnabled);
         this.skybox?.apply(world, this.scene);
         if (this.postFx) this.postFx.render(world, this.camera);
         else this.renderer.render(this.scene, this.camera);
@@ -386,6 +397,7 @@ export class ThreeRenderer implements IRenderer {
     public dispose(): void {
         this.skybox?.dispose();
         this.colliderOverlay?.dispose();
+        this.navOverlay?.dispose();
         this.gizmos.dispose();
         this.orbit?.dispose();
         this.lights?.dispose();

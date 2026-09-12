@@ -96,6 +96,7 @@
         @update-size="setColliderSize"
         @update-radius="setColliderRadius"
         @update-height="setColliderHeight"
+        @update-walkable="setColliderWalkable"
         @commit="saveToStorage"
       />
       <InspectorPlayer
@@ -131,11 +132,13 @@
         :can-add-sound="!sound"
         :can-add-light="!light"
         :can-add-vfx="!hasVfx"
+        :can-add-agent="!hasAgent"
         @add="addUserComponent"
         @add-gltf="addGltf"
         @add-sound="addSound"
         @add-light="addLight"
         @add-vfx="addVfx"
+        @add-agent="addAgent"
       />
     </div>
   </div>
@@ -207,6 +210,7 @@ const {
   setColliderSize,
   setColliderRadius,
   setColliderHeight,
+  setColliderWalkable,
   fitColliderToModel
 } = useInspectorCollider();
 const {
@@ -215,8 +219,10 @@ const {
   availableTypes,
   entityOptions,
   hasVfx,
+  hasAgent,
   addUserComponent,
   addVfx,
+  addAgent,
   dropUserComponent,
   setField,
   dropOrphan,

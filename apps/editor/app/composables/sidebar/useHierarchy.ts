@@ -73,7 +73,7 @@ export const useHierarchy = () => {
 
     const world = engine.value.world;
 
-    const forest = buildIndexedForest(visibleEntities.value, resolveDisplayParent, (entityId, children) => {
+    const forest = buildIndexedForest<HierarchyItem>(visibleEntities.value, resolveDisplayParent, (entityId, children) => {
       const name = getComponent(world, entityId, Name);
       const node: HierarchyItem = {
         id: entityId,

@@ -53,6 +53,14 @@
       :title="colliderOverlayMode === 'all' ? 'Collider overlay: all' : 'Collider overlay: selection'"
       @click="toggleColliderOverlay"
     />
+    <UButton
+      :icon="isNavOverlayVisible ? 'i-lucide-route' : 'i-lucide-route-off'"
+      color="neutral"
+      variant="ghost"
+      square
+      :title="isNavOverlayVisible ? 'Nav overlay: on' : 'Nav overlay: off'"
+      @click="toggleNavOverlay"
+    />
   </UCard>
 </template>
 
@@ -66,6 +74,8 @@ const {
   toggleGrid,
   colliderOverlayMode,
   toggleColliderOverlay,
+  isNavOverlayVisible,
+  toggleNavOverlay,
   resetScene,
   canReset,
   stepFrame

@@ -32,6 +32,17 @@
         @reset="resetPostFx"
         @commit="saveToStorage"
       />
+      <InspectorNavigation
+        :nav="nav"
+        :authored="navAuthored"
+        :inspect-tick="inspectTick"
+        @update-cell-size="setCellSize"
+        @update-agent-radius="setAgentRadius"
+        @update-agent-height="setAgentHeight"
+        @bake="bakeNav"
+        @clear="clearNavGrid"
+        @commit="saveToStorage"
+      />
     </div>
   </div>
 </template>
@@ -57,4 +68,13 @@ const {
   setVignette,
   resetPostFx
 } = useInspectorWorldPostFx();
+const {
+  nav,
+  authored: navAuthored,
+  bake: bakeNav,
+  clear: clearNavGrid,
+  setCellSize,
+  setAgentRadius,
+  setAgentHeight
+} = useInspectorWorldNav();
 </script>

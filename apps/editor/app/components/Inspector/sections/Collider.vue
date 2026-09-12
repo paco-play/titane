@@ -91,6 +91,12 @@
             @click="emit('fit')"
           />
 
+          <InspectorBooleanField
+            label="Walkable"
+            :value="collider.walkable"
+            @update="emit('updateWalkable', $event)"
+          />
+
           <UButton
             label="Remove"
             color="neutral"
@@ -144,6 +150,7 @@ const emit = defineEmits<{
   updateSize: [size: Vec3]
   updateRadius: [radius: number]
   updateHeight: [height: number]
+  updateWalkable: [walkable: boolean]
   commit: []
 }>();
 

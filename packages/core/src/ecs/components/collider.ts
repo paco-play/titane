@@ -23,6 +23,8 @@ export interface ColliderData {
     radius: number;
     /** Capsule cylindrical length along local Y. */
     height: number;
+    /** When true, this collider's XZ footprint is a nav floor during bake. */
+    walkable: boolean;
 }
 
 const DEFAULT_SIZE: Vec3 = { x: 1, y: 1, z: 1 };
@@ -54,7 +56,8 @@ export const createCollider = (kind: ColliderKind = 'box'): ColliderData => ({
     center: cloneVec3(DEFAULT_CENTER),
     size: cloneVec3(DEFAULT_SIZE),
     radius: 0.5,
-    height: 1
+    height: 1,
+    walkable: false
 });
 
 const reviveCollider = (raw: unknown): ColliderData => {
@@ -64,6 +67,7 @@ const reviveCollider = (raw: unknown): ColliderData => {
     created.size = asVec3(source.size, DEFAULT_SIZE);
     created.radius = Math.max(0.001, asFinite(source.radius, 0.5));
     created.height = Math.max(0.001, asFinite(source.height, 1));
+    created.walkable = source.walkable === true;
     return created;
 };
 

@@ -99,6 +99,13 @@ export const useInspectorCollider = () => {
     });
   };
 
+  const setColliderWalkable = (walkable: boolean): void => {
+    patchCollider((data) => {
+      data.walkable = walkable;
+    });
+    saveToStorage();
+  };
+
   const fitColliderToModel = (): void => {
     if (selectedEntityId.value === null || !renderer.value) return;
     const aabb = renderer.value.localAabb(selectedEntityId.value);
@@ -130,6 +137,7 @@ export const useInspectorCollider = () => {
     setColliderSize,
     setColliderRadius,
     setColliderHeight,
+    setColliderWalkable,
     fitColliderToModel
   };
 };

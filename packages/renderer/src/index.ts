@@ -19,6 +19,7 @@ export * from './local-trs';
 export * from './gizmo';
 export * from './collider-visual';
 export * from './collider-overlay';
+export * from './nav-overlay';
 export * from './skybox';
 export * from './vfx-pool';
 export * from './vfx-particles';

@@ -8,6 +8,7 @@ import {
   removeComponent,
   removeOrphan,
   updateComponent,
+  Agent,
   Vfx,
   type AnyComponentType,
   type AnyFieldDef,
@@ -57,7 +58,7 @@ export const useInspectorUser = () => {
     if (!host || !engine.value) return [];
 
     const sections: InspectedUserComponent[] = [];
-    const types: AnyComponentType[] = [Vfx, ...engine.value.getUserComponents()];
+    const types: AnyComponentType[] = [Vfx, Agent, ...engine.value.getUserComponents()];
     const seen = new Set<string>();
     for (const type of types) {
       if (!type.schema || seen.has(type.id)) continue;
@@ -145,8 +146,19 @@ export const useInspectorUser = () => {
     return hasComponent(host.world, host.entity, Vfx);
   });
 
+  const hasAgent = computed<boolean>(() => {
+    void inspectTick.value;
+    const host = selected();
+    if (!host) return false;
+    return hasComponent(host.world, host.entity, Agent);
+  });
+
   const addVfx = (): void => {
     addUserComponent(Vfx);
+  };
+
+  const addAgent = (): void => {
+    addUserComponent(Agent);
   };
 
   return {
@@ -155,8 +167,10 @@ export const useInspectorUser = () => {
     availableTypes,
     entityOptions,
     hasVfx,
+    hasAgent,
     addUserComponent,
     addVfx,
+    addAgent,
     dropUserComponent,
     setField,
     dropOrphan,

@@ -6,6 +6,7 @@ import { markPersistenceDirty } from '~/utils/persistence-dirty';
 const isPlaying = ref<boolean>(false);
 const isGridVisible = ref<boolean>(true);
 const colliderOverlayMode = ref<ColliderOverlayMode>('selected');
+const isNavOverlayVisible = ref<boolean>(true);
 const pendingExitPlay = ref<boolean>(false);
 
 /** Scene as it was after the last load or first seed. Independent of play snapshots. */
@@ -50,6 +51,7 @@ export const useRuntime = () => {
     if (!playing) {
       renderer.value.setGridVisible(isGridVisible.value);
       renderer.value.setColliderOverlayMode(colliderOverlayMode.value);
+      renderer.value.setNavOverlayVisible(isNavOverlayVisible.value);
     }
   };
 
@@ -133,6 +135,16 @@ export const useRuntime = () => {
   };
 
   /**
+   * Toggles walkable nav-grid quads in the viewport.
+   */
+  const toggleNavOverlay = (): void => {
+    if (!renderer.value) return;
+
+    isNavOverlayVisible.value = !isNavOverlayVisible.value;
+    if (!isPlaying.value) renderer.value.setNavOverlayVisible(isNavOverlayVisible.value);
+  };
+
+  /**
    * Advances the simulation by one fixed timestep without entering play mode.
    */
   const stepFrame = (): void => {
@@ -175,6 +187,8 @@ export const useRuntime = () => {
     toggleGrid,
     colliderOverlayMode,
     toggleColliderOverlay,
+    isNavOverlayVisible,
+    toggleNavOverlay,
     stepFrame,
     captureBaseline,
     resetScene,

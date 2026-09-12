@@ -2,6 +2,7 @@ import type { Scheduler } from './scheduler';
 import type { IRenderer } from '../../runtime/renderer-interface';
 import { registerSystem } from './scheduler';
 import { Phase } from './system';
+import { agentSystem } from '../systems/agent';
 import { integrateVelocitySystem } from '../systems/movement';
 import { rapierPhysicsSystem } from '../systems/physics';
 import { clearInputSystem } from '../systems/input-system';
@@ -23,6 +24,11 @@ export const setupDefaultPipeline = (
     renderer: IRenderer,
     isPaused: () => boolean
 ): void => {
+    registerSystem(scheduler, Phase.UPDATE, (world, deltaTime) => {
+        if (isPaused()) return;
+        agentSystem(world, deltaTime);
+    });
+
     registerSystem(scheduler, Phase.PHYSICS, (world, deltaTime) => {
         if (isPaused()) return;
         integrateVelocitySystem(world, deltaTime);
