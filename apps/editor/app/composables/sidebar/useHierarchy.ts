@@ -18,7 +18,8 @@ export interface HierarchyItem extends TreeItem {
  * @returns The hierarchy items, the count of visible entities and the selection bridge.
  */
 export const useHierarchy = () => {
-  const { engine, entities, selectedEntityId, selectedWorld } = useTitane();
+  const { engine, renderer, entities, selectedEntityId, selectedWorld } = useTitane();
+  const { isPlaying } = useRuntime();
 
   /**
    * Internal cache used to map Entity IDs to their respective TreeItem objects.
@@ -113,7 +114,11 @@ export const useHierarchy = () => {
       }
 
       selectedWorld.value = false;
-      selectedEntityId.value = incomingSelection?.id ?? null;
+      const entityId = incomingSelection?.id ?? null;
+      selectedEntityId.value = entityId;
+      if (entityId !== null && !isPlaying.value) {
+        renderer.value?.focus(entityId);
+      }
     }
   });
 

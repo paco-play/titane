@@ -13,15 +13,6 @@
       color="success"
     />
     <UButton
-      icon="i-lucide-rotate-ccw"
-      color="neutral"
-      variant="ghost"
-      square
-      title="Reset scene"
-      :disabled="!canReset || isPlaying"
-      @click="resetScene"
-    />
-    <UButton
       :icon="isPlaying ? 'i-lucide-pause' : 'i-lucide-play'"
       :color="isPlaying ? 'primary' : 'neutral'"
       :variant="isPlaying ? 'soft' : 'ghost'"
@@ -60,6 +51,16 @@
       square
       :title="isNavOverlayVisible ? 'Nav overlay: on' : 'Nav overlay: off'"
       @click="toggleNavOverlay"
+    />
+    <USeparator orientation="vertical" class="h-5" />
+    <UButton
+      icon="i-lucide-rotate-ccw"
+      color="neutral"
+      variant="ghost"
+      square
+      title="Reset scene"
+      :disabled="!canReset || isPlaying"
+      @click="resetScene"
     />
   </UCard>
 </template>

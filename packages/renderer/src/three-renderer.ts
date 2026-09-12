@@ -27,6 +27,7 @@ import { applyOrthographicSize, applySceneCamera } from './scene-camera';
 import { ColliderOverlay } from './collider-overlay';
 import type { ColliderOverlayMode } from './collider-visual';
 import { NavOverlay } from './nav-overlay';
+import { CameraOverlay, entityOfCameraGlyph } from './camera-overlay';
 import { SkyboxApplier } from './skybox';
 import { VfxPool } from './vfx-pool';
 import { PostFxComposer } from './post-fx';
@@ -59,6 +60,7 @@ export class ThreeRenderer implements IRenderer {
     private gridHelper: THREE.GridHelper | undefined;
     private colliderOverlay: ColliderOverlay | undefined;
     private navOverlay: NavOverlay | undefined;
+    private cameraOverlay: CameraOverlay | undefined;
     private skybox: SkyboxApplier | undefined;
     private orbit: OrbitControls | undefined;
     private pool: InstancePool | undefined;
@@ -182,6 +184,7 @@ export class ThreeRenderer implements IRenderer {
         this.gizmos.attach(this.perspective, canvas, this.scene, this.orbit);
         this.colliderOverlay = new ColliderOverlay(this.scene, entity => this.localAabb(entity));
         this.navOverlay = new NavOverlay(this.scene);
+        this.cameraOverlay = new CameraOverlay(this.scene);
     }
 
     /**
@@ -314,6 +317,15 @@ export class ThreeRenderer implements IRenderer {
             }
         });
         this.navOverlay?.sync(world, this.chromeEnabled);
+        this.cameraOverlay?.sync(world, {
+            visible: this.chromeEnabled,
+            worldMatrixOf: entity => {
+                if (this.gizmos.dragging && entity === this.gizmos.entity) {
+                    return this.gizmos.draggedMatrix();
+                }
+                return getComponent(world, entity, Transform)?.worldMatrix ?? null;
+            }
+        });
         this.skybox?.apply(world, this.scene);
         if (this.postFx) this.postFx.render(world, this.camera);
         else this.renderer.render(this.scene, this.camera);
@@ -331,11 +343,14 @@ export class ThreeRenderer implements IRenderer {
 
         const targets = [
             ...this.pool.pickables(),
-            ...(this.models?.pickables() ?? [])
+            ...(this.models?.pickables() ?? []),
+            ...(this.cameraOverlay?.pickables() ?? [])
         ];
 
         return entityFromHits(raycaster.intersectObjects(targets, true), (object, instanceId) =>
-            this.pool?.entityOf(object, instanceId) ?? this.models?.entityOf(object)
+            this.pool?.entityOf(object, instanceId)
+            ?? this.models?.entityOf(object)
+            ?? entityOfCameraGlyph(object)
         );
     }
 
@@ -349,7 +364,8 @@ export class ThreeRenderer implements IRenderer {
         raycaster.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), this.camera);
         const targets = [
             ...(this.pool?.pickables() ?? []),
-            ...(this.models?.pickables() ?? [])
+            ...(this.models?.pickables() ?? []),
+            ...(this.cameraOverlay?.pickables() ?? [])
         ];
         return worldPointFromRay(raycaster, targets);
     }
@@ -398,6 +414,7 @@ export class ThreeRenderer implements IRenderer {
         this.skybox?.dispose();
         this.colliderOverlay?.dispose();
         this.navOverlay?.dispose();
+        this.cameraOverlay?.dispose();
         this.gizmos.dispose();
         this.orbit?.dispose();
         this.lights?.dispose();

@@ -4,6 +4,7 @@ import { getComponent, Transform } from '@titane/core';
 import { worldMatrixToLocalTrs, type LocalTrs } from './local-trs';
 import { createTransformGizmo, type GizmoMode, type TransformGizmo } from './gizmo';
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { panOrbitToFocus } from './frame-orbit';
 
 /** Called when the gizmo writes a new local TRS for an entity. */
 export type GizmoTransformHandler = (entity: Entity, trs: LocalTrs) => void;
@@ -85,7 +86,11 @@ export class GizmoController {
         if (!transform) return;
 
         this.focusPoint.setFromMatrixPosition(this.scratchFocus.fromArray(transform.worldMatrix));
-        this.orbit.target.copy(this.focusPoint);
+        const camera = this.orbit.object;
+        const framed = panOrbitToFocus(camera.position, this.orbit.target, this.focusPoint);
+        camera.position.set(framed.camera.x, framed.camera.y, framed.camera.z);
+        this.orbit.target.set(framed.target.x, framed.target.y, framed.target.z);
+        this.orbit.update();
     }
 
     /**
