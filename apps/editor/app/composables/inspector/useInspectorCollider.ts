@@ -2,10 +2,9 @@ import {
   addComponent,
   Collider,
   createCollider,
-  createRigidBody,
+  ensureRigidBodyForCollider,
   getComponent,
   hasComponent,
-  RigidBody,
   removeComponent,
   updateComponent,
   type ColliderData,
@@ -30,34 +29,22 @@ export const useInspectorCollider = () => {
     return getComponent(engine.value.world, selectedEntityId.value, Collider) ?? null;
   });
 
-  const ensureFixedRigidBody = (): void => {
-    if (selectedEntityId.value === null || !engine.value) return;
-    const world = engine.value.world;
-    const entity = selectedEntityId.value;
-    if (!hasComponent(world, entity, RigidBody)) {
-      addComponent(world, entity, RigidBody, createRigidBody('fixed'));
-      return;
-    }
-    updateComponent(world, entity, RigidBody, (data) => {
-      data.kind = 'fixed';
-    });
-  };
-
   const asColliderKind = (kind: ColliderKind | unknown): ColliderKind =>
     kind === 'sphere' || kind === 'capsule' || kind === 'mesh' || kind === 'box' ? kind : 'box';
 
   const addCollider = (kind: ColliderKind | unknown = 'box'): void => {
     const resolvedKind = asColliderKind(kind);
     if (selectedEntityId.value === null || !engine.value) return;
-    ensureFixedRigidBody();
-    if (!hasComponent(engine.value.world, selectedEntityId.value, Collider)) {
-      addComponent(engine.value.world, selectedEntityId.value, Collider, createCollider(resolvedKind));
+    const world = engine.value.world;
+    const entity = selectedEntityId.value;
+    ensureRigidBodyForCollider(world, entity, resolvedKind);
+    if (!hasComponent(world, entity, Collider)) {
+      addComponent(world, entity, Collider, createCollider(resolvedKind));
     } else {
-      updateComponent(engine.value.world, selectedEntityId.value, Collider, (data) => {
+      updateComponent(world, entity, Collider, (data) => {
         data.kind = resolvedKind;
       });
     }
-    if (resolvedKind === 'mesh') ensureFixedRigidBody();
     notifyInspect();
     markDirty();
     saveToStorage();
@@ -82,7 +69,9 @@ export const useInspectorCollider = () => {
     patchCollider((data) => {
       data.kind = kind;
     });
-    if (kind === 'mesh') ensureFixedRigidBody();
+    if (selectedEntityId.value !== null && engine.value) {
+      ensureRigidBodyForCollider(engine.value.world, selectedEntityId.value, kind);
+    }
     saveToStorage();
   };
 

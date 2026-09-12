@@ -17,5 +17,6 @@ describe('ECS: Input Component', () => {
         expect(inputState.mouse.x).toBe(0);
         expect(inputState.mouse.y).toBe(0);
         expect(inputState.mouse.buttons).toEqual([false, false, false]);
+        expect(inputState.mouse.justPressed).toEqual([false, false, false]);
     });
 });

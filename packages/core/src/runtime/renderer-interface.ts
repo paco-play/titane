@@ -1,5 +1,6 @@
 import { World } from '../ecs/kernel/world';
 import type { Entity } from '../ecs/types';
+import type { Vec3 } from '../ecs/components/transform';
 
 /**
  * Packed triangle mesh in the entity's local space, used to build a Rapier trimesh.
@@ -49,6 +50,17 @@ export interface IRenderer {
      * Cleans up all GPU resources.
      */
     dispose(): void;
+
+    /**
+     * Entity under the pointer, or `null` on a miss.
+     * Game hosts call this on `engine.renderer` — no driver cast.
+     */
+    pick(clientX: number, clientY: number): Entity | null;
+
+    /**
+     * World point under the pointer: first mesh hit, else the `y = 0` plane.
+     */
+    worldPointFromPointer(clientX: number, clientY: number): Vec3;
 
     /**
      * Triangle mesh for a `Collider` of kind `mesh`. Optional: headless

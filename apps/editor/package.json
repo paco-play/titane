@@ -20,17 +20,17 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/ui": "^4.6.0",
+    "@nuxt/ui": "^4.11.1",
     "@titane/core": "file:../../packages/core",
     "@titane/renderer": "file:../../packages/renderer",
-    "nuxt": "^4.4.2",
+    "nuxt": "^4.5.2",
     "tailwindcss": "^4.2.2",
-    "vue": "^3.5.30",
+    "vue": "^3.5.42",
     "vue-router": "^5.0.3"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
     "vue-tsc": "^3.3.11",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.11"
   }
 }

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TitaneEngine } from '../../runtime/engine';
-import type { IRenderer } from '../../runtime/renderer-interface';
 import { createPrimitive } from '../../ecs/kernel/factory';
 import { addComponent } from '../../ecs/kernel/component';
 import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
@@ -9,14 +8,7 @@ import { Phase } from '../../ecs/pipeline/system';
 import { getPhysicsSession, getIntersections } from '../../physics/session';
 import { createTriggerSystem } from '../../ecs/systems/trigger';
 import type { Entity } from '../../ecs/types';
-
-const createMockRenderer = (): IRenderer => ({
-    init: vi.fn(),
-    render: vi.fn(),
-    handleResize: vi.fn(),
-    setSize: vi.fn(),
-    dispose: vi.fn()
-});
+import { createMockRenderer } from '../mock-renderer';
 
 const createMockCanvas = (): HTMLCanvasElement => ({
     addEventListener: vi.fn(),

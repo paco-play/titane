@@ -33,6 +33,18 @@ describe('ECS: clearInputSystem', () => {
         // The impulses must vanish
         expect(Object.keys(input.justPressed).length).toBe(0);
         // But held keys must persist across frames
-        expect(input.keys['KeyW']).toBe(true); 
+        expect(input.keys['KeyW']).toBe(true);
+    });
+
+    it('should clear mouse justPressed while held buttons stay', () => {
+        let input = getComponent(world, inputEntity, Input)!;
+        input.mouse.buttons[0] = true;
+        input.mouse.justPressed[0] = true;
+
+        clearInputSystem(world);
+
+        input = getComponent(world, inputEntity, Input)!;
+        expect(input.mouse.justPressed).toEqual([false, false, false]);
+        expect(input.mouse.buttons[0]).toBe(true);
     });
 });

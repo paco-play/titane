@@ -88,6 +88,9 @@ export class InputDriver {
     private onMouseDown(event: MouseEvent): void {
         updateComponent(this.world, this.inputEntityId, Input, (input) => {
             if (event.button >= 0 && event.button <= 2) {
+                if (!input.mouse.buttons[event.button]) {
+                    input.mouse.justPressed[event.button] = true;
+                }
                 input.mouse.buttons[event.button] = true;
             }
         });

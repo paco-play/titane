@@ -65,5 +65,6 @@ export * from './utils/clock';
 export * from './utils/math';
 export * from './utils/fixed-step';
 export { initPhysics, isPhysicsReady, getIntersections, setMeshColliderGeometryProvider } from './physics/session';
+export { rigidKindForCollider, ensureRigidBodyForCollider } from './physics/authoring';
 export { colliderHalfHeight, colliderHalfHeightOfBinding, isBodyGrounded } from './physics/ground';
 export { moveAxesFromInput, PLAYER_MOVE_SPEED, PLAYER_JUMP_SPEED } from './ecs/systems/move-axes';

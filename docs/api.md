@@ -6,7 +6,7 @@ Public entry points. Types travel with the handles; there is no `any` in the eng
 
 | Name | Role |
 | --- | --- |
-| `TitaneEngine` | World, scheduler, play/pause/step, `loadWorld`, snapshots |
+| `TitaneEngine` | World, scheduler, play/pause/step, `loadWorld`, snapshots. `engine.renderer.pick` / `worldPointFromPointer` |
 | `engine.use` / `applyTitaneConfig` | Register plugins from `titane.config.ts` |
 | `engine.registerComponent` | User type → Add Component + batched lifecycle |
 | `engine.getUserComponents` | Types listed in the Inspector |
@@ -21,14 +21,14 @@ Public entry points. Types travel with the handles; there is no `any` in the eng
 | `serializePrefab` / `instantiatePrefab` | Subtree templates (`public/prefabs`) |
 | `TitanePlugin` / `TitaneConfig` | Host seam |
 
-Built-in components include `Transform`, `Mesh`, `Name`, `Velocity`, `Light`, `Gltf` (`url`, `clip`, `playing`, `loop`, `fade`), `Sound`, `Camera` (`projection` perspective \| orthographic, `fov`, `orthoSize`, `near`, `far`, `current`), `Skybox` (`color`, `cubemap` raster URL or cube-face folder), `RigidBody` (`kind`, `friction`, `restitution`), `Collider` (`kind` box/sphere/capsule/mesh, `center`, `size`, `radius`, `height`), `Sensor`, `PlayerControlled`, `Input`. `pickCurrentCamera` / `setCurrentCamera` choose which camera Play and game mode use. `pickSkybox` selects the first authored sky. `ensureSkybox` / `clearSkybox` create or drop a Transform-less sky entity. No `Skybox` uses `/engine/sky_118_cubemap_2k`; empty `cubemap` (or a failed load) is a gradient tinted by `color`. A `Collider` overrides `Mesh.primitive` for physics. `mesh` colliders are Rapier trimeshes from the loaded glTF (not stored in `.titane`) and force a fixed body. Changing `Gltf.clip` while playing crossfades when `fade` is greater than 0; `fade === 0` is a hard cut.
+Built-in components include `Transform`, `Mesh`, `Name`, `Velocity`, `Light`, `Gltf` (`url`, `clip`, `playing`, `loop`, `fade`), `Sound`, `Camera` (`projection` perspective \| orthographic, `fov`, `orthoSize`, `near`, `far`, `current`), `Skybox` (`color`, `cubemap` raster URL or cube-face folder), `RigidBody` (`kind`, `friction`, `restitution`), `Collider` (`kind` box/sphere/capsule/mesh, `center`, `size`, `radius`, `height`), `Sensor`, `PlayerControlled`, `Input` (`keys`, `justPressed`, `mouse.buttons`, `mouse.justPressed`). `pickCurrentCamera` / `setCurrentCamera` choose which camera Play and game mode use. `pickSkybox` selects the first authored sky. `ensureSkybox` / `clearSkybox` create or drop a Transform-less sky entity. No `Skybox` uses `/engine/sky_118_cubemap_2k`; empty `cubemap` (or a failed load) is a gradient tinted by `color`. A `Collider` overrides `Mesh.primitive` for physics. `mesh` colliders are Rapier trimeshes from the loaded glTF (not stored in `.titane`) and force a fixed body. Analytic colliders keep an existing `RigidBody.kind` (or spawn `dynamic`). Changing `Gltf.clip` while playing crossfades when `fade` is greater than 0; `fade === 0` is a hard cut.
 
 ## `@titane/renderer`
 
 | Name | Role |
 | --- | --- |
 | `ThreeRenderer` | `IRenderer` driver. `{ mode: 'game' }` skips orbit, gizmos, grid |
-| `worldPointFromPointer` | Screen → world: first mesh hit, else the `y = 0` plane |
+| `pick` / `worldPointFromPointer` | On `IRenderer`. Screen → entity, or world point (mesh hit else `y = 0`) |
 | `localAabb` | Local bounds of a loaded glTF or the unit primitive box |
 | `meshColliderGeometry` | Triangle soup for `Collider.kind = mesh` |
 | `setCamera` | Look-from / look-at for game hosts when no ECS camera is current |

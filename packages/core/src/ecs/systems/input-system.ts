@@ -14,6 +14,9 @@ export const clearInputSystem = (world: World): void => {
     for (const entityId of runQuery(world, inputQuery)) {
         updateComponent(world, entityId, Input, (input) => {
             input.justPressed = {};
+            input.mouse.justPressed[0] = false;
+            input.mouse.justPressed[1] = false;
+            input.mouse.justPressed[2] = false;
         });
     }
 };

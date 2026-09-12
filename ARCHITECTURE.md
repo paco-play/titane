@@ -215,10 +215,12 @@ color disposes it, so a color picker dragged through thousands of values cannot 
 without bound. Remaining resources are released when the renderer shuts down. This is also the
 groundwork for instancing: entities already share the exact objects a draw call would need to batch.
 
-### Viewport helpers (not on `IRenderer`)
-Orbit, picking and gizmos live on `ThreeRenderer` the same way `setGridVisible` does: the engine
-contract describes rendering a world, not the chrome of a particular tool. The editor keeps a typed
-reference to the driver it constructed.
+### Viewport helpers
+`pick` and `worldPointFromPointer` live on `IRenderer` so a game host clicks through
+`engine.renderer` without casting `ThreeRenderer`. Orbit, gizmos and the grid stay on
+the driver: the engine contract describes rendering a world, not the chrome of a
+particular tool. The editor keeps a typed reference to the driver it constructed for
+those helpers.
 
 | Input | Action |
 | --- | --- |

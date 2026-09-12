@@ -1,16 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TitaneEngine } from '../runtime/engine';
-import type { IRenderer } from '../runtime/renderer-interface';
 import { applyTitaneConfig, type TitanePlugin } from '../runtime/plugin';
 import { Phase } from '../ecs/pipeline/system';
-
-const createMockRenderer = (): IRenderer => ({
-    init: vi.fn(),
-    render: vi.fn(),
-    handleResize: vi.fn(),
-    setSize: vi.fn(),
-    dispose: vi.fn()
-});
+import { createMockRenderer } from './mock-renderer';
 
 describe('engine.use', () => {
     let engine: TitaneEngine;

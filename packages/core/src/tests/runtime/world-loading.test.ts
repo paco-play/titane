@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TitaneEngine } from '../../runtime/engine';
-import type { IRenderer } from '../../runtime/renderer-interface';
 import { createWorld } from '../../ecs/kernel/world';
 import { createEntity } from '../../ecs/kernel/entity';
 import { addComponent, getComponent, hasComponent } from '../../ecs/kernel/component';
@@ -12,14 +11,7 @@ import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
 import { PlayerControlled, createPlayerControlled } from '../../ecs/components/player-controlled';
 import { serializeWorld, deserializeWorld, type SerializedWorld } from '../../ecs/serialization';
 import { createSparseStore } from '../../ecs/kernel/store';
-
-const createMockRenderer = (): IRenderer => ({
-    init: vi.fn(),
-    render: vi.fn(),
-    handleResize: vi.fn(),
-    setSize: vi.fn(),
-    dispose: vi.fn()
-});
+import { createMockRenderer } from '../mock-renderer';
 
 const createMockCanvas = (): HTMLCanvasElement => ({
     addEventListener: vi.fn(),
@@ -94,7 +86,7 @@ describe('Engine world loading', () => {
         const source = createWorld();
         const foreignInput = createEntity(source);
         const inputStore = createSparseStore();
-        inputStore.set(foreignInput, { keys: {}, justPressed: {}, mouse: { x: 0, y: 0, buttons: [] } });
+        inputStore.set(foreignInput, { keys: {}, justPressed: {}, mouse: { x: 0, y: 0, buttons: [], justPressed: [] } });
         source._stores[Input.index] = inputStore;
 
         engine.loadWorld(source);

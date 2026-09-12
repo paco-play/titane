@@ -1,23 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TitaneEngine } from '../runtime/engine';
-import { IRenderer } from '../runtime/renderer-interface';
+import type { IRenderer } from '../runtime/renderer-interface';
 import { Name } from '../ecs/components/name';
 import { addComponent, getComponent } from '../ecs/kernel/component';
 import { createEntity } from '../ecs/kernel/entity';
 import { Phase } from '../ecs/pipeline/system';
 import { Input } from '../ecs/components/input';
 import { isPhysicsReady } from '../physics/session';
-
-/**
- * Mock Renderer to avoid WebGL dependencies in Node environment.
- */
-const createMockRenderer = (): IRenderer => ({
-    init: vi.fn(),
-    render: vi.fn(),
-    handleResize: vi.fn(),
-    setSize: vi.fn(),
-    dispose: vi.fn(),
-});
+import { createMockRenderer } from './mock-renderer';
 
 describe('Engine Lifecycle & State Management', () => {
     let engine: TitaneEngine;
@@ -50,6 +40,11 @@ describe('Engine Lifecycle & State Management', () => {
         expect(engine.globalInputEntity).toBeDefined();
         // Entity 0 is usually the GlobalInput
         expect(engine.world.entities.active.has(engine.globalInputEntity)).toBe(true);
+    });
+
+    it('exposes pick and worldPointFromPointer on engine.renderer', () => {
+        expect(engine.renderer.pick(10, 20)).toBeNull();
+        expect(engine.renderer.worldPointFromPointer(10, 20)).toEqual({ x: 0, y: 0, z: 0 });
     });
 
     it('should restore snapshots in place, keeping the World reference stable', () => {

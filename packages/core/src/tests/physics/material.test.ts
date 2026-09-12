@@ -1,20 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TitaneEngine } from '../../runtime/engine';
-import type { IRenderer } from '../../runtime/renderer-interface';
+import { createMockRenderer } from '../mock-renderer';
 import { createPrimitive } from '../../ecs/kernel/factory';
 import { addComponent, getComponent, updateComponent } from '../../ecs/kernel/component';
 import { Mesh } from '../../ecs/components/mesh';
 import { Transform } from '../../ecs/components/transform';
 import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
 import { getPhysicsSession } from '../../physics/session';
-
-const createMockRenderer = (): IRenderer => ({
-    init: vi.fn(),
-    render: vi.fn(),
-    handleResize: vi.fn(),
-    setSize: vi.fn(),
-    dispose: vi.fn()
-});
 
 const createMockCanvas = (): HTMLCanvasElement => ({
     addEventListener: vi.fn(),

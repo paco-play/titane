@@ -16,6 +16,8 @@ export interface Input {
         y: number;
         /** Mouse buttons currently held: [Left, Middle, Right] */
         buttons: [boolean, boolean, boolean];
+        /** Buttons pressed exactly in the current frame. Held `buttons` stay. */
+        justPressed: [boolean, boolean, boolean];
     };
 }
 
@@ -29,6 +31,7 @@ export const createDefaultInput = (): Input => ({
         x: 0,
         y: 0,
         buttons: [false, false, false],
+        justPressed: [false, false, false],
     },
 });
 

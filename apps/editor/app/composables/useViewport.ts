@@ -57,13 +57,13 @@ export const useViewport = () => {
    * Right clicks never reach this handler (`click.left` on the canvas).
    */
   const onCanvasClick = (event: MouseEvent): void => {
-    if (!renderer.value || isPlaying.value) return;
+    if (!engine.value || !renderer.value || isPlaying.value) return;
     if (renderer.value.consumeGizmoPick()) {
       saveToStorage();
       return;
     }
 
-    const picked = renderer.value.pick(event.clientX, event.clientY);
+    const picked = engine.value.renderer.pick(event.clientX, event.clientY);
     if (picked === null) {
       clearSelection();
       return;
@@ -76,11 +76,11 @@ export const useViewport = () => {
    */
   const onCanvasDrop = (event: DragEvent): void => {
     event.preventDefault();
-    if (!renderer.value || isPlaying.value || !event.dataTransfer) return;
+    if (!engine.value || !renderer.value || isPlaying.value || !event.dataTransfer) return;
     const item = readProjectItemPayload(event.dataTransfer);
     if (!item) return;
-    const position = renderer.value.worldPointFromPointer(event.clientX, event.clientY);
-    const pickEntity = renderer.value.pick(event.clientX, event.clientY);
+    const position = engine.value.renderer.worldPointFromPointer(event.clientX, event.clientY);
+    const pickEntity = engine.value.renderer.pick(event.clientX, event.clientY);
     openItemAt(item, {
       position,
       pickEntity,

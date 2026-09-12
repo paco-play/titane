@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TitaneEngine } from '../../runtime/engine';
-import { IRenderer } from '../../runtime/renderer-interface';
 import { createPrimitive } from '../../ecs/kernel/factory';
 import { setParent } from '../../ecs/kernel/transform-utils';
 import { addComponent, getComponent } from '../../ecs/kernel/component';
@@ -10,14 +9,7 @@ import { Name } from '../../ecs/components/name';
 import { Input } from '../../ecs/components/input';
 import { serializeWorld, deserializeWorld, type SerializedWorld } from '../../ecs/serialization';
 import { FIXED_DT } from '../../utils/fixed-step';
-
-const createMockRenderer = (): IRenderer => ({
-    init: vi.fn(),
-    render: vi.fn(),
-    handleResize: vi.fn(),
-    setSize: vi.fn(),
-    dispose: vi.fn()
-});
+import { createMockRenderer } from '../mock-renderer';
 
 const createMockCanvas = (): HTMLCanvasElement => ({
     addEventListener: vi.fn(),

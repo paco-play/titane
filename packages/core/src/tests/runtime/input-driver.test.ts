@@ -44,9 +44,21 @@ describe('Runtime: Input Driver', () => {
         
         const input = getComponent(world, inputEntity, Input)!;
         expect(input.mouse.buttons[0]).toBe(true);
+        expect(input.mouse.justPressed[0]).toBe(true);
 
         window.dispatchEvent({ type: 'mouseup', button: 0 } as any);
         expect(input.mouse.buttons[0]).toBe(false);
+        expect(input.mouse.justPressed[0]).toBe(true);
+    });
+
+    it('should not retrigger mouse justPressed while the button is held', () => {
+        window.dispatchEvent({ type: 'mousedown', button: 0 } as any);
+        const input = getComponent(world, inputEntity, Input)!;
+        input.mouse.justPressed[0] = false;
+
+        window.dispatchEvent({ type: 'mousedown', button: 0 } as any);
+        expect(input.mouse.justPressed[0]).toBe(false);
+        expect(input.mouse.buttons[0]).toBe(true);
     });
 
     it('should correctly strip event listeners on dispose() to avoid Memory Leaks', () => {
