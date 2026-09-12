@@ -8,6 +8,7 @@ import {
   removeComponent,
   removeOrphan,
   updateComponent,
+  Vfx,
   type AnyComponentType,
   type AnyFieldDef,
   type Entity,
@@ -56,8 +57,12 @@ export const useInspectorUser = () => {
     if (!host || !engine.value) return [];
 
     const sections: InspectedUserComponent[] = [];
-    for (const type of engine.value.getUserComponents()) {
-      if (!type.schema || !hasComponent(host.world, host.entity, type)) continue;
+    const types: AnyComponentType[] = [Vfx, ...engine.value.getUserComponents()];
+    const seen = new Set<string>();
+    for (const type of types) {
+      if (!type.schema || seen.has(type.id)) continue;
+      seen.add(type.id);
+      if (!hasComponent(host.world, host.entity, type)) continue;
       const data = getComponent(host.world, host.entity, type);
       if (data === undefined) continue;
       sections.push({
@@ -133,12 +138,25 @@ export const useInspectorUser = () => {
     persist();
   };
 
+  const hasVfx = computed<boolean>(() => {
+    void inspectTick.value;
+    const host = selected();
+    if (!host) return false;
+    return hasComponent(host.world, host.entity, Vfx);
+  });
+
+  const addVfx = (): void => {
+    addUserComponent(Vfx);
+  };
+
   return {
     attached,
     orphans,
     availableTypes,
     entityOptions,
+    hasVfx,
     addUserComponent,
+    addVfx,
     dropUserComponent,
     setField,
     dropOrphan,

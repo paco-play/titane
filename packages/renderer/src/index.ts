@@ -20,3 +20,7 @@ export * from './gizmo';
 export * from './collider-visual';
 export * from './collider-overlay';
 export * from './skybox';
+export * from './vfx-pool';
+export * from './vfx-particles';
+export * from './post-fx';
+export * from './post-fx-grade';

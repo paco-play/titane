@@ -33,8 +33,9 @@ export interface IRenderer {
     /**
      * Synchronizes ECS data and performs the render pass.
      * @param world The current ECS World state.
+     * @param deltaTime Frame delta in seconds. Particle pools use this; omit for a 60 Hz step.
      */
-    render(world: World): void;
+    render(world: World, deltaTime?: number): void;
 
     /**
      * Updates the projection and viewport size.

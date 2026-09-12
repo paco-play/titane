@@ -39,7 +39,7 @@ export const setupDefaultPipeline = (
     });
 
     // Rendering always runs, to keep the editor responsive while paused
-    registerSystem(scheduler, Phase.RENDER, (world) => {
-        renderer.render(world);
+    registerSystem(scheduler, Phase.RENDER, (world, deltaTime) => {
+        renderer.render(world, deltaTime);
     });
 };

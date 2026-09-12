@@ -19,6 +19,19 @@
         @reset="resetSkybox"
         @commit="saveToStorage"
       />
+      <InspectorFilters
+        :post-fx="postFx"
+        :authored="filtersAuthored"
+        :inspect-tick="inspectTick"
+        @update-bloom="setBloom"
+        @update-exposure="setExposure"
+        @update-contrast="setContrast"
+        @update-saturation="setSaturation"
+        @update-tint="setTint"
+        @update-vignette="setVignette"
+        @reset="resetPostFx"
+        @commit="saveToStorage"
+      />
     </div>
   </div>
 </template>
@@ -33,4 +46,15 @@ const {
   setSkyboxCubemap,
   resetSkybox
 } = useInspectorWorldSkybox();
+const {
+  postFx,
+  authored: filtersAuthored,
+  setBloom,
+  setExposure,
+  setContrast,
+  setSaturation,
+  setTint,
+  setVignette,
+  resetPostFx
+} = useInspectorWorldPostFx();
 </script>

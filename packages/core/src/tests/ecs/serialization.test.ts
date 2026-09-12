@@ -10,6 +10,7 @@ import { Camera, createCamera } from '../../ecs/components/camera';
 import { Skybox, createSkybox, DEFAULT_SKYBOX_CUBEMAP } from '../../ecs/components/skybox';
 import { Gltf, createGltf } from '../../ecs/components/gltf';
 import { Sound, createSound } from '../../ecs/components/sound';
+import { Vfx } from '../../ecs/components/vfx';
 import { RigidBody, createRigidBody } from '../../ecs/components/rigid-body';
 import {
     SCENE_FORMAT_VERSION,
@@ -284,6 +285,32 @@ describe('ECS: Scene Serialization', () => {
             loop: true,
             positional: false,
             playing: true
+        });
+    });
+
+    it('round-trips a Vfx emitter', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Vfx, {
+            mode: 'burst',
+            lifetime: 2,
+            rate: 40,
+            color: '#22d3ee',
+            size: 0.3,
+            texture: '/assets/glow.png'
+        });
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+
+        expect(getComponent(restored, entity, Vfx)).toEqual({
+            mode: 'burst',
+            lifetime: 2,
+            rate: 40,
+            color: '#22d3ee',
+            size: 0.3,
+            texture: '/assets/glow.png'
         });
     });
 

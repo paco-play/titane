@@ -23,6 +23,7 @@ const props = defineProps<{
   canAddGltf: boolean;
   canAddSound: boolean;
   canAddLight: boolean;
+  canAddVfx: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -30,6 +31,7 @@ const emit = defineEmits<{
   addGltf: [];
   addSound: [];
   addLight: [];
+  addVfx: [];
 }>();
 
 /**
@@ -57,6 +59,13 @@ const items = computed<DropdownMenuItem[][]>(() => {
       label: 'Light',
       icon: 'i-lucide-sun',
       onSelect: () => emit('addLight'),
+    });
+  }
+  if (props.canAddVfx) {
+    builtins.push({
+      label: 'Vfx',
+      icon: 'i-lucide-sparkles',
+      onSelect: () => emit('addVfx'),
     });
   }
 

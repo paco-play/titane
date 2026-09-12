@@ -130,10 +130,12 @@
         :can-add-gltf="!gltf"
         :can-add-sound="!sound"
         :can-add-light="!light"
+        :can-add-vfx="!hasVfx"
         @add="addUserComponent"
         @add-gltf="addGltf"
         @add-sound="addSound"
         @add-light="addLight"
+        @add-vfx="addVfx"
       />
     </div>
   </div>
@@ -212,7 +214,9 @@ const {
   orphans,
   availableTypes,
   entityOptions,
+  hasVfx,
   addUserComponent,
+  addVfx,
   dropUserComponent,
   setField,
   dropOrphan,

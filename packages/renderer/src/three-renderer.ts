@@ -27,6 +27,8 @@ import { applyOrthographicSize, applySceneCamera } from './scene-camera';
 import { ColliderOverlay } from './collider-overlay';
 import type { ColliderOverlayMode } from './collider-visual';
 import { SkyboxApplier } from './skybox';
+import { VfxPool } from './vfx-pool';
+import { PostFxComposer } from './post-fx';
 import {
     captureEditorCamera,
     restoreEditorCamera,
@@ -65,6 +67,8 @@ export class ThreeRenderer implements IRenderer {
     private lights: LightPool | undefined;
     private models: ModelPool | undefined;
     private audio: AudioPool | undefined;
+    private vfx: VfxPool | undefined;
+    private postFx: PostFxComposer | undefined;
     private resumeAudio: (() => void) | undefined;
     private disposeAudioListener: (() => void) | undefined;
     private editorPose: EditorCameraPose | null = null;
@@ -158,6 +162,8 @@ export class ThreeRenderer implements IRenderer {
         this.lights = new LightPool(this.scene);
         this.models = new ModelPool(this.scene);
         this.pool = new InstancePool(this.scene, this.resources);
+        this.vfx = new VfxPool(this.scene);
+        this.postFx = new PostFxComposer(this.renderer, this.scene);
 
         const audio = createBrowserAudioPool(this.scene, this.perspective);
         this.audio = audio.pool;
@@ -203,6 +209,7 @@ export class ThreeRenderer implements IRenderer {
 
     public setSize(width: number, height: number): void {
         this.renderer.setSize(width, height, false);
+        this.postFx?.setSize(width, height);
         const aspect = width / Math.max(1, height);
         this.perspective.aspect = aspect;
         this.perspective.updateProjectionMatrix();
@@ -232,7 +239,7 @@ export class ThreeRenderer implements IRenderer {
         return this.pool?.batchCount ?? 0;
     }
 
-    public render(world: World): void {
+    public render(world: World, deltaTime = 1 / 60): void {
         this.gizmos.bindWorld(world);
 
         // Sync ECS-driven lights. Toggle fallbacks based on whether any exist.
@@ -285,6 +292,7 @@ export class ThreeRenderer implements IRenderer {
             if (applied) this.camera = applied;
         }
         this.bindAudioListener();
+        this.vfx?.sync(world, this.camera, deltaTime);
         this.colliderOverlay?.sync(world, {
             selected: this.gizmos.entity,
             visible: this.chromeEnabled,
@@ -296,7 +304,8 @@ export class ThreeRenderer implements IRenderer {
             }
         });
         this.skybox?.apply(world, this.scene);
-        this.renderer.render(this.scene, this.camera);
+        if (this.postFx) this.postFx.render(world, this.camera);
+        else this.renderer.render(this.scene, this.camera);
     }
 
     /**
@@ -385,6 +394,8 @@ export class ThreeRenderer implements IRenderer {
             this.renderer.domElement.removeEventListener('pointerdown', this.resumeAudio);
         }
         this.audio?.dispose();
+        this.vfx?.dispose();
+        this.postFx?.dispose();
         this.disposeAudioListener?.();
         this.pool?.dispose();
         this.liveEntities.clear();
