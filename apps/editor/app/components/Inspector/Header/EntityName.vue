@@ -10,10 +10,11 @@
 <script setup lang="ts">
 import { getComponent, updateComponent, Name } from '@titane/core';
 
-const { engine, selectedEntityId, syncWorld } = useTitane();
+const { engine, selectedEntityId, syncWorld, inspectTick } = useTitane();
 
 /** Name component of the selected entity, if any. */
 const nameComponent = computed(() => {
+  void inspectTick.value;
   if (selectedEntityId.value === null || !engine.value) return undefined;
   return getComponent(engine.value.world, selectedEntityId.value, Name);
 });

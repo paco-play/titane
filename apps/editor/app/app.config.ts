@@ -4,7 +4,7 @@
  * inherit the look without per-template classes.
  */
 const glassChrome = 'glass-panel bg-transparent ring-0 shadow-none';
-const glassOverlay = 'glass-panel--subtle bg-transparent ring-0 shadow-none';
+const glassOverlay = glassChrome;
 const glassStrong = 'glass-panel--strong bg-transparent ring-0 shadow-none';
 
 /** Beats Nuxt UI's default `sm:p-6` so every surface shares --chrome-pad. */

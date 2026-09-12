@@ -35,6 +35,24 @@ describe('ECS: Scene Serialization', () => {
         expect(getComponent(restored, entity, Transform)?.position).toEqual({ x: 1, y: 2, z: 3 });
     });
 
+    it('round-trips optional Name icon and color', () => {
+        const world = createWorld();
+        const entity = createEntity(world);
+        addComponent(world, entity, Name, createName('Lamp', {
+            icon: 'i-lucide-sun',
+            color: '#facc15'
+        }));
+
+        const restored = deserializeWorld(
+            JSON.parse(JSON.stringify(serializeWorld(world))) as SerializedWorld
+        );
+        expect(getComponent(restored, entity, Name)).toEqual({
+            value: 'Lamp',
+            icon: 'i-lucide-sun',
+            color: '#facc15'
+        });
+    });
+
     it('should stamp the format version', () => {
         expect(serializeWorld(createWorld()).version).toBe(SCENE_FORMAT_VERSION);
     });

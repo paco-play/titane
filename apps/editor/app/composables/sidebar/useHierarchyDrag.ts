@@ -22,6 +22,10 @@ export const useHierarchyDrag = (items: Ref<HierarchyItem[]>) => {
   };
 
   const onDragStart = (event: DragEvent): void => {
+    if (event.target instanceof Element && event.target.closest('input')) {
+      event.preventDefault();
+      return;
+    }
     const item = itemFromEvent(event);
     if (!item || item.value === WORLD_HIERARCHY_KEY || item.id === undefined) {
       event.preventDefault();

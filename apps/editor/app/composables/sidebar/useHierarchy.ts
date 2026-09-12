@@ -8,6 +8,8 @@ import { WORLD_HIERARCHY_KEY } from '~/utils/hierarchy-reparent';
 export interface HierarchyItem extends TreeItem {
   id?: Entity;
   children?: HierarchyItem[];
+  /** Hex tint for the leading glyph. */
+  color?: string;
 }
 
 /**
@@ -72,9 +74,12 @@ export const useHierarchy = () => {
     const world = engine.value.world;
 
     const forest = buildIndexedForest(visibleEntities.value, resolveDisplayParent, (entityId, children) => {
+      const name = getComponent(world, entityId, Name);
       const node: HierarchyItem = {
         id: entityId,
-        label: getComponent(world, entityId, Name)?.value || `GameObject #${entityId}`,
+        label: name?.value || `GameObject #${entityId}`,
+        icon: name?.icon,
+        color: name?.color,
         children,
         defaultExpanded: true,
         value: entityId.toString()
