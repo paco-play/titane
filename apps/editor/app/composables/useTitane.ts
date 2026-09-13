@@ -124,6 +124,20 @@ export const useTitane = () => {
     scriptError.value = null;
   };
 
+  /**
+   * Stops the loop and drops the singleton so the next canvas can boot a
+   * fresh engine. Needed when the viewport remounts (HMR) onto a new DOM node.
+   */
+  const disposeEngine = (): void => {
+    engineInstance.value?.dispose();
+    rendererInstance.value?.dispose();
+    engineInstance.value = null;
+    rendererInstance.value = null;
+    isInitialized.value = false;
+    activeEntities.value = new Set();
+    clearSelection();
+  };
+
   return {
     engine: engineInstance,
     renderer: rendererInstance,
@@ -135,6 +149,7 @@ export const useTitane = () => {
     inspectTick,
     scriptError,
     initEngine,
+    disposeEngine,
     syncWorld,
     notifyInspect,
     clearSelection,

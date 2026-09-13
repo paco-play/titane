@@ -23,6 +23,7 @@ export * from './collider-overlay';
 export * from './nav-overlay';
 export * from './camera-overlay';
 export * from './skybox';
+export * from './fog';
 export * from './vfx-pool';
 export * from './vfx-particles';
 export * from './post-fx';

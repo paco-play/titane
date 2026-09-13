@@ -6,6 +6,7 @@ import {
   Nav,
   PostFx,
   Skybox,
+  Fog,
   Transform,
   addComponent,
   createEntity,
@@ -15,6 +16,7 @@ import {
   createNav,
   createPostFx,
   createSkybox,
+  createFog,
   createTransform,
   createWorld
 } from '@titane/core';
@@ -43,6 +45,15 @@ describe('isHierarchyVisible', () => {
     const entity = createEntity(world);
     addComponent(world, entity, Name, createName('PostFx'));
     addComponent(world, entity, PostFx, createPostFx());
+
+    expect(isHierarchyVisible(world, entity)).toBe(false);
+  });
+
+  it('hides a Transform-less Fog entity', () => {
+    const world = createWorld();
+    const entity = createEntity(world);
+    addComponent(world, entity, Name, createName('Fog'));
+    addComponent(world, entity, Fog, createFog());
 
     expect(isHierarchyVisible(world, entity)).toBe(false);
   });

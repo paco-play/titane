@@ -1,7 +1,7 @@
 # Titane product loop
 
 This file is the source of truth for **what Titane is becoming** and **what is in scope**.
-Phases **0–9** below are historical: they shipped. Phases **10+** are what comes next.
+Phases **0–10** below are historical: they shipped. Phases **11+** are what comes next.
 
 Titane already has a solid engine floor: typed data-oriented ECS, a decoupled Three.js renderer, a working editor (hierarchy, inspector, gizmos, play/pause/step), Rapier, glTF, audio, and `.titane` serialization.
 
@@ -212,11 +212,11 @@ Authored paths (waypoints / spline drawn in the editor, loops for ambient movers
 
 Cheap, immediate, unblocks humans and agents. Inspector rotations in degrees, edit-mode undo, and scene fog.
 
-| # | Task | Detail |
-| --- | --- | --- |
-| 10.1 | Inspector rotation in degrees | Transform Euler XYZ **display and type** in degrees. ECS storage stays radians. Gizmos unchanged. |
-| 10.2 | Edit undo / redo | Command stack for Inspector writes, gizmos, spawn / delete / reparent. Ctrl+Z / Ctrl+Y. Play Keep / Discard stays a snapshot, not this stack. |
-| 10.3 | Fog | World-authored fog + fade distance (same Transform-less family as Skybox / PostFx). `Camera.far` remains the hard clip. |
+| # | Task | Detail | Status |
+| --- | --- | --- | --- |
+| 10.1 | Inspector rotation in degrees | Transform Euler XYZ **display and type** in degrees. ECS storage stays radians. Gizmos unchanged. | Done |
+| 10.2 | Edit undo / redo | Command stack for Inspector writes, gizmos, spawn / delete / reparent. Ctrl+Z / Ctrl+Y. Play Keep / Discard stays a snapshot, not this stack. | Done |
+| 10.3 | Fog | World-authored fog + fade distance (same Transform-less family as Skybox / PostFx). `Camera.far` remains the hard clip. | Done |
 
 **Done when:** typing `90` in Rotation is 90°; Ctrl+Z undoes a gizmo move; fog is not “set Camera.far lower”.
 
@@ -310,7 +310,7 @@ The Inspector `field.asset()` picker is not a Project window. The editor now has
 
 - ECS kernel, phases, SoA stores, queries, public `addSystem` / `removeSystem`
 - User `defineComponent` + `field.*` + Inspector Add Component + missing-script orphans
-- Editor: hierarchy, inspector, gizmos, pick, orbit, play/pause/step, dirty-flag save, Project panel
-- Renderer: instancing, lights, albedo, PBR material, shadows, glTF, audio, scene camera, `Camera.far`
+- Editor: hierarchy, inspector, gizmos, pick, orbit, play/pause/step, dirty-flag save, Project panel, edit undo/redo
+- Renderer: instancing, lights, albedo, PBR material, shadows, glTF, audio, scene camera, `Camera.far`, World fog
 - Rapier + sensors/triggers + authored `Collider`
 - Play snapshot with explicit Keep / Discard

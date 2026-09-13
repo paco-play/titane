@@ -32,6 +32,15 @@
         @reset="resetPostFx"
         @commit="saveToStorage"
       />
+      <InspectorFog
+        :fog="fog"
+        :authored="fogAuthored"
+        :inspect-tick="inspectTick"
+        @update-color="setFogColor"
+        @update-fade-distance="setFogFadeDistance"
+        @reset="resetFog"
+        @commit="saveToStorage"
+      />
       <InspectorNavigation
         :nav="nav"
         :authored="navAuthored"
@@ -68,6 +77,13 @@ const {
   setVignette,
   resetPostFx
 } = useInspectorWorldPostFx();
+const {
+  fog,
+  authored: fogAuthored,
+  setColor: setFogColor,
+  setFadeDistance: setFogFadeDistance,
+  resetFog
+} = useInspectorWorldFog();
 const {
   nav,
   authored: navAuthored,

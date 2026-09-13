@@ -1,9 +1,7 @@
 import { serializeWorld, deserializeWorld, createWorld, type SerializedWorld } from '@titane/core';
 import { useTitane } from './useTitane';
+import { AUTOSAVE_KEY, writeAutosave } from '~/utils/autosave-buffer';
 import { clearPersistenceDirty, isPersistenceDirty } from '~/utils/persistence-dirty';
-
-/** Key of the recovery buffer kept in local storage. */
-const AUTOSAVE_KEY = 'titane_autosave_buffer';
 
 export const usePersistence = () => {
   const { engine, syncWorld, clearSelection } = useTitane();
@@ -63,7 +61,9 @@ export const usePersistence = () => {
     engine.value.loadWorld(deserializeWorld(data));
     clearSelection();
     clearPersistenceDirty();
-    syncWorld();
+    useHistory().runQuiet(() => {
+      syncWorld();
+    });
     captureBaseline();
   };
 
@@ -73,12 +73,9 @@ export const usePersistence = () => {
   const saveToStorage = (): void => {
     if (!engine.value) return;
 
-    try {
-      const data = serializeWorld(engine.value.world);
-      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
-      clearPersistenceDirty();
-    } catch (error) {
-      console.error('[Titane] Failed to auto-save to local storage.', error);
+    writeAutosave(engine.value.world);
+    if (!isPlaying.value && !useHistory().isReplaying()) {
+      useHistory().record();
     }
   };
 
@@ -113,7 +110,9 @@ export const usePersistence = () => {
       engine.value.loadWorld(deserializeWorld(data));
       clearSelection();
       clearPersistenceDirty();
-      syncWorld();
+      useHistory().runQuiet(() => {
+        syncWorld();
+      });
       return true;
     } catch (error) {
       console.error('[Titane] Failed to recover session. Corrupted data.', error);
@@ -121,7 +120,9 @@ export const usePersistence = () => {
       engine.value.loadWorld(createWorld());
       clearSelection();
       clearPersistenceDirty();
-      syncWorld();
+      useHistory().runQuiet(() => {
+        syncWorld();
+      });
       return false;
     }
   };

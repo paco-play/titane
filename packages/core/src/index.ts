@@ -17,6 +17,7 @@ export * from './ecs/kernel/transform-utils';
 export * from './ecs/kernel/camera-utils';
 export * from './ecs/kernel/skybox-utils';
 export * from './ecs/kernel/post-fx-utils';
+export * from './ecs/kernel/fog-utils';
 export * from './ecs/kernel/nav-utils';
 
 // Schema DSL
@@ -43,6 +44,7 @@ export * from './ecs/components/camera';
 export * from './ecs/components/skybox';
 export * from './ecs/components/vfx';
 export * from './ecs/components/post-fx';
+export * from './ecs/components/fog';
 export * from './ecs/components/nav';
 export * from './ecs/components/agent';
 

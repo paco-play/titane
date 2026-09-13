@@ -32,7 +32,7 @@ The product is the loop **user TypeScript → ECS component → Inspector → Pl
 ---
 
 ## Current Milestone
-**Phase 9 — Pathfinding.** Nav bake from walkable colliders and `Agent` A → B. Numbered phases 0–9 are complete. Authored looping paths are later. Contract: `docs/ROADMAP.md`.
+**Phase 10 — Daily authoring.** Inspector rotations in degrees, edit undo/redo, World fog. Numbered phases 0–10 are complete. Next is Phase 11 — Real Project window. Contract: `docs/ROADMAP.md`.
 
 The Drop demo (`apps/demo`) and **Preview in Demo** live-preview are gone. A game is `npm run create`.
 
@@ -309,3 +309,9 @@ Nav bake from walkable colliders. `Agent` moves `Transform` (and Rapier body whe
 **Done when:** an Agent walks A → B around baked colliders in Play, with no ad-hoc grid in game code.
 
 Authored looping paths (waypoints / spline) are later, not this phase.
+
+### Phase 10 — Daily authoring — done
+
+Inspector Transform rotation is typed in degrees (ECS stays radians). Edit-mode undo / redo covers Inspector writes, gizmos, spawn / delete / reparent (`Ctrl+Z` / `Ctrl+Y`). Play Keep / Discard stays the engine snapshot. World `Fog` (color + fade distance) is authored like Skybox / PostFx; `Camera.far` remains the clip plane.
+
+**Done when:** typing `90` in Rotation is 90°; Ctrl+Z undoes a gizmo move; fog is not “set Camera.far lower”.

@@ -20,9 +20,11 @@
 
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
+import { isRedoShortcut, isTypingTarget, isUndoShortcut } from '~/utils/history-shortcut';
 import { isSaveShortcut } from '~/utils/save-shortcut';
 
 const { saveToProject, loadFromDisk } = usePersistence();
+const { undo, redo, canUndo, canRedo } = useHistory();
 
 const fileInput = ref<HTMLInputElement | null>(null);
 
@@ -57,24 +59,53 @@ const saveItem: DropdownMenuItem = {
 
 const dropDownItems = computed<DropdownMenuItem[][]>(() => [
   [newSceneItem],
-  [openItem, saveItem]
+  [openItem, saveItem],
+  [
+    {
+      label: 'Undo',
+      icon: 'i-lucide-undo-2',
+      shortcuts: ['⌘', 'Z'],
+      disabled: !canUndo.value,
+      onSelect: undo
+    },
+    {
+      label: 'Redo',
+      icon: 'i-lucide-redo-2',
+      shortcuts: ['⌘', 'Y'],
+      disabled: !canRedo.value,
+      onSelect: redo
+    }
+  ]
 ]);
 
 /**
- * Writes `scenes/main.titane` and stops the browser from saving the HTML page.
+ * Ctrl+S writes the project scene. Ctrl+Z / Ctrl+Y undo edit-mode persists.
+ * Typing in an Inspector field keeps native text undo.
  */
-const onSaveKey = (event: KeyboardEvent): void => {
-  if (!isSaveShortcut(event)) return;
-  event.preventDefault();
-  void saveToProject();
+const onEditorKey = (event: KeyboardEvent): void => {
+  if (isSaveShortcut(event)) {
+    event.preventDefault();
+    void saveToProject();
+    return;
+  }
+  if (isTypingTarget(event.target)) return;
+  if (isUndoShortcut(event)) {
+    event.preventDefault();
+    undo();
+    return;
+  }
+  if (isRedoShortcut(event)) {
+    event.preventDefault();
+    redo();
+  }
 };
 
 onMounted(() => {
-  window.addEventListener('keydown', onSaveKey);
+  window.addEventListener('keydown', onEditorKey);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onSaveKey);
+  window.removeEventListener('keydown', onEditorKey);
 });
 
 /**

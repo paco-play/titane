@@ -29,6 +29,7 @@ import type { ColliderOverlayMode } from './collider-visual';
 import { NavOverlay } from './nav-overlay';
 import { CameraOverlay, entityOfCameraGlyph } from './camera-overlay';
 import { SkyboxApplier } from './skybox';
+import { FogApplier } from './fog';
 import { VfxPool } from './vfx-pool';
 import { PostFxComposer } from './post-fx';
 import {
@@ -62,6 +63,7 @@ export class ThreeRenderer implements IRenderer {
     private navOverlay: NavOverlay | undefined;
     private cameraOverlay: CameraOverlay | undefined;
     private skybox: SkyboxApplier | undefined;
+    private fog: FogApplier | undefined;
     private orbit: OrbitControls | undefined;
     private pool: InstancePool | undefined;
 
@@ -143,6 +145,7 @@ export class ThreeRenderer implements IRenderer {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(DEFAULT_SKYBOX_COLOR);
         this.skybox = new SkyboxApplier();
+        this.fog = new FogApplier();
 
         this.perspective = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
         this.perspective.position.set(5, 5, 5);
@@ -327,6 +330,7 @@ export class ThreeRenderer implements IRenderer {
             }
         });
         this.skybox?.apply(world, this.scene);
+        this.fog?.apply(world, this.scene);
         if (this.postFx) this.postFx.render(world, this.camera);
         else this.renderer.render(this.scene, this.camera);
     }

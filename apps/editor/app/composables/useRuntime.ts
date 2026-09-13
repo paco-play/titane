@@ -74,8 +74,10 @@ export const useRuntime = () => {
     isPaused.value = true;
     if (engine.value) engine.value.isPaused = true;
     applyPlayChrome(false);
-    syncWorld();
-    notifyInspect();
+    useHistory().runQuiet(() => {
+      syncWorld();
+      notifyInspect();
+    });
   };
 
   /**
@@ -122,8 +124,8 @@ export const useRuntime = () => {
     engine.value.keepPlayChanges();
     markPersistenceDirty();
     usePersistence().saveToStorage();
-    captureBaseline();
     finishExitPlay();
+    captureBaseline();
   };
 
   /**
@@ -182,6 +184,7 @@ export const useRuntime = () => {
   const captureBaseline = (): void => {
     if (!engine.value) return;
     editBaseline.value = captureWorldState(engine.value.world);
+    useHistory().prime();
   };
 
   /**
@@ -192,8 +195,11 @@ export const useRuntime = () => {
 
     restoreWorldState(engine.value.world, editBaseline.value);
     clearSelection();
-    syncWorld();
-    notifyInspect();
+    useHistory().runQuiet(() => {
+      syncWorld();
+      notifyInspect();
+    });
+    useHistory().prime();
   };
 
   return {

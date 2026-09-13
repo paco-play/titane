@@ -20,7 +20,7 @@ import { bootEditorWorld } from '~/utils/boot-editor-world';
 const AUTOSAVE_INTERVAL_MS = 60_000;
 
 const canvasReference = ref<HTMLCanvasElement | null>(null);
-const { initEngine, entities, syncWorld } = useTitane();
+const { initEngine, disposeEngine, entities, syncWorld } = useTitane();
 const { saveToStorage, saveIfDirty, loadFromStorage } = usePersistence();
 const { captureBaseline } = useRuntime();
 const { onCanvasClick, onCanvasDrop, onCanvasDragOver, onKeyDown } = useViewport();
@@ -66,5 +66,6 @@ onBeforeUnmount(() => {
   if (autoSaveInterval !== undefined) window.clearInterval(autoSaveInterval);
   window.removeEventListener('resize', onResize);
   window.removeEventListener('keydown', onKeyDown);
+  disposeEngine();
 });
 </script>
