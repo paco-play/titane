@@ -1,20 +1,12 @@
 <template>
-  <UCollapsible :default-open="true">
-    <UButton
-      label="Navigation"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div
-        class="space-y-3 py-1.5"
-        :data-tick="inspectTick"
-      >
+  <InspectorSection
+    title="Navigation"
+    icon="i-lucide-route"
+  >
+    <div
+      class="space-y-3"
+      :data-tick="inspectTick"
+    >
         <InspectorNumberField
           label="Cell size"
           :value="nav.cellSize"
@@ -65,8 +57,7 @@
           @click="emit('clear')"
         />
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

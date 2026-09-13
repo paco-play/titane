@@ -47,7 +47,7 @@ export default defineAppConfig({
             root: `${glassOverlay} divide-white/10`
           },
           subtle: {
-            root: `${glassOverlay} divide-white/10`
+            root: 'glass-panel--nested bg-transparent ring-0 shadow-none divide-white/10'
           }
         }
       },
@@ -116,7 +116,11 @@ export default defineAppConfig({
     header: {
       slots: {
         root: 'glass-panel bg-transparent border-0 relative static h-max overflow-hidden rounded-lg z-10 backdrop-blur-none',
-        container: `flex items-center justify-between gap-2 h-full max-w-none ${padX} lg:px-(--chrome-pad) py-(--chrome-pad-tight)`
+        container: `flex items-center justify-between gap-2 h-full max-w-none ${padX} lg:px-(--chrome-pad) py-(--chrome-pad-tight)`,
+        left: 'flex-1 flex items-center gap-1.5',
+        center: 'flex items-center justify-center',
+        right: 'flex items-center justify-end flex-1 gap-1.5',
+        toggle: 'hidden'
       }
     },
     sidebar: {
@@ -328,7 +332,7 @@ export default defineAppConfig({
         },
         selected: {
           true: {
-            link: 'before:bg-primary/25'
+            link: 'before:bg-primary/25 text-primary'
           }
         }
       },

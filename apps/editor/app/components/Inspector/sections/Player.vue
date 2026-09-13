@@ -1,25 +1,14 @@
 <template>
-  <UCollapsible>
-    <UButton
-      label="Control"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
+  <InspectorSection
+    title="Control"
+    icon="i-lucide-gamepad-2"
+  >
+    <UCheckbox
+      :model-value="controlled"
+      label="Player controlled"
+      @update:model-value="onToggle"
     />
-
-    <template #content>
-      <div class="py-1.5">
-        <UCheckbox
-          :model-value="controlled"
-          label="Player controlled"
-          @update:model-value="onToggle"
-        />
-      </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

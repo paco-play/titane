@@ -1,20 +1,12 @@
 <template>
-  <UCollapsible>
-    <UButton
-      label="Transform"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div
-        class="space-y-1.5 py-1.5"
-        :data-tick="inspectTick"
-      >
+  <InspectorSection
+    title="Transform"
+    icon="i-lucide-move-3d"
+  >
+    <div
+      class="space-y-1.5"
+      :data-tick="inspectTick"
+    >
         <div
           v-for="field in fields"
           :key="field.key"
@@ -40,8 +32,7 @@
           </div>
         </div>
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

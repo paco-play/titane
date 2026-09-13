@@ -1,20 +1,12 @@
 <template>
-  <UCollapsible :default-open="true">
-    <UButton
-      label="Skybox"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div
-        class="space-y-3 py-1.5"
-        :data-tick="inspectTick"
-      >
+  <InspectorSection
+    title="Skybox"
+    icon="i-lucide-cloud-sun"
+  >
+    <div
+      class="space-y-3"
+      :data-tick="inspectTick"
+    >
         <InspectorColorField
           label="Color"
           :value="skybox.color"
@@ -41,8 +33,7 @@
           @click="emit('reset')"
         />
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

@@ -1,17 +1,9 @@
 <template>
-  <UCollapsible>
-    <UButton
-      label="Sound"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div class="space-y-1.5 py-1.5">
+  <InspectorSection
+    title="Sound"
+    icon="i-lucide-volume-2"
+  >
+    <div class="space-y-1.5">
         <InspectorAssetField
           label="URL"
           :value="sound.url"
@@ -60,8 +52,7 @@
           @click="emit('remove')"
         />
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

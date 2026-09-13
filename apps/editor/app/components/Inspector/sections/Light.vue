@@ -1,17 +1,9 @@
 <template>
-  <UCollapsible>
-    <UButton
-      label="Light"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div class="space-y-1.5 py-1.5">
+  <InspectorSection
+    title="Light"
+    icon="i-lucide-sun"
+  >
+    <div class="space-y-1.5">
 
         <!-- Kind selector -->
         <div class="space-y-2">
@@ -84,8 +76,7 @@
           @click="emit('remove')"
         />
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

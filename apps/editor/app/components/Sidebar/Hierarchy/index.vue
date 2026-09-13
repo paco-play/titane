@@ -2,6 +2,7 @@
   <div
     ref="treeRoot"
     class="h-full overflow-y-auto"
+    :style="activeColorStyle"
     @dragstart.capture="onDragStart"
     @dragover="onDragOver"
     @drop.prevent="onDrop"
@@ -63,6 +64,16 @@ const { onDragStart, onDragOver, onDrop, syncRowDraggable } = useHierarchyDrag(i
 const { isRenaming, draft, beginRename, commitRename, cancelRename } = useHierarchyRename();
 const treeRoot = ref<HTMLElement | null>(null);
 let rowObserver: MutationObserver | null = null;
+
+/**
+ * Paints the selected row with the entity color from the Hierarchy dropdown.
+ * Unset colors keep the theme primary.
+ */
+const activeColorStyle = computed<Record<string, string> | undefined>(() => {
+  const hex = selection.value?.color;
+  if (!hex) return undefined;
+  return { '--ui-primary': hex };
+});
 
 const canDrag = (item: HierarchyItem): boolean =>
   item.value !== WORLD_HIERARCHY_KEY && !isRenaming(item.id);

@@ -1,17 +1,9 @@
 <template>
-  <UCollapsible>
-    <UButton
-      label="Mesh"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div class="flex flex-col gap-3 py-2.5">
+  <InspectorSection
+    title="Mesh"
+    icon="i-lucide-box"
+  >
+    <div class="flex flex-col gap-3">
         <div class="space-y-1">
           <UiFormLabel label="Primitive" />
           <div
@@ -95,8 +87,7 @@
           />
         </div>
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

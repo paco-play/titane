@@ -1,17 +1,9 @@
 <template>
-  <UCollapsible>
-    <UButton
-      label="Camera"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div class="space-y-1.5 py-1.5">
+  <InspectorSection
+    title="Camera"
+    icon="i-lucide-video"
+  >
+    <div class="space-y-1.5">
         <div
           v-if="camera"
           class="space-y-3"
@@ -117,8 +109,7 @@
           @click="emit('add')"
         />
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

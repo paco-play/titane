@@ -1,27 +1,34 @@
 <template>
-  <div class="flex items-center justify-between gap-2 w-full">
-    <div class="flex items-center gap-2">
-      <h2 class="text-xs text-muted">Hierarchy</h2>
-      <UBadge
-        :label="String(count)"
-        variant="subtle"
+  <div class="flex flex-col gap-2 w-full">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <h2 class="text-xs text-muted">Hierarchy</h2>
+        <UBadge
+          :label="String(count)"
+          variant="subtle"
+          size="xs"
+          color="neutral"
+        />
+      </div>
+      <UDropdownMenu
+        :items="createItems"
         size="xs"
-        color="neutral"
-      />
+      >
+        <UButton
+          icon="i-lucide-plus"
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          square
+          :title="selectedEntityId === null ? 'Add primitive' : 'Add as child of selection'"
+        />
+      </UDropdownMenu>
     </div>
-    <UDropdownMenu
-      :items="createItems"
-      size="xs"
-    >
-      <UButton
-        icon="i-lucide-plus"
-        variant="ghost"
-        color="neutral"
-        size="xs"
-        square
-        :title="selectedEntityId === null ? 'Add primitive' : 'Add as child of selection'"
-      />
-    </UDropdownMenu>
+    <UInput
+      v-model="query"
+      icon="i-lucide-search"
+      placeholder="Search"
+    />
   </div>
 </template>
 
@@ -31,7 +38,7 @@ import { PRIMITIVE_OPTIONS } from '~/types/mesh';
 import { LIGHT_KIND_OPTIONS } from '~/types/light';
 
 const { selectedEntityId } = useTitane();
-const { count } = useHierarchy();
+const { count, query } = useHierarchy();
 const { addPrimitive, addLight, addGltf, addSound, addCamera } = useHierarchyActions();
 const { prefabs, spawnPrefab } = usePrefabs();
 

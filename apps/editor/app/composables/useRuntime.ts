@@ -4,6 +4,7 @@ import { useTitane } from './useTitane';
 import { markPersistenceDirty } from '~/utils/persistence-dirty';
 
 const isPlaying = ref<boolean>(false);
+const isPaused = ref<boolean>(true);
 const isGridVisible = ref<boolean>(true);
 const colliderOverlayMode = ref<ColliderOverlayMode>('selected');
 const isNavOverlayVisible = ref<boolean>(true);
@@ -58,6 +59,7 @@ export const useRuntime = () => {
   const enterPlay = (): void => {
     if (!engine.value) return;
     isPlaying.value = true;
+    isPaused.value = false;
     pendingExitPlay.value = false;
     engine.value.saveSnapshot();
     engine.value.isPaused = false;
@@ -69,6 +71,7 @@ export const useRuntime = () => {
     stopPlayHierarchySync();
     pendingExitPlay.value = false;
     isPlaying.value = false;
+    isPaused.value = true;
     if (engine.value) engine.value.isPaused = true;
     applyPlayChrome(false);
     syncWorld();
@@ -76,18 +79,35 @@ export const useRuntime = () => {
   };
 
   /**
-   * Starts Play, or asks keep/discard when leaving Play.
+   * Enters Play, or resumes after Pause.
    */
-  const togglePlay = (): void => {
-    if (!engine.value) return;
-    if (pendingExitPlay.value) return;
-
+  const play = (): void => {
+    if (!engine.value || pendingExitPlay.value) return;
     if (!isPlaying.value) {
       enterPlay();
       return;
     }
+    if (!isPaused.value) return;
+    isPaused.value = false;
+    engine.value.isPaused = false;
+  };
 
+  /**
+   * Freezes the simulation without leaving Play.
+   */
+  const pause = (): void => {
+    if (!engine.value || !isPlaying.value || isPaused.value || pendingExitPlay.value) return;
+    isPaused.value = true;
     engine.value.isPaused = true;
+  };
+
+  /**
+   * Leaves Play and asks keep/discard for session edits.
+   */
+  const stop = (): void => {
+    if (!engine.value || !isPlaying.value || pendingExitPlay.value) return;
+    engine.value.isPaused = true;
+    isPaused.value = true;
     pendingExitPlay.value = true;
   };
 
@@ -148,7 +168,7 @@ export const useRuntime = () => {
    * Advances the simulation by one fixed timestep without entering play mode.
    */
   const stepFrame = (): void => {
-    if (!engine.value || isPlaying.value) return;
+    if (!engine.value || (isPlaying.value && !isPaused.value)) return;
     engine.value.isPaused = true;
     engine.value.step();
     syncWorld();
@@ -178,8 +198,11 @@ export const useRuntime = () => {
 
   return {
     isPlaying,
+    isPaused,
     pendingExitPlay,
-    togglePlay,
+    play,
+    pause,
+    stop,
     keepPlayChanges,
     discardPlayChanges,
     dismissPlayExit,

@@ -7,28 +7,6 @@
       @update:model-value="setGizmoMode"
     />
     <USeparator orientation="vertical" class="h-5" />
-    <UBadge
-      v-if="isPlaying"
-      label="Playing"
-      color="success"
-    />
-    <UButton
-      :icon="isPlaying ? 'i-lucide-pause' : 'i-lucide-play'"
-      :color="isPlaying ? 'primary' : 'neutral'"
-      :variant="isPlaying ? 'soft' : 'ghost'"
-      square
-      :title="isPlaying ? 'Pause' : 'Play'"
-      @click="togglePlay"
-    />
-    <UButton
-      icon="i-lucide-skip-forward"
-      color="neutral"
-      variant="ghost"
-      square
-      title="Step one frame"
-      :disabled="isPlaying"
-      @click="stepFrame"
-    />
     <UButton
       :icon="isGridVisible ? 'i-lucide-grid-2x2-x' : 'i-lucide-grid-2x2'"
       color="neutral"
@@ -70,7 +48,6 @@ import type { GizmoModeOption } from './GizmoModes.vue';
 
 const {
   isPlaying,
-  togglePlay,
   isGridVisible,
   toggleGrid,
   colliderOverlayMode,
@@ -78,8 +55,7 @@ const {
   isNavOverlayVisible,
   toggleNavOverlay,
   resetScene,
-  canReset,
-  stepFrame
+  canReset
 } = useRuntime();
 const { gizmoMode, setGizmoMode } = useViewport();
 

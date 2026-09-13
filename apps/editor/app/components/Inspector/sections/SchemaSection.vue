@@ -1,38 +1,29 @@
 <template>
-  <UCollapsible>
-    <UButton
-      :label="label"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div class="space-y-1.5 py-1.5">
-        <InspectorSchemaField
-          v-for="entry in fields"
-          :key="entry.key"
-          :field-key="entry.key"
-          :field="entry.field"
-          :value="data[entry.key]"
-          :inspect-tick="inspectTick"
-          :entity-options="entityOptions"
-          @update="onField(entry.key, $event)"
-          @commit="emit('commit')"
-        />
-        <UButton
-          label="Remove"
-          color="neutral"
-          variant="ghost"
-          size="xs"
-          @click="emit('remove')"
-        />
-      </div>
-    </template>
-  </UCollapsible>
+  <InspectorSection
+    :title="label"
+    icon="i-lucide-braces"
+  >
+    <div class="space-y-1.5">
+      <InspectorSchemaField
+        v-for="entry in fields"
+        :key="entry.key"
+        :field-key="entry.key"
+        :field="entry.field"
+        :value="data[entry.key]"
+        :inspect-tick="inspectTick"
+        :entity-options="entityOptions"
+        @update="onField(entry.key, $event)"
+        @commit="emit('commit')"
+      />
+      <UButton
+        label="Remove"
+        color="neutral"
+        variant="ghost"
+        size="xs"
+        @click="emit('remove')"
+      />
+    </div>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

@@ -1,17 +1,9 @@
 <template>
-  <UCollapsible>
-    <UButton
-      label="Collider"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div class="space-y-1.5 py-1.5">
+  <InspectorSection
+    title="Collider"
+    icon="i-lucide-cuboid"
+  >
+    <div class="space-y-1.5">
         <div
           v-if="collider"
           class="space-y-3"
@@ -127,8 +119,7 @@
           />
         </div>
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

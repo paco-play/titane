@@ -1,17 +1,9 @@
 <template>
-  <UCollapsible>
-    <UButton
-      label="Rigid Body"
-      color="neutral"
-      variant="outline"
-      trailing-icon="i-lucide-chevron-down"
-      size="xs"
-      block
-      class="justify-start"
-    />
-
-    <template #content>
-      <div class="space-y-1.5 py-1.5">
+  <InspectorSection
+    title="Rigid Body"
+    icon="i-lucide-atom"
+  >
+    <div class="space-y-1.5">
         <div
           v-if="rigid"
           class="space-y-2"
@@ -77,8 +69,7 @@
           @click="emit('add')"
         />
       </div>
-    </template>
-  </UCollapsible>
+  </InspectorSection>
 </template>
 
 <script setup lang="ts">

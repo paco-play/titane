@@ -4,6 +4,7 @@ import { getComponent, Name, Transform } from '@titane/core';
 import { buildIndexedForest } from '~/utils/hierarchy-index';
 import { isHierarchyVisible } from '~/utils/hierarchy-visible';
 import { WORLD_HIERARCHY_KEY } from '~/utils/hierarchy-reparent';
+import { filterTreeItems } from '~/utils/hierarchy-filter';
 
 export interface HierarchyItem extends TreeItem {
   id?: Entity;
@@ -12,10 +13,14 @@ export interface HierarchyItem extends TreeItem {
   color?: string;
 }
 
+/** Shared so the Hierarchy header search and the tree read the same query. */
+const query = ref('');
+
 /**
- * Transforms the ECS World state into Nuxt UI Navigation items.
+ * Transforms the ECS World state into Nuxt UI tree items.
  *
- * @returns The hierarchy items, the count of visible entities and the selection bridge.
+ * @returns The (optionally filtered) hierarchy items, the search query,
+ *   the count of visible entities and the selection bridge.
  */
 export const useHierarchy = () => {
   const { engine, renderer, entities, selectedEntityId, selectedWorld } = useTitane();
@@ -93,6 +98,10 @@ export const useHierarchy = () => {
     return [worldNode, ...forest];
   });
 
+  const visibleItems = computed<HierarchyItem[]>(() =>
+    filterTreeItems(hierarchyItems.value, query.value)
+  );
+
   /**
    * Bridge between engine selection and the UI's object-based selection.
    */
@@ -123,7 +132,8 @@ export const useHierarchy = () => {
   });
 
   return {
-    items: hierarchyItems,
+    items: visibleItems,
+    query,
     count: computed(() => visibleEntities.value.length),
     selection: selectionBridge,
     selectedEntityId
